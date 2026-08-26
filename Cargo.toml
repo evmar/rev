@@ -1,0 +1,13 @@
+[package]
+name = "rev"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+futures-util = "0.3.34"
+openrouter-rs = "0.14.0"
+tokio = { version = "1", features = ["full"] }
+iced-x86 = "1.21.0"
+
+exe = { path = "../theseus/exe" }
+runtime = { path = "../theseus/runtime" }

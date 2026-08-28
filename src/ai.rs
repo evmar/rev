@@ -6,6 +6,11 @@ use openrouter_rs::{
     types::{CompletionsResponse, Role},
 };
 
+/// ai
+#[derive(argh::FromArgs)]
+#[argh(subcommand, name = "ai")]
+pub struct Args {}
+
 fn print_usage(start: std::time::Instant, response: &CompletionsResponse) {
     println!();
     let delta = std::time::Instant::now() - start;

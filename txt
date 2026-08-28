@@ -1,0 +1,16 @@
+0823:0cfd sub si,si
+0823:0cff sub di,di
+0823:0d01 push ax
+0823:0d02 pop bp
+0823:0d03 mov ah,51h
+0823:0d05 int 21h
+0823:0d07 mov es,bx
+0823:0d09 mov ax,es:[2Ch]
+0823:0d0d mov es,ax
+0823:0d0f mov ah,49h
+0823:0d11 int 21h
+0823:0d13 mov ax,352Fh
+0823:0d16 int 21h
+0823:0d18 mov ax,es
+0823:0d1a cmp ax,0
+0823:0d1d je short 0D28h

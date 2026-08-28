@@ -5,7 +5,7 @@ const DOSBOX_SEG: u16 = 0x813;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    load();
+    ai::call().await?;
     Ok(())
 }
 

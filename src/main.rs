@@ -3,21 +3,54 @@ mod ai;
 
 const DOSBOX_SEG: u16 = 0x813;
 
+#[derive(argh::FromArgs)]
+#[argh(subcommand)]
+enum Mode {
+    Dis(Dis),
+    AI(AI),
+}
+
+/// disassemble
+#[derive(argh::FromArgs)]
+#[argh(subcommand, name = "dis")]
+struct Dis {
+    #[argh(positional)]
+    path: String,
+}
+
+/// ai
+#[derive(argh::FromArgs)]
+#[argh(subcommand, name = "ai")]
+struct AI {}
+
+/// wip
+#[derive(argh::FromArgs)]
+struct Args {
+    #[argh(subcommand)]
+    mode: Mode,
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    ai::call().await?;
+    let args = argh::from_env::<Args>();
+    match args.mode {
+        Mode::Dis(dis) => {
+            load(dis.path);
+        }
+        Mode::AI(_ai) => {
+            ai::call().await?;
+        }
+    }
     Ok(())
 }
 
-fn load() {
+fn load(path: String) {
     let mut mem = Vec::<u8>::new();
     let psp_segment = DOSBOX_SEG;
     let load_addr = SegOfs::new(psp_segment + 0x10, 0);
 
     let dos = {
-        let args = std::env::args().collect::<Vec<String>>();
-        let path = &args[1];
-        let buf = std::fs::read(path).unwrap();
+        let buf = std::fs::read(&path).unwrap();
         println!("loading {path}");
         let dos = exe::DOS::parse(&buf).unwrap();
         {

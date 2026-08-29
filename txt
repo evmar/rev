@@ -1,3 +1,13 @@
+loading /Users/evmar/projects/theseus/scratch/dos/sbaitso/SBTALKER.EXE
+0823:0cec:
+0823:0cec mov ax,cs
+0823:0cee sub ax,10h
+0823:0cf1 mov ds,ax
+0823:0cf3 mov es,ax
+0823:0cf5 sub ax,ax
+0823:0cf7 sub bx,bx
+0823:0cf9 sub cx,cx
+0823:0cfb sub dx,dx
 0823:0cfd sub si,si
 0823:0cff sub di,di
 0823:0d01 push ax
@@ -14,3 +24,68 @@
 0823:0d18 mov ax,es
 0823:0d1a cmp ax,0
 0823:0d1d je short 0D28h
+
+0823:0d1f:
+0823:0d1f mov ax,0FBFBh
+0823:0d22 int 2Fh
+0823:0d24 or ax,ax
+0823:0d26 je short 0D88h
+
+0823:0d28:
+0823:0d28 mov bx,cs
+0823:0d2a sub bx,10h
+0823:0d2d mov cs:[8Eh],bx
+0823:0d32 dec bx
+0823:0d33 mov ds,bx
+0823:0d35 mov si,3
+0823:0d38 mov dx,[si]
+0823:0d3a mov cs:[90h],dx
+0823:0d3f inc bx
+0823:0d40 add bx,dx
+0823:0d42 mov cs:[0A9h],bx
+0823:0d47 mov al,1
+0823:0d49 call 09E5h
+0823:0d4c call 0BE7h
+0823:0d4f call 0C86h
+0823:0d52 call 0F5Bh
+0823:0d55 call 0943h
+0823:0d58 call 0B3Ch
+0823:0d5b call 0AA0h
+0823:0d5e mov ax,352Fh
+0823:0d61 int 21h
+0823:0d63 mov cs:[7Eh],es
+0823:0d68 mov cs:[80h],bx
+0823:0d6d push cs
+0823:0d6e pop ds
+0823:0d6f mov dx,898h
+0823:0d72 mov ax,252Fh
+0823:0d75 int 21h
+0823:0d77 lea dx,ds:[0ABh]
+0823:0d7b call 0C79h
+0823:0d7e mov ax,3100h
+0823:0d81 mov dx,cs:[90h]
+0823:0d86 int 21h
+
+0823:0d88:
+0823:0d88 mov ah,4Ch
+0823:0d8a mov al,0FBh
+0823:0d8c int 21h
+0823:0d8e fmul qword ptr [bx]
+0823:0d90 or dx,[bx+si]
+0823:0d92 cmp [bx+si],dx
+0823:0d94 pop sp
+0823:0d95 adc [bp+si+10h],bh
+0823:0d98 mov dl,[bx+si]
+0823:0d9a lahf
+0823:0d9b adc [di-6DF0h],bh
+0823:0d9f movzx cx,word ptr [bx]
+0823:0da2 pop cx
+0823:0da3 push cx
+0823:0da4 mov ax,sp
+0823:0da6 mov cs:[0E57h],ax
+0823:0daa push ds
+0823:0dab pop ss
+0823:0dac mov sp,cs:[0E59h]
+0823:0db1 push cx
+0823:0db2 ret
+

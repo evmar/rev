@@ -53,8 +53,7 @@ pub async fn call() -> Result<(), Box<dyn std::error::Error>> {
                 Role::System,
                 indoc!(
                     "
-                    You are a DOS and x86 expert.
-                    You read the input assembly, and respond with comments on specific addresses
+                    You read the input DOS x86 assembly, and respond with comments on specific addresses
                     about what the code is doing at that address.
                     Do not comment on every line, only higher level comments."
                 ),

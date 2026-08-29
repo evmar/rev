@@ -950,6 +950,7 @@ dependencies = [
 name = "rev"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "argh",
  "exe",
  "futures-util",

@@ -5,25 +5,24 @@ use std::{
 
 use runtime::SegOfs;
 
+use crate::db::DB;
+
 const DOSBOX_SEG: u16 = 0x813;
 
 /// disassemble
 #[derive(argh::FromArgs)]
 #[argh(subcommand, name = "dis")]
-pub struct Args {
-    #[argh(positional)]
-    path: String,
-}
+pub struct Args {}
 
-pub fn load(args: Args) {
+pub fn load(db: &DB, _args: Args) {
     let mut mem = Vec::<u8>::new();
     let psp_segment = DOSBOX_SEG;
     let load_addr = SegOfs::new(psp_segment + 0x10, 0);
 
     let dos = {
-        let path = &args.path;
+        let path = &db.exe_path();
+        println!("loading {}", path.display());
         let buf = std::fs::read(path).unwrap();
-        println!("loading {path}");
         let dos = exe::DOS::parse(&buf).unwrap();
         {
             let data = &buf[dos.image_offset()..];

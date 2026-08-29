@@ -1,4 +1,6 @@
-use std::path::Path;
+use std::path::PathBuf;
+
+use crate::db::DB;
 
 /// init
 #[derive(argh::FromArgs)]
@@ -9,15 +11,12 @@ pub struct Args {
     exe: String,
 }
 
-#[derive(serde::Serialize, serde::Deserialize)]
-struct Meta {
-    exe: String,
-}
-
-pub fn init(project: String, args: Args) -> Result<(), Box<dyn std::error::Error>> {
-    let meta = Meta { exe: args.exe };
-    let path = Path::new(&project).join("meta.toml");
-    std::fs::write(&path, toml::to_string(&meta)?)?;
+pub fn init(project_path: PathBuf, args: Args) -> Result<(), Box<dyn std::error::Error>> {
+    let db = DB {
+        project_path,
+        exe: args.exe,
+    };
+    let path = db.write()?;
     println!("wrote {}", path.display());
     Ok(())
 }

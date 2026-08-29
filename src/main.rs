@@ -1,4 +1,9 @@
+use std::path::PathBuf;
+
+use crate::db::DB;
+
 mod ai;
+mod db;
 mod dis;
 mod init;
 
@@ -15,7 +20,7 @@ enum Mode {
 struct Args {
     /// project path
     #[argh(option)]
-    project: String,
+    project: PathBuf,
 
     #[argh(subcommand)]
     mode: Mode,
@@ -27,7 +32,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     match mode {
         Mode::Init(args) => init::init(project, args),
         Mode::Dis(args) => {
-            dis::load(args);
+            let db = DB::load(project)?;
+            dis::load(&db, args);
             Ok(())
         }
         Mode::AI(_ai) => ai::call().await,

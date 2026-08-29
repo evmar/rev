@@ -13,3 +13,5 @@ exe = { path = "../theseus/exe" }
 runtime = { path = "../theseus/runtime" }
 indoc = "2.0.7"
 argh = "0.1.19"
+toml = "1.1.4"
+serde = "1.0.229"

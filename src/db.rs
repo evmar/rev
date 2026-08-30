@@ -1,32 +1,41 @@
 use std::path::{Path, PathBuf};
 
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(Default)]
 pub struct DB {
-    #[serde(skip)]
     pub project_path: PathBuf,
+    pub meta: Meta,
+}
 
+#[derive(Default, serde::Serialize, serde::Deserialize)]
+pub struct Meta {
     pub exe: String,
 }
 
 impl DB {
-    fn path(project_path: &Path) -> PathBuf {
-        Path::new(project_path).join("db.toml")
+    pub fn meta(&self) -> PathBuf {
+        Path::new(&self.project_path).join("db.toml")
     }
 
-    pub fn load(project_path: PathBuf) -> anyhow::Result<Self> {
-        let buf = std::fs::read(Self::path(&project_path))?;
-        let mut db: DB = toml::from_slice(&buf)?;
-        db.project_path = project_path;
-        Ok(db)
+    pub fn new(project_path: PathBuf) -> Self {
+        DB {
+            project_path,
+            ..Default::default()
+        }
     }
 
-    pub fn write(&self) -> anyhow::Result<PathBuf> {
-        let path = Self::path(&self.project_path);
-        std::fs::write(&path, toml::to_string(self)?)?;
-        Ok(path)
+    pub fn load(&mut self) -> anyhow::Result<()> {
+        let buf = std::fs::read(self.meta())?;
+        self.meta = toml::from_slice(&buf)?;
+        Ok(())
+    }
+
+    pub fn write(&self) -> anyhow::Result<()> {
+        let path = self.meta();
+        std::fs::write(&path, toml::to_string(&self.meta)?)?;
+        Ok(())
     }
 
     pub fn exe_path(&self) -> PathBuf {
-        self.project_path.join(&self.exe)
+        self.project_path.join(&self.meta.exe)
     }
 }

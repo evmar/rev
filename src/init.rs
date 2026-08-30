@@ -12,11 +12,9 @@ pub struct Args {
 }
 
 pub fn init(project_path: PathBuf, args: Args) -> Result<(), Box<dyn std::error::Error>> {
-    let db = DB {
-        project_path,
-        exe: args.exe,
-    };
-    let path = db.write()?;
-    println!("wrote {}", path.display());
+    let mut db = DB::new(project_path);
+    db.meta.exe = args.exe;
+    db.write()?;
+    println!("wrote {}", db.meta().display());
     Ok(())
 }

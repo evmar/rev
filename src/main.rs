@@ -32,7 +32,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     match mode {
         Mode::Init(args) => init::init(project, args),
         Mode::Dis(args) => {
-            let db = DB::load(project)?;
+            let mut db = DB::new(project);
+            db.load()?;
             dis::load(&db, args);
             Ok(())
         }

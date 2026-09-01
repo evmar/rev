@@ -7,23 +7,20 @@ use std::{
 };
 
 #[derive(serde::Serialize)]
-pub struct FunctionMeta {
-    pub ip: SegOfs,
-}
-
 pub struct Function {
-    pub meta: FunctionMeta,
+    pub ip: SegOfs,
+    #[serde(skip)]
     pub blocks: Vec<Block>,
 }
 
 impl Function {
     fn ser(&self, w: &mut impl std::io::Write) -> anyhow::Result<()> {
-        writeln!(w, "{}", toml::to_string(&self.meta)?)?;
+        writeln!(w, "{}", toml::to_string(self)?)?;
         writeln!(w, "---")?;
 
         for block in self.blocks.iter() {
             for instr in block.instrs.iter() {
-                let ip = self.meta.ip.with_ofs(instr.ip16());
+                let ip = self.ip.with_ofs(instr.ip16());
                 writeln!(w, "{ip} {instr}")?;
             }
             println!();
@@ -66,7 +63,7 @@ pub fn load(path: &Path) -> Function {
     let blocks = gather(&mem, SegOfs::new(cs, dos.header.entry_point));
 
     Function {
-        meta: FunctionMeta { ip: blocks[0].ip },
+        ip: blocks[0].ip,
         blocks,
     }
 }

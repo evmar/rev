@@ -13,7 +13,7 @@ pub struct Function {
 }
 
 impl Function {
-    fn ser(&self, w: &mut impl std::io::Write) -> anyhow::Result<()> {
+    pub fn serialize(&self, w: &mut impl std::io::Write) -> anyhow::Result<()> {
         writeln!(w, "{}", toml::to_string(self)?)?;
         writeln!(w, "---")?;
 
@@ -22,7 +22,7 @@ impl Function {
                 let ip = self.ip.with_ofs(instr.ip16());
                 writeln!(w, "{ip} {instr}")?;
             }
-            println!();
+            writeln!(w)?;
         }
         Ok(())
     }
@@ -36,10 +36,15 @@ pub struct Args {
     addr: SegOfs,
 }
 
-pub fn run(db: &mut DB, args: Args) {
+pub fn run(db: &mut DB, args: Args) -> anyhow::Result<()> {
     let mem = load_exe(db);
     let func = dis(&mem, args.addr);
-    func.ser(&mut std::io::stdout()).unwrap();
+    if db.functions.iter().any(|f| f.ip == func.ip) {
+        anyhow::bail!("function at {} already exists", func.ip);
+    }
+    db.functions.push(func);
+    db.write()?;
+    Ok(())
 }
 
 fn dis(mem: &[u8], addr: SegOfs) -> Function {

@@ -984,6 +984,7 @@ dependencies = [
  "bitflags",
  "log",
  "num-traits",
+ "serde",
  "widestring",
  "zerocopy",
 ]

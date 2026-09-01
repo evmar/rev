@@ -6,16 +6,8 @@ use std::{
     path::Path,
 };
 
-fn ser_segofs<S>(segofs: &SegOfs, serializer: S) -> Result<S::Ok, S::Error>
-where
-    S: serde::Serializer,
-{
-    serializer.serialize_str(&format!("{}", segofs))
-}
-
 #[derive(serde::Serialize)]
 pub struct FunctionMeta {
-    #[serde(serialize_with = "ser_segofs")]
     pub ip: SegOfs,
 }
 

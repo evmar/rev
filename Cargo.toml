@@ -10,7 +10,7 @@ tokio = { version = "1", features = ["full"] }
 iced-x86 = "1.21.0"
 
 exe = { path = "../theseus/exe" }
-runtime = { path = "../theseus/runtime" }
+runtime = { path = "../theseus/runtime", features = ["serde"] }
 indoc = "2.0.7"
 argh = "0.1.19"
 toml = "1.1.4"

@@ -39,12 +39,32 @@ pub struct Args {
 pub fn run(db: &mut DB, args: Args) -> anyhow::Result<()> {
     let mem = load_exe(db);
     let func = dis(&mem, args.addr);
+    check_coverage(&func);
     if db.functions.iter().any(|f| f.ip == func.ip) {
         anyhow::bail!("function at {} already exists", func.ip);
     }
     db.functions.push(func);
     db.write()?;
     Ok(())
+}
+
+fn check_coverage(func: &Function) {
+    let start = func.blocks[0].instrs[0].ip16() as usize;
+    let mut covered = vec![];
+    for block in func.blocks.iter() {
+        for instr in block.instrs.iter() {
+            let end = instr.ip16() as usize + instr.len();
+            covered.resize(end - start, false);
+            covered[instr.ip16() as usize - start..][..instr.len()].fill(true);
+        }
+    }
+
+    let count = covered.iter().filter(|&&b| b).count();
+    println!(
+        "{count}/{len} bytes covered",
+        count = count,
+        len = covered.len()
+    );
 }
 
 fn dis(mem: &[u8], addr: SegOfs) -> Function {

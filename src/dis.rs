@@ -1,13 +1,16 @@
-use crate::{db::DB, load::load_exe};
+use crate::db::DB;
 use runtime::SegOfs;
 use std::{
     collections::{BTreeMap, VecDeque},
     ops::Range,
 };
 
-#[derive(serde::Serialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct Function {
+    pub name: Option<String>,
+
     pub ip: SegOfs,
+
     #[serde(skip)]
     pub blocks: Vec<Block>,
 }
@@ -26,6 +29,42 @@ impl Function {
         }
         Ok(())
     }
+
+    pub fn deserialize(mem: &[u8], buf: &str) -> anyhow::Result<Self> {
+        let Some((header, body)) = buf.split_once("\n---\n") else {
+            anyhow::bail!("missing --- separator")
+        };
+
+        let mut func: Function = toml::from_str(header)?;
+
+        let mut decoder = iced_x86::Decoder::new(16, &mem, iced_x86::DecoderOptions::NONE);
+        let mut block = func.blocks.push_mut(Block {
+            ip: Default::default(),
+            instrs: vec![],
+        });
+        for (i, line) in body.lines().enumerate() {
+            if line.is_empty() {
+                block = func.blocks.push_mut(Block {
+                    ip: Default::default(),
+                    instrs: vec![],
+                });
+                continue;
+            }
+            let Some((addr, _)) = line.split_once(' ') else {
+                anyhow::bail!("{i}: {line:?} missing addr")
+            };
+            let addr = SegOfs::parse(addr).map_err(|err| anyhow::anyhow!("{i}: {addr:?} {err}"))?;
+            if block.ip.is_null() {
+                block.ip = addr;
+            }
+            decoder.set_ip(addr.ofs as u64);
+            decoder.set_position(addr.abs() as usize).unwrap();
+            let instr = decoder.decode();
+            block.instrs.push(instr);
+        }
+
+        Ok(func)
+    }
 }
 
 /// disassemble
@@ -37,13 +76,23 @@ pub struct Args {
 }
 
 pub fn run(db: &mut DB, args: Args) -> anyhow::Result<()> {
-    let mem = load_exe(db);
-    let func = dis(&mem, args.addr);
+    let ip = args.addr;
+    let func = match db.functions.get_mut(&ip) {
+        Some(func) => func,
+        None => {
+            let func = Function {
+                name: None,
+                ip,
+                blocks: Default::default(),
+            };
+            db.functions.insert(ip, func);
+            db.functions.get_mut(&ip).unwrap()
+        }
+    };
     check_coverage(&func);
-    if db.functions.iter().any(|f| f.ip == func.ip) {
-        anyhow::bail!("function at {} already exists", func.ip);
-    }
-    db.functions.push(func);
+
+    func.blocks = gather(&db.mem, ip);
+
     db.write()?;
     Ok(())
 }
@@ -65,14 +114,6 @@ fn check_coverage(func: &Function) {
         count = count,
         len = covered.len()
     );
-}
-
-fn dis(mem: &[u8], addr: SegOfs) -> Function {
-    let blocks = gather(&mem, addr);
-    Function {
-        ip: blocks[0].ip,
-        blocks,
-    }
 }
 
 fn gather(mem: &[u8], start: SegOfs) -> Vec<Block> {

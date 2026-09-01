@@ -1,26 +1,40 @@
-use std::path::PathBuf;
+use std::{collections::BTreeMap, path::PathBuf};
 
-use crate::{dis::Function, load::EXE};
+use runtime::SegOfs;
+
+use crate::{
+    dis::Function,
+    load::{EXE, load_exe},
+};
 
 #[derive(Default)]
 pub struct DB {
     pub project_path: PathBuf,
+    pub mem: Vec<u8>,
     pub exe: EXE,
-    pub functions: Vec<Function>,
+    pub functions: BTreeMap<SegOfs, Function>,
 }
 
 impl DB {
     pub fn load(project_path: PathBuf) -> anyhow::Result<Self> {
         let exe: EXE = toml::from_slice(&std::fs::read(project_path.join("db.toml"))?)?;
-
-        let functions = vec![];
-        // for _addr in exe.functions.iter() {}
-
-        let db = DB {
+        let mut db = DB {
             project_path,
             exe,
-            functions,
+            ..Default::default()
         };
+        load_exe(&mut db);
+
+        let fn_dir = db.project_path.join("fn");
+        for entry in std::fs::read_dir(fn_dir)? {
+            let entry = entry?;
+            let func = Function::deserialize(
+                &db.mem,
+                std::str::from_utf8(&std::fs::read(entry.path())?)?,
+            )?;
+            db.functions.insert(func.ip, func);
+        }
+
         Ok(db)
     }
 
@@ -32,7 +46,7 @@ impl DB {
 
         let fn_dir = self.project_path("fn");
         std::fs::create_dir_all(&fn_dir)?;
-        for func in self.functions.iter() {
+        for func in self.functions.values() {
             let name = format!("{:04x}_{:04x}.toml", func.ip.seg, func.ip.ofs);
             let path = fn_dir.join(name);
             let mut f = std::fs::File::create(&path)?;

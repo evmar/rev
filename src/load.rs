@@ -9,7 +9,7 @@ pub struct EXE {
     pub entry_point: SegOfs,
 }
 
-pub fn load_exe(db: &mut DB) -> Vec<u8> {
+pub fn load_exe(db: &mut DB) {
     const DOSBOX_SEG: u16 = 0x813;
     let mut mem = Vec::<u8>::new();
     let psp_segment = DOSBOX_SEG;
@@ -27,6 +27,6 @@ pub fn load_exe(db: &mut DB) -> Vec<u8> {
     dos.apply_relocations(load_addr.seg, &mut mem[load_addr.abs() as usize..]);
 
     let cs = load_addr.seg + dos.header.initial_cs;
+    db.mem = mem;
     db.exe.entry_point = (cs, dos.header.entry_point).into();
-    mem
 }

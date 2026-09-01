@@ -15,8 +15,8 @@ pub fn init(project_path: PathBuf, args: Args) -> Result<(), Box<dyn std::error:
     let mut db = DB::default();
     db.project_path = project_path;
     db.exe.filename = args.exe;
-
     load_exe(&mut db);
+
     println!("entry point {}", db.exe.entry_point);
 
     db.write()?;

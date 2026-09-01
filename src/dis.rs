@@ -1,9 +1,8 @@
-use crate::db::DB;
+use crate::{db::DB, load::load_exe};
 use runtime::SegOfs;
 use std::{
     collections::{BTreeMap, VecDeque},
     ops::Range,
-    path::Path,
 };
 
 #[derive(serde::Serialize)]
@@ -32,36 +31,19 @@ impl Function {
 /// disassemble
 #[derive(argh::FromArgs)]
 #[argh(subcommand, name = "dis")]
-pub struct Args {}
+pub struct Args {
+    #[argh(positional, from_str_fn(SegOfs::parse))]
+    addr: SegOfs,
+}
 
-pub fn run(db: &DB, _args: Args) {
-    let func = load(&db.exe_path());
+pub fn run(db: &mut DB, args: Args) {
+    let mem = load_exe(db);
+    let func = dis(&mem, args.addr);
     func.ser(&mut std::io::stdout()).unwrap();
 }
 
-pub fn load(path: &Path) -> Function {
-    const DOSBOX_SEG: u16 = 0x813;
-    let mut mem = Vec::<u8>::new();
-    let psp_segment = DOSBOX_SEG;
-    let load_addr = SegOfs::new(psp_segment + 0x10, 0);
-
-    let dos = {
-        println!("loading {}", path.display());
-        let buf = std::fs::read(path).unwrap();
-        let dos = exe::DOS::parse(&buf).unwrap();
-        {
-            let data = &buf[dos.image_offset()..];
-            mem.resize(load_addr.abs() as usize + data.len(), 0);
-            mem[load_addr.abs() as usize..].copy_from_slice(data);
-        }
-        dos.apply_relocations(load_addr.seg, &mut mem[load_addr.abs() as usize..]);
-
-        dos
-    };
-
-    let cs = load_addr.seg + dos.header.initial_cs;
-    let blocks = gather(&mem, SegOfs::new(cs, dos.header.entry_point));
-
+fn dis(mem: &[u8], addr: SegOfs) -> Function {
+    let blocks = gather(&mem, addr);
     Function {
         ip: blocks[0].ip,
         blocks,

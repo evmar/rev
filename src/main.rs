@@ -6,6 +6,7 @@ mod ai;
 mod db;
 mod dis;
 mod init;
+mod load;
 
 #[derive(argh::FromArgs)]
 #[argh(subcommand)]
@@ -32,9 +33,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     match mode {
         Mode::Init(args) => init::init(project, args),
         Mode::Dis(args) => {
-            let mut db = DB::new(project);
-            db.load()?;
-            dis::run(&db, args);
+            let mut db = DB::load(project)?;
+            dis::run(&mut db, args);
             Ok(())
         }
         Mode::AI(_ai) => ai::call().await,

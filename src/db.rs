@@ -1,41 +1,34 @@
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
-#[derive(Default, serde::Serialize, serde::Deserialize)]
+use crate::load::EXE;
+
+#[derive(Default)]
 pub struct DB {
-    #[serde(skip)]
     pub project_path: PathBuf,
-    pub exe: String,
+    pub exe: EXE,
 }
 
 impl DB {
-    pub fn meta(&self) -> PathBuf {
-        Path::new(&self.project_path).join("db.toml")
-    }
-
-    pub fn new(project_path: PathBuf) -> Self {
-        DB {
+    pub fn load(project_path: PathBuf) -> anyhow::Result<Self> {
+        let buf = std::fs::read(project_path.join("db.toml"))?;
+        let db = DB {
             project_path,
-            ..Default::default()
-        }
-    }
-
-    pub fn load(&mut self) -> anyhow::Result<()> {
-        let buf = std::fs::read(self.meta())?;
-        *self = DB {
-            project_path: std::mem::take(&mut self.project_path),
-            ..toml::from_slice(&buf)?
+            exe: toml::from_slice(&buf)?,
         };
-        Ok(())
+        Ok(db)
     }
 
     pub fn write(&self) -> anyhow::Result<()> {
         assert!(!self.project_path.as_os_str().is_empty());
-        let path = self.meta();
-        std::fs::write(&path, toml::to_string(self)?)?;
+        std::fs::write(self.meta(), toml::to_string(&self.exe)?)?;
         Ok(())
     }
 
-    pub fn exe_path(&self) -> PathBuf {
-        self.project_path.join(&self.exe)
+    pub fn project_path(&self, filename: &str) -> PathBuf {
+        self.project_path.join(filename)
+    }
+
+    pub fn meta(&self) -> PathBuf {
+        self.project_path("db.toml")
     }
 }

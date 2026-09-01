@@ -1,26 +1,62 @@
+use crate::db::DB;
+use runtime::SegOfs;
 use std::{
     collections::{BTreeMap, VecDeque},
     ops::Range,
+    path::Path,
 };
 
-use runtime::SegOfs;
+fn ser_segofs<S>(segofs: &SegOfs, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+{
+    serializer.serialize_str(&format!("{}", segofs))
+}
 
-use crate::db::DB;
+#[derive(serde::Serialize)]
+pub struct FunctionMeta {
+    #[serde(serialize_with = "ser_segofs")]
+    pub ip: SegOfs,
+}
 
-const DOSBOX_SEG: u16 = 0x813;
+pub struct Function {
+    pub meta: FunctionMeta,
+    pub blocks: Vec<Block>,
+}
+
+impl Function {
+    fn ser(&self, w: &mut impl std::io::Write) -> anyhow::Result<()> {
+        writeln!(w, "{}", toml::to_string(&self.meta)?)?;
+        writeln!(w, "---")?;
+
+        for block in self.blocks.iter() {
+            for instr in block.instrs.iter() {
+                let ip = self.meta.ip.with_ofs(instr.ip16());
+                writeln!(w, "{ip} {instr}")?;
+            }
+            println!();
+        }
+        Ok(())
+    }
+}
 
 /// disassemble
 #[derive(argh::FromArgs)]
 #[argh(subcommand, name = "dis")]
 pub struct Args {}
 
-pub fn load(db: &DB, _args: Args) {
+pub fn run(db: &DB, _args: Args) {
+    let func = load(&db.exe_path());
+    func.ser(&mut std::io::stdout()).unwrap();
+}
+
+pub fn load(path: &Path) -> Function {
+    const DOSBOX_SEG: u16 = 0x813;
     let mut mem = Vec::<u8>::new();
     let psp_segment = DOSBOX_SEG;
     let load_addr = SegOfs::new(psp_segment + 0x10, 0);
 
     let dos = {
-        let path = &db.exe_path();
         println!("loading {}", path.display());
         let buf = std::fs::read(path).unwrap();
         let dos = exe::DOS::parse(&buf).unwrap();
@@ -37,12 +73,9 @@ pub fn load(db: &DB, _args: Args) {
     let cs = load_addr.seg + dos.header.initial_cs;
     let blocks = gather(&mem, SegOfs::new(cs, dos.header.entry_point));
 
-    for block in blocks {
-        println!("{}:", block.ip);
-        for instr in block.instrs {
-            println!("{} {}", block.ip.with_ofs(instr.ip16()), instr);
-        }
-        println!();
+    Function {
+        meta: FunctionMeta { ip: blocks[0].ip },
+        blocks,
     }
 }
 
@@ -73,7 +106,7 @@ fn gather(mem: &[u8], start: SegOfs) -> Vec<Block> {
     blocks.into_values().collect()
 }
 
-struct Block {
+pub struct Block {
     ip: SegOfs,
     instrs: Vec<iced_x86::Instruction>,
 }

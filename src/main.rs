@@ -34,7 +34,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Mode::Dis(args) => {
             let mut db = DB::new(project);
             db.load()?;
-            dis::load(&db, args);
+            dis::run(&db, args);
             Ok(())
         }
         Mode::AI(_ai) => ai::call().await,

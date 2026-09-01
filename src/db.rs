@@ -1,13 +1,9 @@
 use std::path::{Path, PathBuf};
 
-#[derive(Default)]
-pub struct DB {
-    pub project_path: PathBuf,
-    pub meta: Meta,
-}
-
 #[derive(Default, serde::Serialize, serde::Deserialize)]
-pub struct Meta {
+pub struct DB {
+    #[serde(skip)]
+    pub project_path: PathBuf,
     pub exe: String,
 }
 
@@ -25,17 +21,21 @@ impl DB {
 
     pub fn load(&mut self) -> anyhow::Result<()> {
         let buf = std::fs::read(self.meta())?;
-        self.meta = toml::from_slice(&buf)?;
+        *self = DB {
+            project_path: std::mem::take(&mut self.project_path),
+            ..toml::from_slice(&buf)?
+        };
         Ok(())
     }
 
     pub fn write(&self) -> anyhow::Result<()> {
+        assert!(!self.project_path.as_os_str().is_empty());
         let path = self.meta();
-        std::fs::write(&path, toml::to_string(&self.meta)?)?;
+        std::fs::write(&path, toml::to_string(self)?)?;
         Ok(())
     }
 
     pub fn exe_path(&self) -> PathBuf {
-        self.project_path.join(&self.meta.exe)
+        self.project_path.join(&self.exe)
     }
 }

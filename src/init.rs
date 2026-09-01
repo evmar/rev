@@ -13,7 +13,7 @@ pub struct Args {
 
 pub fn init(project_path: PathBuf, args: Args) -> Result<(), Box<dyn std::error::Error>> {
     let mut db = DB::new(project_path);
-    db.meta.exe = args.exe;
+    db.exe = args.exe;
     db.write()?;
     println!("wrote {}", db.meta().display());
     Ok(())

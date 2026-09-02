@@ -3,7 +3,7 @@ use std::{collections::BTreeMap, path::PathBuf};
 use runtime::SegOfs;
 
 use crate::{
-    dis::Function,
+    function::Function,
     load::{EXE, load_exe},
 };
 

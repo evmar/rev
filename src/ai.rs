@@ -11,7 +11,7 @@ use runtime::SegOfs;
 
 use crate::{
     db::DB,
-    dis::{Function, Instr},
+    function::{Function, Instr},
 };
 
 /// ai

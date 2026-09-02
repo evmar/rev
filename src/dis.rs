@@ -1,90 +1,9 @@
-use crate::db::DB;
-use runtime::SegOfs;
-use std::{
-    collections::{BTreeMap, VecDeque},
-    ops::Range,
+use crate::{
+    db::DB,
+    function::{Block, Function, Instr},
 };
-
-#[derive(serde::Serialize, serde::Deserialize)]
-pub struct Function {
-    pub name: Option<String>,
-
-    pub ip: SegOfs,
-
-    #[serde(skip)]
-    pub blocks: Vec<Block>,
-}
-
-impl Function {
-    pub fn serialize(&self, w: &mut impl std::io::Write) -> anyhow::Result<()> {
-        writeln!(w, "{}", toml::to_string(self)?)?;
-        writeln!(w, "---")?;
-
-        for block in self.blocks.iter() {
-            for instr in block.instrs.iter() {
-                let ip = self.ip.with_ofs(instr.iced.ip16());
-                if let Some(comment) = &instr.comment {
-                    writeln!(w, "{ip} ; {comment}")?;
-                }
-                writeln!(w, "{ip} {instr}", instr = instr.iced)?;
-            }
-            writeln!(w)?;
-        }
-        Ok(())
-    }
-
-    pub fn deserialize(mem: &[u8], buf: &str) -> anyhow::Result<Self> {
-        let Some((header, body)) = buf.split_once("\n---\n") else {
-            anyhow::bail!("missing --- separator")
-        };
-
-        let mut func: Function = toml::from_str(header)?;
-
-        let mut decoder = iced_x86::Decoder::new(16, &mem, iced_x86::DecoderOptions::NONE);
-        let mut block = func.blocks.push_mut(Block {
-            ip: Default::default(),
-            instrs: vec![],
-        });
-        let mut comment = String::new();
-        for (i, line) in body.lines().enumerate() {
-            if line.is_empty() {
-                block = func.blocks.push_mut(Block {
-                    ip: Default::default(),
-                    instrs: vec![],
-                });
-                continue;
-            }
-
-            let Some((addr, rest)) = line.split_once(' ') else {
-                anyhow::bail!("{i}: {line:?} missing addr")
-            };
-            let addr = SegOfs::parse(addr).map_err(|err| anyhow::anyhow!("{i}: {addr:?} {err}"))?;
-
-            if rest.starts_with(";") {
-                comment.push_str(&rest[2..]);
-                continue;
-            }
-
-            if block.ip.is_null() {
-                block.ip = addr;
-            }
-
-            decoder.set_ip(addr.ofs as u64);
-            decoder.set_position(addr.abs() as usize).unwrap();
-            let instr = decoder.decode();
-            block.instrs.push(Instr {
-                comment: if comment.is_empty() {
-                    None
-                } else {
-                    Some(std::mem::take(&mut comment))
-                },
-                iced: instr,
-            });
-        }
-
-        Ok(func)
-    }
-}
+use runtime::SegOfs;
+use std::collections::{BTreeMap, VecDeque};
 
 /// disassemble
 #[derive(argh::FromArgs)]
@@ -160,26 +79,6 @@ fn gather(mem: &[u8], start: SegOfs) -> Vec<Block> {
         blocks.insert(ip, block);
     }
     blocks.into_values().collect()
-}
-
-pub struct Block {
-    pub ip: SegOfs,
-    pub instrs: Vec<Instr>,
-}
-
-pub struct Instr {
-    pub comment: Option<String>,
-    pub iced: iced_x86::Instruction,
-}
-
-impl Block {
-    fn span(&self) -> Range<SegOfs> {
-        self.ip..self.ip.with_ofs(self.instrs.last().unwrap().iced.ip16())
-    }
-
-    fn contains_ip(&self, ip: SegOfs) -> bool {
-        ip.seg == self.ip.seg && self.span().contains(&ip)
-    }
 }
 
 fn gather_block(

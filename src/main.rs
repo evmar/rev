@@ -5,6 +5,7 @@ use crate::db::DB;
 mod ai;
 mod db;
 mod dis;
+mod function;
 mod init;
 mod load;
 

@@ -22,8 +22,11 @@ impl Function {
 
         for block in self.blocks.iter() {
             for instr in block.instrs.iter() {
-                let ip = self.ip.with_ofs(instr.ip16());
-                writeln!(w, "{ip} {instr}")?;
+                let ip = self.ip.with_ofs(instr.iced.ip16());
+                if let Some(comment) = &instr.comment {
+                    writeln!(w, "{ip} ; {comment}")?;
+                }
+                writeln!(w, "{ip} {instr}", instr = instr.iced)?;
             }
             writeln!(w)?;
         }
@@ -42,6 +45,7 @@ impl Function {
             ip: Default::default(),
             instrs: vec![],
         });
+        let mut comment = String::new();
         for (i, line) in body.lines().enumerate() {
             if line.is_empty() {
                 block = func.blocks.push_mut(Block {
@@ -50,17 +54,32 @@ impl Function {
                 });
                 continue;
             }
-            let Some((addr, _)) = line.split_once(' ') else {
+
+            let Some((addr, rest)) = line.split_once(' ') else {
                 anyhow::bail!("{i}: {line:?} missing addr")
             };
             let addr = SegOfs::parse(addr).map_err(|err| anyhow::anyhow!("{i}: {addr:?} {err}"))?;
+
+            if rest.starts_with(";") {
+                comment.push_str(&rest[2..]);
+                continue;
+            }
+
             if block.ip.is_null() {
                 block.ip = addr;
             }
+
             decoder.set_ip(addr.ofs as u64);
             decoder.set_position(addr.abs() as usize).unwrap();
             let instr = decoder.decode();
-            block.instrs.push(instr);
+            block.instrs.push(Instr {
+                comment: if comment.is_empty() {
+                    None
+                } else {
+                    Some(std::mem::take(&mut comment))
+                },
+                iced: instr,
+            });
         }
 
         Ok(func)
@@ -98,13 +117,13 @@ pub fn run(db: &mut DB, args: Args) -> anyhow::Result<()> {
 }
 
 fn check_coverage(func: &Function) {
-    let start = func.blocks[0].instrs[0].ip16() as usize;
+    let start = func.blocks[0].instrs[0].iced.ip16() as usize;
     let mut covered = vec![];
     for block in func.blocks.iter() {
         for instr in block.instrs.iter() {
-            let end = instr.ip16() as usize + instr.len();
+            let end = instr.iced.ip16() as usize + instr.iced.len();
             covered.resize(end - start, false);
-            covered[instr.ip16() as usize - start..][..instr.len()].fill(true);
+            covered[instr.iced.ip16() as usize - start..][..instr.iced.len()].fill(true);
         }
     }
 
@@ -144,13 +163,18 @@ fn gather(mem: &[u8], start: SegOfs) -> Vec<Block> {
 }
 
 pub struct Block {
-    ip: SegOfs,
-    instrs: Vec<iced_x86::Instruction>,
+    pub ip: SegOfs,
+    pub instrs: Vec<Instr>,
+}
+
+pub struct Instr {
+    pub comment: Option<String>,
+    pub iced: iced_x86::Instruction,
 }
 
 impl Block {
     fn span(&self) -> Range<SegOfs> {
-        self.ip..self.ip.with_ofs(self.instrs.last().unwrap().ip16())
+        self.ip..self.ip.with_ofs(self.instrs.last().unwrap().iced.ip16())
     }
 
     fn contains_ip(&self, ip: SegOfs) -> bool {
@@ -182,7 +206,10 @@ fn gather_block(
         //     addr = block_ip.with_ofs(instr.ip16()),
         //     code = instr
         // );
-        instrs.push(instr);
+        instrs.push(Instr {
+            comment: None,
+            iced: instr,
+        });
 
         use iced_x86::FlowControl::*;
         match instr.flow_control() {

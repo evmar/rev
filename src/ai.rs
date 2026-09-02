@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use futures_util::StreamExt;
 use indoc::indoc;
 use openrouter_rs::{
@@ -5,11 +7,20 @@ use openrouter_rs::{
     api::chat::{ChatCompletionRequest, Message},
     types::{CompletionsResponse, Role},
 };
+use runtime::SegOfs;
+
+use crate::{
+    db::DB,
+    dis::{Function, Instr},
+};
 
 /// ai
 #[derive(argh::FromArgs)]
 #[argh(subcommand, name = "ai")]
-pub struct Args {}
+pub struct Args {
+    #[argh(positional, from_str_fn(SegOfs::parse))]
+    addr: SegOfs,
+}
 
 fn print_usage(start: std::time::Instant, response: &CompletionsResponse) {
     println!();
@@ -31,8 +42,26 @@ fn print_usage(start: std::time::Instant, response: &CompletionsResponse) {
     }
 }
 
-pub async fn call() -> Result<(), Box<dyn std::error::Error>> {
-    let prompt = String::from_utf8(std::fs::read("txt").unwrap()).unwrap();
+pub async fn run(db: &mut DB, args: Args) -> anyhow::Result<()> {
+    let Some(func) = db.functions.get_mut(&args.addr) else {
+        anyhow::bail!("no function {}", args.addr);
+    };
+
+    let response = call(func).await?;
+
+    let merged = merge(func, &response);
+    if merged == 0 {
+        anyhow::bail!("no comments found");
+    }
+
+    db.write()?;
+    Ok(())
+}
+
+async fn call(func: &Function) -> anyhow::Result<String> {
+    let mut buf = Vec::new();
+    func.serialize(&mut buf)?;
+    let prompt = std::str::from_utf8(&buf).unwrap();
 
     let apikey = std::env::var("APIKEY").expect("need APIKEY in environment");
 
@@ -91,16 +120,73 @@ pub async fn call() -> Result<(), Box<dyn std::error::Error>> {
     let start = std::time::Instant::now();
     let mut stream = client.chat().stream(&request).await?;
 
+    let mut full_response = String::new();
     let mut last = None;
     while let Some(result) = stream.next().await {
         if let Ok(response) = result {
             if let Some(content) = response.choices[0].content() {
                 print!("{}", content);
+                full_response.push_str(&content);
             }
             last = Some(response);
         }
     }
     print_usage(start, &last.unwrap());
 
-    Ok(())
+    Ok(full_response)
+}
+
+fn parse_response(response: &str) -> Vec<(SegOfs, &str)> {
+    let mut comments = vec![];
+    for line in response.split('\n') {
+        if line.is_empty() {
+            continue;
+        }
+
+        let Some((addr, comment)) = line.split_once(' ') else {
+            eprintln!("bad line {line:?}");
+            continue;
+        };
+        let addr = match SegOfs::parse(addr) {
+            Ok(addr) => addr,
+            Err(err) => {
+                eprintln!("bad addr {addr}: {err}");
+                continue;
+            }
+        };
+        comments.push((addr, comment));
+    }
+    comments
+}
+
+fn merge(func: &mut Function, response: &str) -> usize {
+    let comments = parse_response(response);
+
+    let mut instrs: HashMap<SegOfs, &mut Instr> = func
+        .blocks
+        .iter_mut()
+        .flat_map(|b| {
+            b.instrs
+                .iter_mut()
+                .map(|i| (func.ip.with_ofs(i.iced.ip16()), i))
+        })
+        .collect();
+
+    let mut found = 0;
+    for (addr, comment) in comments {
+        if addr.seg != func.ip.seg {
+            eprintln!("bad comment address {addr}");
+            continue;
+        }
+        let Some(instr) = instrs.get_mut(&addr) else {
+            eprintln!("comment on nonexistent {addr}");
+            continue;
+        };
+        instr.comment = Some(match instr.comment.as_mut() {
+            Some(c) => format!("{c}; {comment}"),
+            None => comment.into(),
+        });
+        found += 1;
+    }
+    found
 }

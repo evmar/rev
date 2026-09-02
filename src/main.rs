@@ -15,6 +15,7 @@ enum Mode {
     Init(init::Args),
     Dis(dis::Args),
     AI(ai::Args),
+    RoundTrip(RoundTrip),
 }
 
 /// wip
@@ -27,6 +28,11 @@ struct Args {
     #[argh(subcommand)]
     mode: Mode,
 }
+
+/// wip
+#[derive(argh::FromArgs)]
+#[argh(subcommand, name = "roundtrip")]
+struct RoundTrip {}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -41,6 +47,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Mode::AI(args) => {
             let mut db = DB::load(project)?;
             ai::run(&mut db, args).await?;
+            Ok(())
+        }
+        Mode::RoundTrip(_) => {
+            let db = DB::load(project)?;
+            db.write()?;
             Ok(())
         }
     }

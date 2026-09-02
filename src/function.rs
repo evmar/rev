@@ -77,6 +77,10 @@ impl Function {
                 iced: instr,
             });
         }
+        let last = func.blocks.last().unwrap();
+        if last.instrs.is_empty() {
+            func.blocks.pop();
+        }
 
         Ok(func)
     }

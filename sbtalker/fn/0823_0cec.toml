@@ -1,5 +1,5 @@
-ip = "0823:0cec"
 name = "entry_point"
+ip = "0823:0cec"
 
 ---
 0823:0cec mov ax,cs
@@ -86,23 +86,4 @@ name = "entry_point"
 0823:0d88 mov ah,4Ch
 0823:0d8a mov al,0FBh
 0823:0d8c int 21h
-0823:0d8e ; not real code — misaligned data/junk bytes after the last INT 21h
-0823:0d8e fmul qword ptr [bx]
-0823:0d90 or dx,[bx+si]
-0823:0d92 cmp [bx+si],dx
-0823:0d94 pop sp
-0823:0d95 adc [bp+si+10h],bh
-0823:0d98 mov dl,[bx+si]
-0823:0d9a lahf
-0823:0d9b adc [di-6DF0h],bh
-0823:0d9f movzx cx,word ptr [bx]
-0823:0da2 pop cx
-0823:0da3 push cx
-0823:0da4 ; looks like a stack‑switch + "push cx / ret" dispatch idiom, likely part of a routine at a different alignment
-0823:0da4 mov ax,sp
-0823:0da6 mov cs:[0E57h],ax
-0823:0daa push ds
-0823:0dab pop ss
-0823:0dac mov sp,cs:[0E59h]
-0823:0db1 push cx
-0823:0db2 ret
+

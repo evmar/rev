@@ -20,7 +20,7 @@ impl Function {
             for instr in block.instrs.iter() {
                 let ip = self.ip.with_ofs(instr.iced.ip16());
                 if let Some(comment) = &instr.comment {
-                    writeln!(w, "{ip} ; {comment}")?;
+                    writeln!(w, "; {comment}")?;
                 }
                 writeln!(w, "{ip} {instr}", instr = instr.iced)?;
             }
@@ -51,15 +51,15 @@ impl Function {
                 continue;
             }
 
-            let Some((addr, rest)) = line.split_once(' ') else {
+            if line.starts_with(";") {
+                comment.push_str(&line[2..]);
+                continue;
+            }
+
+            let Some((addr, _)) = line.split_once(' ') else {
                 anyhow::bail!("{i}: {line:?} missing addr")
             };
             let addr = SegOfs::parse(addr).map_err(|err| anyhow::anyhow!("{i}: {addr:?} {err}"))?;
-
-            if rest.starts_with(";") {
-                comment.push_str(&rest[2..]);
-                continue;
-            }
 
             if block.ip.is_null() {
                 block.ip = addr;

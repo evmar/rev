@@ -14,42 +14,42 @@ ip = "0823:0cec"
 0823:0cff sub di,di
 0823:0d01 push ax
 0823:0d02 pop bp
-0823:0d03 ; get current PSP segment (AH=51h)
+; get current PSP segment (AH=51h)
 0823:0d03 mov ah,51h
 0823:0d05 int 21h
 0823:0d07 mov es,bx
-0823:0d09 ; fetch environment block segment from PSP:[2Ch]
+; fetch environment block segment from PSP:[2Ch]
 0823:0d09 mov ax,es:[2Ch]
 0823:0d0d mov es,ax
-0823:0d0f ; free the environment's memory block (AH=49h)
+; free the environment's memory block (AH=49h)
 0823:0d0f mov ah,49h
 0823:0d11 int 21h
-0823:0d13 ; get current INT 2Fh vector (AX=352Fh)
+; get current INT 2Fh vector (AX=352Fh)
 0823:0d13 mov ax,352Fh
 0823:0d16 int 21h
 0823:0d18 mov ax,es
 0823:0d1a cmp ax,0
-0823:0d1d ; if no INT 2Fh handler installed, go install ourselves
+; if no INT 2Fh handler installed, go install ourselves
 0823:0d1d je short 0D28h
 
-0823:0d1f ; multiplex call AX=FBFBh: ask if our TSR is already resident
+; multiplex call AX=FBFBh: ask if our TSR is already resident
 0823:0d1f mov ax,0FBFBh
 0823:0d22 int 2Fh
 0823:0d24 or ax,ax
-0823:0d26 ; if it answered (AX=0), exit instead of installing a second copy
+; if it answered (AX=0), exit instead of installing a second copy
 0823:0d26 je short 0D88h
 
-0823:0d28 ; save PSP segment; PSP-1 is our own MCB
+; save PSP segment; PSP-1 is our own MCB
 0823:0d28 mov bx,cs
 0823:0d2a sub bx,10h
 0823:0d2d mov cs:[8Eh],bx
 0823:0d32 dec bx
 0823:0d33 mov ds,bx
-0823:0d35 ; read owned block size (paragraphs) at MCB+3
+; read owned block size (paragraphs) at MCB+3
 0823:0d35 mov si,3
 0823:0d38 mov dx,[si]
 0823:0d3a mov cs:[90h],dx
-0823:0d3f ; compute segment of the next MCB (end of our memory block)
+; compute segment of the next MCB (end of our memory block)
 0823:0d3f inc bx
 0823:0d40 add bx,dx
 0823:0d42 mov cs:[0A9h],bx
@@ -61,28 +61,28 @@ ip = "0823:0cec"
 0823:0d55 call 0943h
 0823:0d58 call 0B3Ch
 0823:0d5b call 0AA0h
-0823:0d5e ; fetch INT 2Fh vector again to chain to
+; fetch INT 2Fh vector again to chain to
 0823:0d5e mov ax,352Fh
 0823:0d61 int 21h
-0823:0d63 ; save original INT 2Fh vector for the resident handler
+; save original INT 2Fh vector for the resident handler
 0823:0d63 mov cs:[7Eh],es
 0823:0d68 mov cs:[80h],bx
 0823:0d6d push cs
 0823:0d6e pop ds
 0823:0d6f mov dx,898h
-0823:0d72 ; hook INT 2Fh to our handler at CS:0898
+; hook INT 2Fh to our handler at CS:0898
 0823:0d72 mov ax,252Fh
 0823:0d75 int 21h
-0823:0d77 ; DX = offset of the resident portion's end
+; DX = offset of the resident portion's end
 0823:0d77 lea dx,ds:[0ABh]
-0823:0d7b ; shrink the memory block down to the resident part
+; shrink the memory block down to the resident part
 0823:0d7b call 0C79h
-0823:0d7e ; terminate and stay resident (AH=31h), keeping DX paragraphs
+; terminate and stay resident (AH=31h), keeping DX paragraphs
 0823:0d7e mov ax,3100h
 0823:0d81 mov dx,cs:[90h]
 0823:0d86 int 21h
 
-0823:0d88 ; terminate with exit code FBh (TSR already loaded)
+; terminate with exit code FBh (TSR already loaded)
 0823:0d88 mov ah,4Ch
 0823:0d8a mov al,0FBh
 0823:0d8c int 21h

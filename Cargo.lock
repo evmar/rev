@@ -959,6 +959,7 @@ dependencies = [
  "openrouter-rs",
  "runtime",
  "serde",
+ "serde_json",
  "tokio",
  "toml",
 ]

@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "dis",
+  "type": "object",
+  "properties": {
+    "name": {
+      "description": "short function name, a guess at what the function does",
+      "type": "string"
+    },
+    "desc": {
+      "description": "top-level description of function, a few lines of text",
+      "type": "string"
+    },
+    "inline_comments": {
+      "description": "inline comments on code, describing what each block of code does",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "addr": { "type": "string" },
+          "text": { "type": "string" }
+        },
+        "required": [ "addr", "text" ]
+      }
+    }
+  },
+  "required": ["name", "description", "inline_comments"]
+}

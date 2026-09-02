@@ -20,6 +20,7 @@ pub fn run(db: &mut DB, args: Args) -> anyhow::Result<()> {
         None => {
             let func = Function {
                 name: None,
+                desc: None,
                 ip,
                 blocks: Default::default(),
             };
@@ -27,9 +28,9 @@ pub fn run(db: &mut DB, args: Args) -> anyhow::Result<()> {
             db.functions.get_mut(&ip).unwrap()
         }
     };
-    check_coverage(&func);
 
     func.blocks = gather(&db.mem, ip);
+    check_coverage(&func);
 
     db.write()?;
     Ok(())

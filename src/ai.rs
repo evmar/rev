@@ -49,7 +49,7 @@ pub async fn run(db: &mut DB, args: Args) -> anyhow::Result<()> {
 
     let response = call(func).await?;
 
-    let merged = merge(func, &response);
+    let merged = merge(func, response);
     if merged == 0 {
         anyhow::bail!("no comments found");
     }
@@ -58,7 +58,7 @@ pub async fn run(db: &mut DB, args: Args) -> anyhow::Result<()> {
     Ok(())
 }
 
-async fn call(func: &Function) -> anyhow::Result<String> {
+async fn call(func: &Function) -> anyhow::Result<Response> {
     let mut buf = Vec::new();
     func.serialize(&mut buf)?;
     let prompt = std::str::from_utf8(&buf).unwrap();
@@ -73,42 +73,21 @@ async fn call(func: &Function) -> anyhow::Result<String> {
         //.app_categories(["cli-agent"])
         .build()?;
 
+    let schema = serde_json::from_slice(include_bytes!("ai.json")).unwrap();
+    let response_format = openrouter_rs::types::ResponseFormat::json_schema("dis", true, schema);
+
     // Build chat request
     let request = ChatCompletionRequest::builder()
-        //.model("google/gemini-3.7-flash")
-        .model("z-ai/glm-5.3-flash")
+        .model("google/gemini-3.8-flash")
+        // .model("z-ai/glm-5.3-flash")
+        .response_format(response_format)
         .messages(vec![
             Message::new(
                 Role::System,
                 indoc!(
                     "
-                    You read the input DOS x86 assembly, and respond with comments on specific addresses
-                    about what the code is doing at that address.
-                    Do not comment on every line, only higher level comments."
-                ),
-            ),
-            Message::new(
-                Role::User,
-                indoc!(
-                    "
-                0823:0cec mov ax,cs
-                0823:0cee sub ax,10h
-                0823:0cf1 mov ds,ax
-                0823:0cf3 mov es,ax
-                0823:0cf5 sub ax,ax
-                0823:0cf7 sub bx,bx
-                0823:0cf9 sub cx,cx
-                0823:0cfb sub dx,dx
-            "
-                ),
-            ),
-            Message::new(
-                Role::Assistant,
-                indoc!(
-                    "
-                0823:0cec set DS and ES to the PSP segment (CS‑0x10)
-                0823:0cf5 zero out general‑purpose registers
-                "
+                    You read the input DOS x86 assembly and respond with a description of what the code does.
+                    For inline comments, do not comment on every line, but rather summarize blocks of the code."
                 ),
             ),
             Message::new(Role::User, prompt),
@@ -133,34 +112,13 @@ async fn call(func: &Function) -> anyhow::Result<String> {
     }
     print_usage(start, &last.unwrap());
 
-    Ok(full_response)
+    let response: Response = serde_json::from_str(&full_response)?;
+    Ok(response)
 }
 
-fn parse_response(response: &str) -> Vec<(SegOfs, &str)> {
-    let mut comments = vec![];
-    for line in response.split('\n') {
-        if line.is_empty() {
-            continue;
-        }
-
-        let Some((addr, comment)) = line.split_once(' ') else {
-            eprintln!("bad line {line:?}");
-            continue;
-        };
-        let addr = match SegOfs::parse(addr) {
-            Ok(addr) => addr,
-            Err(err) => {
-                eprintln!("bad addr {addr}: {err}");
-                continue;
-            }
-        };
-        comments.push((addr, comment));
-    }
-    comments
-}
-
-fn merge(func: &mut Function, response: &str) -> usize {
-    let comments = parse_response(response);
+fn merge(func: &mut Function, response: Response) -> usize {
+    func.name = Some(response.name);
+    func.desc = Some(response.desc);
 
     let mut instrs: HashMap<SegOfs, &mut Instr> = func
         .blocks
@@ -173,7 +131,11 @@ fn merge(func: &mut Function, response: &str) -> usize {
         .collect();
 
     let mut found = 0;
-    for (addr, comment) in comments {
+    for InlineComment { addr, text } in response.inline_comments {
+        let Ok(addr) = SegOfs::parse(&addr) else {
+            eprintln!("bad comment address {addr}");
+            continue;
+        };
         if addr.seg != func.ip.seg {
             eprintln!("bad comment address {addr}");
             continue;
@@ -183,10 +145,52 @@ fn merge(func: &mut Function, response: &str) -> usize {
             continue;
         };
         instr.comment = Some(match instr.comment.as_mut() {
-            Some(c) => format!("{c}; {comment}"),
-            None => comment.into(),
+            Some(c) => format!("{c}; {text}"),
+            None => text,
         });
         found += 1;
     }
     found
+}
+
+#[derive(serde::Deserialize, Debug)]
+struct Response {
+    name: String,
+    desc: String,
+    inline_comments: Vec<InlineComment>,
+}
+#[derive(serde::Deserialize, Debug)]
+struct InlineComment {
+    addr: String,
+    text: String,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parse() {
+        let response = r#"
+            {
+              "desc": "Saves the entire Interrupt Vector Table (IVT) of 1024 bytes (512 words) from segment 0000:0000 into a buffer located within the code segment at CS:03FC. All modified registers are preserved on the stack.",
+              "inline_comments": [
+                {
+                  "addr": "0823:09e5",
+                  "text": "Save general-purpose and segment registers to the stack"
+                },
+                {
+                  "addr": "0823:09ee",
+                  "text": "Copy 512 words (1024 bytes) from 0000:0000 (IVT) to CS:03FC"
+                },
+                {
+                  "addr": "0823:09fc",
+                  "text": "Restore saved registers and return"
+                }
+              ],
+              "name": "backup_ivt"
+            }
+            "#;
+        let _response: Response = serde_json::from_str(response).unwrap();
+    }
 }

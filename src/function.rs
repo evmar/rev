@@ -3,6 +3,7 @@ use runtime::SegOfs;
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct Function {
     pub name: Option<String>,
+    pub desc: Option<String>,
 
     pub ip: SegOfs,
 

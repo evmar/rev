@@ -28,10 +28,12 @@ impl DB {
         let fn_dir = db.project_path.join("fn");
         for entry in std::fs::read_dir(fn_dir)? {
             let entry = entry?;
-            let func = Function::deserialize(
-                &db.mem,
-                std::str::from_utf8(&std::fs::read(entry.path())?)?,
-            )?;
+            let path = entry.path();
+            let buf = std::fs::read(&path)?;
+            let func = match Function::deserialize(&db.mem, std::str::from_utf8(&buf)?) {
+                Ok(func) => func,
+                Err(err) => anyhow::bail!("{}: {}", path.display(), err),
+            };
             db.functions.insert(func.ip, func);
         }
 

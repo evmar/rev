@@ -22,6 +22,9 @@ impl Function {
                 if let Some(comment) = &instr.comment {
                     writeln!(w, "; {comment}")?;
                 }
+                for r in instr.refs.iter() {
+                    writeln!(w, "@ref {r}")?;
+                }
                 writeln!(w, "{ip} {instr}", instr = instr.iced)?;
             }
             writeln!(w)?;
@@ -42,6 +45,7 @@ impl Function {
             instrs: vec![],
         });
         let mut comment = String::new();
+        let mut refs = vec![];
         for (i, line) in body.lines().enumerate() {
             if line.is_empty() {
                 block = func.blocks.push_mut(Block {
@@ -51,8 +55,11 @@ impl Function {
                 continue;
             }
 
-            if line.starts_with(";") {
-                comment.push_str(&line[2..]);
+            if let Some(c) = line.strip_prefix("; ") {
+                comment.push_str(c);
+                continue;
+            } else if let Some(r) = line.strip_prefix("@ref ") {
+                refs.push(r.to_owned());
                 continue;
             }
 
@@ -74,6 +81,7 @@ impl Function {
                 } else {
                     Some(std::mem::take(&mut comment))
                 },
+                refs: std::mem::take(&mut refs),
                 iced: instr,
             });
         }
@@ -93,6 +101,7 @@ pub struct Block {
 
 pub struct Instr {
     pub comment: Option<String>,
+    pub refs: Vec<String>,
     pub iced: iced_x86::Instruction,
 }
 

@@ -1,0 +1,39 @@
+name = "parse_command_line"
+desc = "Parses and processes command-line arguments from the DOS Program Segment Prefix (PSP). It sets up segment registers from a stored segment value, checks the argument length byte at offset 80h of the PSP, and if arguments are present, calls three helper routines to process the argument string."
+ip = "0823:0be7"
+
+---
+; Save caller registers on stack
+0823:0be7 push dx
+0823:0be8 push cx
+0823:0be9 push bx
+0823:0bea push ax
+0823:0beb push ds
+0823:0bec push es
+; Load PSP segment stored at CS:[008Eh] into DS and ES
+0823:0bed mov ax,cs:[8Eh]
+0823:0bf1 mov ds,ax
+0823:0bf3 mov es,ax
+; Read the command-line argument length byte from offset 80h of PSP
+0823:0bf5 mov di,80h
+0823:0bf8 sub cx,cx
+0823:0bfa mov cl,[di]
+; If argument length is zero, skip parsing
+0823:0bfc cmp cl,0
+0823:0bff je short 0C0Bh
+
+; Point DI to start of command-line tail (offset 81h) and call parsing routines
+0823:0c01 inc di
+0823:0c02 call 0B54h
+0823:0c05 call 0BB2h
+0823:0c08 call 0B87h
+
+; Restore registers and return
+0823:0c0b pop es
+0823:0c0c pop ds
+0823:0c0d pop ax
+0823:0c0e pop bx
+0823:0c0f pop cx
+0823:0c10 pop dx
+0823:0c11 ret
+

@@ -108,6 +108,7 @@ fn gather_block(
         // );
         instrs.push(Instr {
             comment: None,
+            refs: vec![],
             iced: instr,
         });
 

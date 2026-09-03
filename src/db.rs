@@ -49,7 +49,10 @@ impl DB {
         let fn_dir = self.project_path("fn");
         std::fs::create_dir_all(&fn_dir)?;
         for func in self.functions.values() {
-            let name = format!("{:04x}_{:04x}.toml", func.ip.seg, func.ip.ofs);
+            let name = match &func.name {
+                Some(name) => format!("{name}.toml"),
+                None => format!("{:04x}_{:04x}.toml", func.ip.seg, func.ip.ofs),
+            };
             let path = fn_dir.join(name);
             let mut f = std::fs::File::create(&path)?;
             func.serialize(&mut f)?;

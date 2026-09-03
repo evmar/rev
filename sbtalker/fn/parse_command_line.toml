@@ -20,12 +20,16 @@ ip = "0823:0be7"
 0823:0bfa mov cl,[di]
 ; If argument length is zero, skip parsing
 0823:0bfc cmp cl,0
+@jmp 0823:0c0b
 0823:0bff je short 0C0Bh
 
 ; Point DI to start of command-line tail (offset 81h) and call parsing routines
 0823:0c01 inc di
+@jmp 0823:0b54
 0823:0c02 call 0B54h
+@jmp 0823:0bb2
 0823:0c05 call 0BB2h
+@jmp 0823:0b87
 0823:0c08 call 0B87h
 
 ; Restore registers and return

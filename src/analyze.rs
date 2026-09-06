@@ -2,7 +2,10 @@ use std::collections::{HashMap, HashSet};
 
 use runtime::SegOfs;
 
-use crate::{db::DB, function::Function};
+use crate::{
+    db::DB,
+    function::{Function, XRef},
+};
 
 /// wip
 #[derive(argh::FromArgs)]
@@ -34,18 +37,22 @@ fn analyze(names: &HashMap<SegOfs, String>, func: &mut Function) {
                 Call | IndirectCall | IndirectBranch | UnconditionalBranch | ConditionalBranch => {
                     use iced_x86::OpKind::*;
                     match instr.iced.op0_kind() {
-                        NearBranch16 => {
-                            let ip = ip.with_ofs(instr.iced.near_branch16());
-                            names.get(&ip).cloned().unwrap_or_else(|| format!("{}", ip))
+                        NearBranch16 | FarBranch16 => {
+                            let ip = match instr.iced.op0_kind() {
+                                NearBranch16 => ip.with_ofs(instr.iced.near_branch16()),
+                                FarBranch16 => {
+                                    (instr.iced.far_branch_selector(), instr.iced.far_branch16())
+                                        .into()
+                                }
+                                _ => unreachable!(),
+                            };
+                            match names.get(&ip) {
+                                Some(name) => XRef::Name(name.clone()),
+                                None => XRef::Addr(ip),
+                            }
                         }
-                        FarBranch16 => {
-                            let ip: SegOfs =
-                                (instr.iced.far_branch_selector(), instr.iced.far_branch16())
-                                    .into();
-                            names.get(&ip).cloned().unwrap_or_else(|| format!("{}", ip))
-                        }
-                        Memory => format!("mem?"),
-                        Register => format!("reg?"),
+                        Memory => XRef::Name("mem?".into()),
+                        Register => XRef::Name("reg?".into()),
                         d => todo!("unhandled jmp {d:?}"),
                     }
                 }

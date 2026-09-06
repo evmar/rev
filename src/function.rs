@@ -1,10 +1,12 @@
 use runtime::SegOfs;
 
+use serde_with::{DeserializeFromStr, SerializeDisplay};
+
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct Function {
     pub name: Option<String>,
     pub desc: Option<String>,
-    pub xrefs: Option<Vec<String>>,
+    pub xrefs: Option<Vec<XRef>>,
 
     pub ip: SegOfs,
 
@@ -60,7 +62,9 @@ impl Function {
                 comment.push_str(c);
                 continue;
             } else if let Some(r) = line.strip_prefix("@jmp ") {
-                jmp = Some(r.to_owned());
+                use std::str::FromStr;
+                jmp =
+                    Some(XRef::from_str(r).map_err(|err| anyhow::anyhow!("bad xref {r}: {err}"))?);
                 continue;
             }
 
@@ -100,12 +104,6 @@ pub struct Block {
     pub instrs: Vec<Instr>,
 }
 
-pub struct Instr {
-    pub comment: Option<String>,
-    pub jmp: Option<String>,
-    pub iced: iced_x86::Instruction,
-}
-
 impl Block {
     pub fn span(&self) -> std::ops::Range<SegOfs> {
         self.ip..self.ip.with_ofs(self.instrs.last().unwrap().iced.ip16())
@@ -113,5 +111,38 @@ impl Block {
 
     pub fn contains_ip(&self, ip: SegOfs) -> bool {
         ip.seg == self.ip.seg && self.span().contains(&ip)
+    }
+}
+
+pub struct Instr {
+    pub comment: Option<String>,
+    pub jmp: Option<XRef>,
+    pub iced: iced_x86::Instruction,
+}
+
+#[derive(DeserializeFromStr, SerializeDisplay, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+pub enum XRef {
+    Name(String),
+    Addr(SegOfs),
+}
+
+impl std::str::FromStr for XRef {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if s.contains(':') {
+            Ok(XRef::Addr(SegOfs::parse(s)?))
+        } else {
+            Ok(XRef::Name(s.to_owned()))
+        }
+    }
+}
+
+impl std::fmt::Display for XRef {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            XRef::Addr(segofs) => write!(f, "{segofs}"),
+            XRef::Name(name) => f.write_str(name),
+        }
     }
 }

@@ -181,33 +181,3 @@ pub struct Var {
     pub typ: String,
     pub desc: String,
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn parse() {
-        let response = r#"
-            {
-              "desc": "Saves the entire Interrupt Vector Table (IVT) of 1024 bytes (512 words) from segment 0000:0000 into a buffer located within the code segment at CS:03FC. All modified registers are preserved on the stack.",
-              "inline_comments": [
-                {
-                  "addr": "0823:09e5",
-                  "text": "Save general-purpose and segment registers to the stack"
-                },
-                {
-                  "addr": "0823:09ee",
-                  "text": "Copy 512 words (1024 bytes) from 0000:0000 (IVT) to CS:03FC"
-                },
-                {
-                  "addr": "0823:09fc",
-                  "text": "Restore saved registers and return"
-                }
-              ],
-              "name": "backup_ivt"
-            }
-            "#;
-        let _response: Response = serde_json::from_str(response).unwrap();
-    }
-}

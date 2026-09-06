@@ -1,0 +1,23 @@
+# Web frontend
+
+For development, run these commands from the repository root in separate terminals:
+
+```sh
+npm --prefix web run dev
+```
+
+```sh
+cargo run -- --project . web --dev
+```
+
+Open http://127.0.0.1:3000. Axum uses `axum-vite` to proxy frontend HTTP
+requests to Vite on port 5173.
+Vite must be running separately; no frontend build is needed in this mode.
+Development mode requires a debug Rust build (omit `--release`).
+
+For production, build the frontend and serve its static files:
+
+```sh
+npm --prefix web run build
+cargo run -- --project . web
+```

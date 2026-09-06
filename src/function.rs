@@ -4,6 +4,7 @@ use runtime::SegOfs;
 pub struct Function {
     pub name: Option<String>,
     pub desc: Option<String>,
+    pub xrefs: Option<Vec<String>>,
 
     pub ip: SegOfs,
 

@@ -21,6 +21,7 @@ pub fn run(db: &mut DB, args: Args) -> anyhow::Result<()> {
             let func = Function {
                 name: None,
                 desc: None,
+                xrefs: None,
                 ip,
                 blocks: Default::default(),
             };

@@ -1,4 +1,5 @@
 name = "entry_point"
+xrefs = ["0823:0943", "0823:0aa0", "0823:0b3c", "0823:0c79", "0823:0c86", "0823:0d28", "0823:0d88", "0823:0f5b", "backup_ivt", "parse_command_line"]
 ip = "0823:0cec"
 
 ---

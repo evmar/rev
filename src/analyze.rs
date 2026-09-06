@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use runtime::SegOfs;
 
@@ -24,35 +24,40 @@ pub fn run(db: &mut DB, _args: Args) -> anyhow::Result<()> {
 }
 
 fn analyze(names: &HashMap<SegOfs, String>, func: &mut Function) {
+    let mut all_xrefs = HashSet::new();
     for block in func.blocks.iter_mut() {
         let ip = block.ip;
         for instr in block.instrs.iter_mut() {
             use iced_x86::FlowControl::*;
-            match instr.iced.flow_control() {
-                Next | Return | Interrupt => {}
+            let xref = match instr.iced.flow_control() {
+                Next | Return | Interrupt => continue,
                 Call | IndirectCall | IndirectBranch | UnconditionalBranch | ConditionalBranch => {
                     use iced_x86::OpKind::*;
                     match instr.iced.op0_kind() {
                         NearBranch16 => {
                             let ip = ip.with_ofs(instr.iced.near_branch16());
-                            let name = names.get(&ip).cloned().unwrap_or_else(|| format!("{}", ip));
-                            instr.jmp = Some(name)
+                            names.get(&ip).cloned().unwrap_or_else(|| format!("{}", ip))
                         }
                         FarBranch16 => {
                             let ip: SegOfs =
                                 (instr.iced.far_branch_selector(), instr.iced.far_branch16())
                                     .into();
-                            let name = names.get(&ip).cloned().unwrap_or_else(|| format!("{}", ip));
-                            instr.jmp = Some(name)
+                            names.get(&ip).cloned().unwrap_or_else(|| format!("{}", ip))
                         }
-                        Memory => instr.jmp = Some(format!("mem?")),
-                        Register => instr.jmp = Some(format!("reg?")),
+                        Memory => format!("mem?"),
+                        Register => format!("reg?"),
                         d => todo!("unhandled jmp {d:?}"),
                     }
                 }
-
                 XbeginXabortXend | Exception => todo!(),
-            }
+            };
+            instr.jmp = Some(xref.clone());
+            all_xrefs.insert(xref);
         }
+    }
+    let mut xrefs = all_xrefs.into_iter().collect::<Vec<_>>();
+    if !xrefs.is_empty() {
+        xrefs.sort();
+        func.xrefs = Some(xrefs);
     }
 }

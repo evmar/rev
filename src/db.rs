@@ -1,4 +1,7 @@
-use std::{collections::BTreeMap, path::PathBuf};
+use std::{
+    collections::{BTreeMap, HashSet},
+    path::PathBuf,
+};
 
 use runtime::SegOfs;
 
@@ -48,16 +51,27 @@ impl DB {
 
         let fn_dir = self.project_path("fn");
         std::fs::create_dir_all(&fn_dir)?;
+        let mut names = HashSet::new();
         for func in self.functions.values() {
             let name = match &func.name {
                 Some(name) => format!("{name}.toml"),
                 None => format!("{:04x}_{:04x}.toml", func.ip.seg, func.ip.ofs),
             };
-            let path = fn_dir.join(name);
+            let path = fn_dir.join(&name);
             let mut f = std::fs::File::create(&path)?;
             func.serialize(&mut f)?;
             drop(f);
             println!("wrote {}", path.display());
+            names.insert(name);
+        }
+
+        for entry in std::fs::read_dir(&fn_dir).unwrap() {
+            let entry = entry.unwrap();
+            let name = entry.file_name().to_str().unwrap().to_owned();
+            if !names.contains(&name) {
+                std::fs::remove_file(entry.path())?;
+                println!("removed {}", entry.path().display());
+            }
         }
 
         Ok(())

@@ -1,0 +1,40 @@
+name = "parse_hex_digit"
+desc = "Converts an ASCII hexadecimal character in AL ('0'-'9' or 'A'-'F') to its 4-bit numeric value (0-15). On success, returns AL with the converted value and AH set to 0. If the character is not a valid hex digit, AH is set to 1."
+ip = "0823:0b6a"
+
+---
+; Clear AH (success indicator) and check if character is within '0'-'9'
+0823:0b6a xor ah,ah
+0823:0b6c cmp al,30h
+@jmp '3
+0823:0b6e jb short 0B78h
+
+0823:0b70 cmp al,39h
+@jmp '3
+0823:0b72 ja short 0B78h
+
+; Convert '0'-'9' to numeric value (0-9)
+0823:0b74 sub al,30h
+@jmp '7
+0823:0b76 jmp short 0B86h
+
+; Check if character is within 'A'-'F'
+0823:0b78 cmp al,41h
+@jmp '6
+0823:0b7a jb short 0B84h
+
+0823:0b7c cmp al,46h
+@jmp '6
+0823:0b7e ja short 0B84h
+
+; Convert 'A'-'F' to numeric value (10-15)
+0823:0b80 sub al,37h
+@jmp '7
+0823:0b82 jmp short 0B86h
+
+; Set AH = 1 to signal an invalid hexadecimal character
+0823:0b84 mov ah,1
+0823:0b86 ret
+
+0823:0b86 ret
+

@@ -1,4 +1,4 @@
-name = "parse_cmdline_switch_d"
+name = "parse_cmdline_d_switch"
 desc = "Parses a command-line string to locate the '/D' switch and extracts up to an 8-character argument immediately following it into an internal buffer in the code segment."
 ip = "0823:0b87"
 

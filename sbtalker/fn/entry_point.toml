@@ -1,5 +1,5 @@
 name = "entry_point"
-xrefs = ["backup_ivt", "parse_command_line", "0823:0943", "0823:0aa0", "0823:0b3c", "0823:0c79", "0823:0c86", "0823:0f5b"]
+xrefs = ["backup_ivt", "parse_cmdline", "0823:0943", "0823:0aa0", "0823:0b3c", "0823:0c79", "0823:0c86", "0823:0f5b"]
 ip = "0823:0cec"
 
 ---
@@ -59,7 +59,7 @@ ip = "0823:0cec"
 0823:0d47 mov al,1
 @jmp backup_ivt
 0823:0d49 call 09E5h
-@jmp parse_command_line
+@jmp parse_cmdline
 0823:0d4c call 0BE7h
 @jmp 0823:0c86
 0823:0d4f call 0C86h

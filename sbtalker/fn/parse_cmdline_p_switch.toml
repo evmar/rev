@@ -1,6 +1,6 @@
-name = "parse_p_switch"
+name = "parse_cmdline_p_switch"
 desc = "Searches an input string (such as command line arguments) for the switch '/P' followed by a 4-digit hexadecimal value. It converts the 4 hex digits into a 16-bit word and stores the result into CS:[01B2h]. If the switch is not found or conversion fails, zero is stored."
-xrefs = ["0823:0b6a"]
+xrefs = ["parse_hex_digit"]
 ip = "0823:0bb2"
 
 ---
@@ -29,7 +29,7 @@ ip = "0823:0bb2"
 ; Read each character, convert it to a numeric nibble, and accumulate it into BX.
 0823:0bcb mov al,[di]
 0823:0bcd inc di
-@jmp 0823:0b6a
+@jmp parse_hex_digit
 0823:0bce call 0B6Ah
 0823:0bd1 cmp ah,0
 @jmp '7

@@ -1,5 +1,5 @@
 name = "entry_point"
-xrefs = ["backup_ivt", "parse_command_line", "0823:0943", "0823:0aa0", "0823:0b3c", "0823:0c79", "0823:0c86", "0823:0d28", "0823:0d88", "0823:0f5b"]
+xrefs = ["backup_ivt", "parse_command_line", "0823:0943", "0823:0aa0", "0823:0b3c", "0823:0c79", "0823:0c86", "0823:0f5b"]
 ip = "0823:0cec"
 
 ---
@@ -31,7 +31,7 @@ ip = "0823:0cec"
 0823:0d18 mov ax,es
 0823:0d1a cmp ax,0
 ; if no INT 2Fh handler installed, go install ourselves
-@jmp 0823:0d28
+@jmp '2
 0823:0d1d je short 0D28h
 
 ; multiplex call AX=FBFBh: ask if our TSR is already resident
@@ -39,7 +39,7 @@ ip = "0823:0cec"
 0823:0d22 int 2Fh
 0823:0d24 or ax,ax
 ; if it answered (AX=0), exit instead of installing a second copy
-@jmp 0823:0d88
+@jmp '3
 0823:0d26 je short 0D88h
 
 ; save PSP segment; PSP-1 is our own MCB

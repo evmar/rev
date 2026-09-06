@@ -124,17 +124,21 @@ pub struct Instr {
 pub enum XRef {
     Name(String),
     Addr(SegOfs),
+    Block(usize),
 }
 
 impl std::str::FromStr for XRef {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if s.contains(':') {
-            Ok(XRef::Addr(SegOfs::parse(s)?))
+        let xref = if let Some(i) = s.strip_prefix("'") {
+            XRef::Block(usize::from_str(i).map_err(|err| format!("xref {:?}: {}", s, err))?)
+        } else if s.contains(':') {
+            XRef::Addr(SegOfs::parse(s)?)
         } else {
-            Ok(XRef::Name(s.to_owned()))
-        }
+            XRef::Name(s.to_owned())
+        };
+        Ok(xref)
     }
 }
 
@@ -143,6 +147,7 @@ impl std::fmt::Display for XRef {
         match self {
             XRef::Addr(segofs) => write!(f, "{segofs}"),
             XRef::Name(name) => f.write_str(name),
+            XRef::Block(idx) => write!(f, "'{idx}"),
         }
     }
 }

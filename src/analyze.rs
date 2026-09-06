@@ -30,15 +30,30 @@ pub fn run(db: &mut DB, _args: Args) -> anyhow::Result<()> {
 }
 
 fn analyze(func: &mut Function, xref: impl Fn(SegOfs) -> XRef) {
+    let block_ips = func
+        .blocks
+        .iter()
+        .enumerate()
+        .map(|(i, block)| (block.ip, i))
+        .collect::<HashMap<_, _>>();
     let mut all_xrefs = HashSet::new();
     for block in func.blocks.iter_mut() {
         let ip = block.ip;
         for instr in block.instrs.iter_mut() {
-            let Some(xref) = xref_from_instr(ip, &instr.iced, &xref) else {
+            let Some(xref) = xref_from_instr(ip, &instr.iced, |ip| match block_ips.get(&ip) {
+                Some(idx) => XRef::Block(*idx),
+                None => xref(ip),
+            }) else {
                 continue;
             };
             instr.jmp = Some(xref.clone());
-            all_xrefs.insert(xref);
+
+            match &xref {
+                XRef::Name(_) | XRef::Addr(_) => {
+                    all_xrefs.insert(xref);
+                }
+                XRef::Block(_) => {}
+            }
         }
     }
     let mut xrefs = all_xrefs.into_iter().collect::<Vec<_>>();

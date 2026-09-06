@@ -37,7 +37,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let Args { project, mode } = argh::from_env::<Args>();
     match mode {
         Mode::Web(args) => {
-            web::run(args).await?;
+            let mut db = DB::load(project)?;
+            web::run(&mut db, args).await?;
             Ok(())
         }
         Mode::Init(args) => init::init(project, args),

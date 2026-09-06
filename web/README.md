@@ -1,5 +1,15 @@
 # Web frontend
 
+API types are generated from Rust using `ts-rs` into `web/src/bindings/`.
+Regenerate them from the repository root after changing the Rust types:
+
+```sh
+cargo test export_bindings
+```
+
+Import the overview response type with
+`import type { Overview } from './bindings/Overview'` from a file in `web/src/`.
+
 For development, run these commands from the repository root in separate terminals:
 
 ```sh

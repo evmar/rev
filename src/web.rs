@@ -6,16 +6,20 @@ use tower_http::services::ServeDir;
 
 use crate::{db::DB, load::EXE};
 
-#[derive(serde::Serialize)]
+#[derive(serde::Serialize, ts_rs::TS)]
+#[ts(export, export_to = "../web/src/bindings/")]
 struct Overview<'a> {
+    #[ts(type = "string")]
     project_path: &'a Path,
     mem_size: usize,
     exe: &'a EXE,
     functions: Vec<FunctionOverview<'a>>,
 }
 
-#[derive(serde::Serialize)]
+#[derive(serde::Serialize, ts_rs::TS)]
+#[ts(export_to = "../web/src/bindings/")]
 struct FunctionOverview<'a> {
+    #[ts(type = "string")]
     ip: runtime::SegOfs,
     name: Option<&'a str>,
 }

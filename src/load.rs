@@ -2,10 +2,12 @@ use runtime::SegOfs;
 
 use crate::db::DB;
 
-#[derive(Default, serde::Serialize, serde::Deserialize)]
+#[derive(Default, serde::Serialize, serde::Deserialize, ts_rs::TS)]
+#[ts(export_to = "../web/src/bindings/")]
 pub struct EXE {
     pub filename: String,
     #[serde(skip_serializing_if = "SegOfs::is_null")]
+    #[ts(as = "String")]
     pub entry_point: SegOfs,
 }
 

@@ -11,6 +11,43 @@
       "description": "top-level description of function, a few lines of text",
       "type": "string"
     },
+    "parameters": {
+      "description": "function parameters, both registers and from stack",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "an identifier name for the variable within the function"
+          },
+          "value": {
+            "description": "the parameter's value, either a register or an stack offset like [sp+4]",
+            "type": "string"
+          },
+          "type": { "type": "string", "description": "value type, e.g. u32 or cstr" },
+          "desc": { "type": "string", "description": "human-readable description"  }
+        },
+        "required": [ "name", "value", "type", "desc" ]
+      }
+    },
+    "return": {
+      "description": "return value, if any",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "an identifier name for the variable within the function"
+        },
+        "value": {
+          "description": "the parameter's value, either a register or an stack offset like [sp+4]",
+          "type": "string"
+        },
+        "type": { "type": "string", "description": "value type, e.g. u32 or cstr" },
+        "desc": { "type": "string", "description": "human-readable description"  }
+      },
+      "required": [ "name", "value", "type", "desc" ]
+    },
     "inline_comments": {
       "description": "inline comments on code, describing what each block of code does",
       "type": "array",

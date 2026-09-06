@@ -120,15 +120,20 @@ fn merge(func: &mut Function, response: Response) -> usize {
     func.name = Some(response.name);
     func.desc = Some(response.desc);
 
-    let mut instrs: HashMap<SegOfs, &mut Instr> = func
-        .blocks
-        .iter_mut()
-        .flat_map(|b| {
-            b.instrs
-                .iter_mut()
-                .map(|i| (func.ip.with_ofs(i.iced.ip16()), i))
-        })
-        .collect();
+    func.params = if response.parameters.is_empty() {
+        None
+    } else {
+        Some(response.parameters)
+    };
+    func.ret = response.ret;
+
+    let mut instrs: HashMap<SegOfs, &mut Instr> = Default::default();
+    for block in func.blocks.iter_mut() {
+        for instr in block.instrs.iter_mut() {
+            instr.comment = None;
+            instrs.insert(func.ip.with_ofs(instr.iced.ip16()), instr);
+        }
+    }
 
     let mut found = 0;
     for InlineComment { addr, text } in response.inline_comments {
@@ -155,14 +160,26 @@ fn merge(func: &mut Function, response: Response) -> usize {
 
 #[derive(serde::Deserialize, Debug)]
 struct Response {
-    name: String,
-    desc: String,
-    inline_comments: Vec<InlineComment>,
+    pub name: String,
+    pub desc: String,
+    pub parameters: Vec<Var>,
+    #[serde(rename = "return")]
+    pub ret: Option<Var>,
+    pub inline_comments: Vec<InlineComment>,
 }
 #[derive(serde::Deserialize, Debug)]
 struct InlineComment {
-    addr: String,
-    text: String,
+    pub addr: String,
+    pub text: String,
+}
+
+#[derive(serde::Deserialize, serde::Serialize, Debug)]
+pub struct Var {
+    pub name: String,
+    pub value: String,
+    #[serde(rename = "type")]
+    pub typ: String,
+    pub desc: String,
 }
 
 #[cfg(test)]

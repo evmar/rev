@@ -19,11 +19,8 @@ pub fn run(db: &mut DB, args: Args) -> anyhow::Result<()> {
         Some(func) => func,
         None => {
             let func = Function {
-                name: None,
-                desc: None,
-                xrefs: None,
                 ip,
-                blocks: Default::default(),
+                ..Default::default()
             };
             db.functions.insert(ip, func);
             db.functions.get_mut(&ip).unwrap()

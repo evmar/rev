@@ -1,9 +1,21 @@
 name = "parse_hex_digit"
-desc = "Converts an ASCII hexadecimal character in AL ('0'-'9' or 'A'-'F') to its 4-bit numeric value (0-15). On success, returns AL with the converted value and AH set to 0. If the character is not a valid hex digit, AH is set to 1."
+desc = "Converts an ASCII hexadecimal character in AL ('0'-'9' or 'A'-'F') to its numeric value (0-15). Sets AH to 0 on success and returns the numeric value in AL. If the character is not a valid uppercase hex digit, returns AH = 1 to indicate an error."
 ip = "0823:0b6a"
 
+[[params]]
+name = "c"
+value = "al"
+type = "char"
+desc = "ASCII character to convert"
+
+[ret]
+name = "result"
+value = "ax"
+type = "u16"
+desc = "On success, AH=0 and AL contains the 4-bit numeric value (0-15). On error, AH=1."
+
 ---
-; Clear AH (success indicator) and check if character is within '0'-'9'
+; Initialize AH = 0 (success flag) and check if AL is in '0'-'9' range
 0823:0b6a xor ah,ah
 0823:0b6c cmp al,30h
 @jmp '3
@@ -13,12 +25,12 @@ ip = "0823:0b6a"
 @jmp '3
 0823:0b72 ja short 0B78h
 
-; Convert '0'-'9' to numeric value (0-9)
+; Convert '0'-'9' to numeric 0-9 by subtracting '0' (0x30)
 0823:0b74 sub al,30h
 @jmp '7
 0823:0b76 jmp short 0B86h
 
-; Check if character is within 'A'-'F'
+; Check if AL is in uppercase 'A'-'F' range
 0823:0b78 cmp al,41h
 @jmp '6
 0823:0b7a jb short 0B84h
@@ -27,12 +39,12 @@ ip = "0823:0b6a"
 @jmp '6
 0823:0b7e ja short 0B84h
 
-; Convert 'A'-'F' to numeric value (10-15)
+; Convert 'A'-'F' to numeric 10-15 by subtracting 0x37 ('A' - 10)
 0823:0b80 sub al,37h
 @jmp '7
 0823:0b82 jmp short 0B86h
 
-; Set AH = 1 to signal an invalid hexadecimal character
+; Invalid hex digit: set AH = 1 error flag
 0823:0b84 mov ah,1
 0823:0b86 ret
 

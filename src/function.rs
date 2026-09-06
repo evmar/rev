@@ -2,11 +2,16 @@ use runtime::SegOfs;
 
 use serde_with::{DeserializeFromStr, SerializeDisplay};
 
-#[derive(serde::Serialize, serde::Deserialize)]
+use crate::ai::Var;
+
+#[derive(serde::Serialize, serde::Deserialize, Default)]
 pub struct Function {
     pub name: Option<String>,
     pub desc: Option<String>,
     pub xrefs: Option<Vec<XRef>>,
+
+    pub params: Option<Vec<Var>>,
+    pub ret: Option<Var>,
 
     pub ip: SegOfs,
 

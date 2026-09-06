@@ -1,0 +1,25 @@
+body {
+  font-family: system-ui, sans-serif;
+  background: #eee;
+  margin: 24px;
+}
+
+.panel {
+  margin-bottom: 20px;
+  padding: 16px;
+  border: 1px solid black;
+  border-radius: 4px;
+}
+
+dt {
+  font-weight: bold;
+}
+
+dd {
+  margin: 0 0 12px;
+}
+
+th, td {
+  padding: 4px 16px 4px 0;
+  text-align: left;
+}

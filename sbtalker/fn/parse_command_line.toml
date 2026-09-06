@@ -1,6 +1,6 @@
 name = "parse_command_line"
 desc = "Parses and processes command-line arguments from the DOS Program Segment Prefix (PSP). It sets up segment registers from a stored segment value, checks the argument length byte at offset 80h of the PSP, and if arguments are present, calls three helper routines to process the argument string."
-xrefs = ["0823:0b54", "0823:0b87", "0823:0bb2"]
+xrefs = ["parse_cmdline_switch_d", "parse_p_switch", "toupper_string"]
 ip = "0823:0be7"
 
 ---
@@ -26,11 +26,11 @@ ip = "0823:0be7"
 
 ; Point DI to start of command-line tail (offset 81h) and call parsing routines
 0823:0c01 inc di
-@jmp 0823:0b54
+@jmp toupper_string
 0823:0c02 call 0B54h
-@jmp 0823:0bb2
+@jmp parse_p_switch
 0823:0c05 call 0BB2h
-@jmp 0823:0b87
+@jmp parse_cmdline_switch_d
 0823:0c08 call 0B87h
 
 ; Restore registers and return

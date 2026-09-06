@@ -9,6 +9,7 @@ mod dis;
 mod function;
 mod init;
 mod load;
+mod web;
 
 #[derive(argh::FromArgs)]
 #[argh(subcommand)]
@@ -17,6 +18,7 @@ enum Mode {
     Dis(dis::Args),
     AI(ai::Args),
     Analyze(analyze::Args),
+    Web(web::Args),
 }
 
 /// wip
@@ -34,6 +36,10 @@ struct Args {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let Args { project, mode } = argh::from_env::<Args>();
     match mode {
+        Mode::Web(args) => {
+            web::run(args).await?;
+            Ok(())
+        }
         Mode::Init(args) => init::init(project, args),
         Mode::Dis(args) => {
             let mut db = DB::load(project)?;

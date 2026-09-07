@@ -73,7 +73,7 @@ async fn call(func: &Function) -> anyhow::Result<Response> {
         //.app_categories(["cli-agent"])
         .build()?;
 
-    let schema = serde_json::from_slice(include_bytes!("ai.json")).unwrap();
+    let schema = serde_json::to_value(response_schema())?;
     let response_format = openrouter_rs::types::ResponseFormat::json_schema("dis", true, schema);
 
     // Build chat request
@@ -158,27 +158,80 @@ fn merge(func: &mut Function, response: Response) -> usize {
     found
 }
 
-#[derive(serde::Deserialize, Debug)]
+#[derive(serde::Deserialize, Debug, schemars::JsonSchema)]
+#[schemars(rename = "dis")]
 struct Response {
+    /// short function name, a guess at what the function does
     pub name: String,
+    /// top-level description of function, a few lines of text
     pub desc: String,
+    /// function parameters, both registers and from stack
     pub parameters: Vec<Var>,
+    /// return value, if any
     #[serde(rename = "return")]
     pub ret: Option<Var>,
+    /// inline comments on code, describing what each block of code does
     pub inline_comments: Vec<InlineComment>,
 }
-#[derive(serde::Deserialize, Debug)]
+
+#[derive(serde::Deserialize, Debug, schemars::JsonSchema)]
 struct InlineComment {
     pub addr: String,
     pub text: String,
 }
 
-#[derive(serde::Deserialize, serde::Serialize, Debug, ts_rs::TS)]
+#[derive(serde::Deserialize, serde::Serialize, Debug, ts_rs::TS, schemars::JsonSchema)]
 #[ts(export_to = "../web/src/bindings/")]
 pub struct Var {
+    /// an identifier name for the variable within the function
     pub name: String,
+    /// the parameter's value, either a register or an stack offset like [sp+4]
     pub value: String,
+    /// value type, e.g. u32 or cstr
     #[serde(rename = "type")]
     pub typ: String,
+    /// human-readable description
     pub desc: String,
+}
+
+fn response_schema() -> schemars::Schema {
+    schemars::generate::SchemaSettings::default()
+        .with(|settings| settings.inline_subschemas = true)
+        .into_generator()
+        .into_root_schema_for::<Response>()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn response_schema_matches_response_fields() {
+        let schema = response_schema();
+        println!("{}", serde_json::to_string_pretty(&schema).unwrap());
+        let schema = serde_json::to_value(schema).unwrap();
+        assert_eq!(schema["title"], "dis");
+        let required = schema["required"].as_array().unwrap();
+        for field in ["name", "desc", "parameters", "inline_comments"] {
+            assert!(required.contains(&serde_json::json!(field)));
+        }
+        assert!(!required.contains(&serde_json::json!("description")));
+        assert!(schema["properties"]["return"].is_object());
+        assert!(schema["properties"].get("ret").is_none());
+        assert_eq!(
+            schema["properties"]["parameters"]["items"]["properties"]["type"]["type"],
+            "string"
+        );
+        assert!(!serde_json::to_string(&schema).unwrap().contains("\"$ref\""));
+        assert_eq!(
+            schema["properties"]["name"]["description"],
+            "short function name, a guess at what the function does"
+        );
+        let response: Response = serde_json::from_value(serde_json::json!({
+            "name": "example", "desc": "description", "parameters": [],
+            "return": null, "inline_comments": []
+        }))
+        .unwrap();
+        assert!(response.ret.is_none());
+    }
 }

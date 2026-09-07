@@ -1,10 +1,82 @@
-use std::path::Path;
+use std::{collections::BTreeMap, path::Path, sync::Arc};
 
-use axum::{Router, body::Bytes, http::header, routing::get};
+use axum::{
+    Router,
+    body::Bytes,
+    http::{StatusCode, header},
+    routing::get,
+};
 use axum_vite::ViteConfig;
 use tower_http::services::ServeDir;
 
 use crate::{db::DB, load::EXE};
+
+#[derive(serde::Serialize, ts_rs::TS)]
+#[ts(export, export_to = "../web/src/bindings/")]
+struct FunctionDetail<'a> {
+    ip: String,
+    name: Option<&'a str>,
+    desc: Option<&'a str>,
+    xrefs: Option<Vec<String>>,
+    params: &'a Option<Vec<crate::ai::Var>>,
+    ret: &'a Option<crate::ai::Var>,
+    blocks: Vec<BlockDetail>,
+}
+
+#[derive(serde::Serialize, ts_rs::TS)]
+#[ts(export_to = "../web/src/bindings/")]
+struct BlockDetail {
+    ip: String,
+    instrs: Vec<InstructionDetail>,
+}
+
+#[derive(serde::Serialize, ts_rs::TS)]
+#[ts(export_to = "../web/src/bindings/")]
+struct InstructionDetail {
+    ip: String,
+    text: String,
+    comment: Option<String>,
+    jmp: Option<String>,
+}
+
+fn function_detail(func: &crate::function::Function) -> FunctionDetail<'_> {
+    FunctionDetail {
+        ip: func.ip.to_string(),
+        name: func.name.as_deref(),
+        desc: func.desc.as_deref(),
+        xrefs: func
+            .xrefs
+            .as_ref()
+            .map(|refs| refs.iter().map(ToString::to_string).collect()),
+        params: &func.params,
+        ret: &func.ret,
+        blocks: func
+            .blocks
+            .iter()
+            .map(|block| BlockDetail {
+                ip: block.ip.to_string(),
+                instrs: block
+                    .instrs
+                    .iter()
+                    .map(|instr| InstructionDetail {
+                        ip: block.ip.with_ofs(instr.iced.ip16()).to_string(),
+                        text: instr.iced.to_string(),
+                        comment: instr.comment.clone(),
+                        jmp: instr.jmp.as_ref().map(ToString::to_string),
+                    })
+                    .collect(),
+            })
+            .collect(),
+    }
+}
+
+fn lookup_function(
+    functions: &BTreeMap<runtime::SegOfs, Bytes>,
+    ip: &str,
+) -> Result<Bytes, StatusCode> {
+    let ip = runtime::SegOfs::parse(ip).map_err(|_| StatusCode::BAD_REQUEST)?;
+    functions.get(&ip).cloned().ok_or(StatusCode::NOT_FOUND)
+}
 
 #[derive(serde::Serialize, ts_rs::TS)]
 #[ts(export, export_to = "../web/src/bindings/")]
@@ -51,6 +123,17 @@ pub struct Args {
 
 pub async fn run(db: &mut DB, args: Args) -> anyhow::Result<()> {
     let overview = Bytes::from(serde_json::to_vec(&overview(db))?);
+    let functions = Arc::new(
+        db.functions
+            .iter()
+            .map(|(ip, func)| {
+                Ok((
+                    *ip,
+                    Bytes::from(serde_json::to_vec(&function_detail(func))?),
+                ))
+            })
+            .collect::<Result<BTreeMap<_, _>, serde_json::Error>>()?,
+    );
     let app = if args.dev {
         anyhow::ensure!(
             cfg!(debug_assertions),
@@ -78,6 +161,18 @@ pub async fn run(db: &mut DB, args: Args) -> anyhow::Result<()> {
             async move { ([(header::CONTENT_TYPE, "application/json")], overview) }
         }),
     );
+    let app = app.route(
+        "/api/functions/{ip}",
+        get(
+            move |axum::extract::Path(ip): axum::extract::Path<String>| {
+                let functions = functions.clone();
+                async move {
+                    lookup_function(&functions, &ip)
+                        .map(|body| ([(header::CONTENT_TYPE, "application/json")], body))
+                }
+            },
+        ),
+    );
     let listener = tokio::net::TcpListener::bind("127.0.0.1:3000").await?;
     eprintln!("Listening on http://{}", listener.local_addr()?);
     axum::serve(listener, app).await?;
@@ -89,6 +184,59 @@ mod tests {
     use super::*;
     use crate::function::Function;
     use runtime::SegOfs;
+
+    #[test]
+    fn function_details_include_disassembly_and_lookup_errors() {
+        use crate::function::{Block, Instr, XRef};
+        let ip = SegOfs::new(0x1234, 0x5678);
+        let mut decoder = iced_x86::Decoder::with_ip(
+            16,
+            &[0x90, 0xc3],
+            ip.ofs as u64,
+            iced_x86::DecoderOptions::NONE,
+        );
+        let func = Function {
+            ip,
+            name: Some("example".into()),
+            blocks: vec![Block {
+                ip,
+                instrs: vec![
+                    Instr {
+                        iced: decoder.decode(),
+                        comment: Some("entry".into()),
+                        jmp: Some(XRef::Name("target".into())),
+                    },
+                    Instr {
+                        iced: decoder.decode(),
+                        comment: None,
+                        jmp: None,
+                    },
+                ],
+            }],
+            ..Default::default()
+        };
+        let json = serde_json::to_value(function_detail(&func)).unwrap();
+        assert_eq!(json["name"], "example");
+        assert_eq!(json["blocks"][0]["ip"], "1234:5678");
+        assert_eq!(
+            json["blocks"][0]["instrs"],
+            serde_json::json!([
+                { "ip": "1234:5678", "text": "nop", "comment": "entry", "jmp": "target" },
+                { "ip": "1234:5679", "text": "ret", "comment": null, "jmp": null },
+            ])
+        );
+        let body = Bytes::from(serde_json::to_vec(&json).unwrap());
+        let functions = BTreeMap::from([(ip, body.clone())]);
+        assert_eq!(lookup_function(&functions, "1234:5678"), Ok(body));
+        assert_eq!(
+            lookup_function(&functions, "1234:0000"),
+            Err(StatusCode::NOT_FOUND)
+        );
+        assert_eq!(
+            lookup_function(&functions, "invalid"),
+            Err(StatusCode::BAD_REQUEST)
+        );
+    }
 
     #[test]
     fn overview_serializes_metadata_and_function_summaries() {

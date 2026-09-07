@@ -173,7 +173,8 @@ struct InlineComment {
     pub text: String,
 }
 
-#[derive(serde::Deserialize, serde::Serialize, Debug)]
+#[derive(serde::Deserialize, serde::Serialize, Debug, ts_rs::TS)]
+#[ts(export_to = "../web/src/bindings/")]
 pub struct Var {
     pub name: String,
     pub value: String,

@@ -1,12 +1,14 @@
-use std::{collections::BTreeMap, path::Path, sync::Arc};
+use std::{path::Path, sync::Arc};
 
 use axum::{
-    Router,
-    body::Bytes,
-    http::{StatusCode, header},
+    Json, Router,
+    extract::State,
+    http::StatusCode,
+    response::{IntoResponse, Response},
     routing::get,
 };
 use axum_vite::ViteConfig;
+use tokio::sync::RwLock;
 use tower_http::services::ServeDir;
 
 use crate::{db::DB, load::EXE};
@@ -70,12 +72,21 @@ fn function_detail(func: &crate::function::Function) -> FunctionDetail<'_> {
     }
 }
 
-fn lookup_function(
-    functions: &BTreeMap<runtime::SegOfs, Bytes>,
-    ip: &str,
-) -> Result<Bytes, StatusCode> {
-    let ip = runtime::SegOfs::parse(ip).map_err(|_| StatusCode::BAD_REQUEST)?;
-    functions.get(&ip).cloned().ok_or(StatusCode::NOT_FOUND)
+type AppState = Arc<RwLock<DB>>;
+
+async fn get_overview(State(db): State<AppState>) -> Response {
+    let db = db.read().await;
+    Json(overview(&db)).into_response()
+}
+
+async fn get_function(
+    State(db): State<AppState>,
+    axum::extract::Path(ip): axum::extract::Path<String>,
+) -> Result<Response, StatusCode> {
+    let ip = runtime::SegOfs::parse(&ip).map_err(|_| StatusCode::BAD_REQUEST)?;
+    let db = db.read().await;
+    let func = db.functions.get(&ip).ok_or(StatusCode::NOT_FOUND)?;
+    Ok(Json(function_detail(func)).into_response())
 }
 
 #[derive(serde::Serialize, ts_rs::TS)]
@@ -121,19 +132,8 @@ pub struct Args {
     pub dev: bool,
 }
 
-pub async fn run(db: &mut DB, args: Args) -> anyhow::Result<()> {
-    let overview = Bytes::from(serde_json::to_vec(&overview(db))?);
-    let functions = Arc::new(
-        db.functions
-            .iter()
-            .map(|(ip, func)| {
-                Ok((
-                    *ip,
-                    Bytes::from(serde_json::to_vec(&function_detail(func))?),
-                ))
-            })
-            .collect::<Result<BTreeMap<_, _>, serde_json::Error>>()?,
-    );
+pub async fn run(db: DB, args: Args) -> anyhow::Result<()> {
+    let db = Arc::new(RwLock::new(db));
     let app = if args.dev {
         anyhow::ensure!(
             cfg!(debug_assertions),
@@ -154,25 +154,10 @@ pub async fn run(db: &mut DB, args: Args) -> anyhow::Result<()> {
         );
         Router::new().fallback_service(ServeDir::new(dist))
     };
-    let app = app.route(
-        "/api/overview",
-        get(move || {
-            let overview = overview.clone();
-            async move { ([(header::CONTENT_TYPE, "application/json")], overview) }
-        }),
-    );
-    let app = app.route(
-        "/api/functions/{ip}",
-        get(
-            move |axum::extract::Path(ip): axum::extract::Path<String>| {
-                let functions = functions.clone();
-                async move {
-                    lookup_function(&functions, &ip)
-                        .map(|body| ([(header::CONTENT_TYPE, "application/json")], body))
-                }
-            },
-        ),
-    );
+    let app = app
+        .route("/api/overview", get(get_overview))
+        .route("/api/functions/{ip}", get(get_function))
+        .with_state(db);
     let listener = tokio::net::TcpListener::bind("127.0.0.1:3000").await?;
     eprintln!("Listening on http://{}", listener.local_addr()?);
     axum::serve(listener, app).await?;
@@ -185,8 +170,8 @@ mod tests {
     use crate::function::Function;
     use runtime::SegOfs;
 
-    #[test]
-    fn function_details_include_disassembly_and_lookup_errors() {
+    #[tokio::test]
+    async fn function_details_include_disassembly_and_lookup_errors() {
         use crate::function::{Block, Instr, XRef};
         let ip = SegOfs::new(0x1234, 0x5678);
         let mut decoder = iced_x86::Decoder::with_ip(
@@ -225,17 +210,67 @@ mod tests {
                 { "ip": "1234:5679", "text": "ret", "comment": null, "jmp": null },
             ])
         );
-        let body = Bytes::from(serde_json::to_vec(&json).unwrap());
-        let functions = BTreeMap::from([(ip, body.clone())]);
-        assert_eq!(lookup_function(&functions, "1234:5678"), Ok(body));
+        let db = Arc::new(RwLock::new(DB {
+            functions: [(ip, func)].into(),
+            ..Default::default()
+        }));
+        let response = get_function(State(db.clone()), axum::extract::Path("1234:5678".into()))
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(response_json(response).await, json);
         assert_eq!(
-            lookup_function(&functions, "1234:0000"),
-            Err(StatusCode::NOT_FOUND)
+            get_function(State(db.clone()), axum::extract::Path("1234:0000".into()))
+                .await
+                .unwrap_err(),
+            StatusCode::NOT_FOUND
         );
         assert_eq!(
-            lookup_function(&functions, "invalid"),
-            Err(StatusCode::BAD_REQUEST)
+            get_function(State(db), axum::extract::Path("invalid".into()))
+                .await
+                .unwrap_err(),
+            StatusCode::BAD_REQUEST
         );
+    }
+
+    async fn response_json(response: Response) -> serde_json::Value {
+        let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+            .await
+            .unwrap();
+        serde_json::from_slice(&body).unwrap()
+    }
+
+    #[tokio::test]
+    async fn handlers_read_current_db_state() {
+        let db = Arc::new(RwLock::new(DB::default()));
+        let initial = response_json(get_overview(State(db.clone())).await).await;
+        assert_eq!(initial["mem_size"], 0);
+        assert_eq!(initial["functions"], serde_json::json!([]));
+        let ip = SegOfs::new(0x1234, 0x5678);
+        {
+            let mut db = db.write().await;
+            db.mem.resize(32, 0);
+            db.functions.insert(
+                ip,
+                Function {
+                    ip,
+                    name: Some("new".into()),
+                    ..Default::default()
+                },
+            );
+        }
+        let updated = response_json(get_overview(State(db.clone())).await).await;
+        assert_eq!(updated["mem_size"], 32);
+        assert_eq!(updated["functions"][0]["name"], "new");
+        let detail = get_function(State(db.clone()), axum::extract::Path(ip.to_string()))
+            .await
+            .unwrap();
+        assert_eq!(response_json(detail).await["name"], "new");
+        db.write().await.functions.get_mut(&ip).unwrap().name = Some("renamed".into());
+        let detail = get_function(State(db), axum::extract::Path(ip.to_string()))
+            .await
+            .unwrap();
+        assert_eq!(response_json(detail).await["name"], "renamed");
     }
 
     #[test]

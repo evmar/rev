@@ -11,6 +11,16 @@ body {
   border-radius: 4px;
 }
 
+.panel > :first-child,
+.panel > section:first-child > :first-child {
+  margin-top: 0;
+}
+
+.panel > :last-child,
+.panel > section:last-child > :last-child {
+  margin-bottom: 0;
+}
+
 dt {
   font-weight: bold;
 }

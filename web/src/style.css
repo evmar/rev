@@ -4,6 +4,11 @@ body {
   margin: 24px;
 }
 
+main {
+  max-width: 50em;
+  margin-inline: auto;
+}
+
 .panel {
   margin-bottom: 20px;
   padding: 16px;

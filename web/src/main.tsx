@@ -75,7 +75,6 @@ function OverviewView() {
 
   return (
     <main>
-      <h1>Project overview</h1>
       {error ? (
         <p class="panel" role="alert">Could not load overview: {error}</p>
       ) : overview === null ? (

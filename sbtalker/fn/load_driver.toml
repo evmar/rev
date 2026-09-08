@@ -1,0 +1,81 @@
+name = "load_driver"
+desc = 'Parses an optional driver name parameter from an internal buffer (cs:01AAh), constructs the driver file path by appending the name and the extension ".DRV" to a buffer at cs:01B5h, and calls a routine to load the driver. If loading fails, it displays an error message and terminates the program via DOS interrupt 21h, function 4Ch.'
+xrefs = ["print_string_with_suffix", "0823:0c12"]
+ip = "0823:0c86"
+
+---
+; Save registers to stack
+0823:0c86 push dx
+0823:0c87 push cx
+0823:0c88 push bx
+0823:0c89 push ax
+0823:0c8a push ds
+0823:0c8b push es
+; Check if an argument/driver name is present at cs:[01AAh]; skip if it begins with a space
+0823:0c8c mov bx,1AAh
+0823:0c8f cmp byte ptr cs:[bx],20h
+@jmp '7
+0823:0c93 je short 0CCFh
+
+; Copy up to 8 characters of the driver name into cs:[01B9h]
+0823:0c95 mov si,1B5h
+0823:0c98 add si,4
+0823:0c9b mov cx,8
+
+0823:0c9e mov al,cs:[bx]
+0823:0ca1 cmp al,20h
+@jmp '5
+0823:0ca3 je short 0CB0h
+
+0823:0ca5 cmp al,0Dh
+@jmp '5
+0823:0ca7 je short 0CB0h
+
+0823:0ca9 mov cs:[si],al
+0823:0cac inc si
+0823:0cad inc bx
+@jmp '2
+0823:0cae loop 0C9Eh
+
+; Append extension ".DRV" and null-pad the remainder of the filename buffer
+0823:0cb0 mov byte ptr cs:[si],2Eh
+0823:0cb4 inc si
+0823:0cb5 mov byte ptr cs:[si],44h
+0823:0cb9 inc si
+0823:0cba mov byte ptr cs:[si],52h
+0823:0cbe inc si
+0823:0cbf mov byte ptr cs:[si],56h
+0823:0cc3 inc cx
+
+0823:0cc4 inc si
+0823:0cc5 mov byte ptr cs:[si],0
+0823:0cc9 dec cx
+0823:0cca cmp cx,0
+@jmp '6
+0823:0ccd ja short 0CC4h
+
+; Call driver loader routine with path buffer at cs:[01B5h]
+0823:0ccf mov si,1B5h
+@jmp 0823:0c12
+0823:0cd2 call 0C12h
+@jmp '9
+0823:0cd5 jae short 0CE5h
+
+; On load failure, print error message at cs:[0189h] and terminate with exit code 1
+0823:0cd7 push cs
+0823:0cd8 pop ds
+0823:0cd9 lea dx,ds:[189h]
+@jmp print_string_with_suffix
+0823:0cdd call 0C79h
+0823:0ce0 mov ax,4C01h
+0823:0ce3 int 21h
+
+; Restore registers and return on success
+0823:0ce5 pop es
+0823:0ce6 pop ds
+0823:0ce7 pop ax
+0823:0ce8 pop bx
+0823:0ce9 pop cx
+0823:0cea pop dx
+0823:0ceb ret
+

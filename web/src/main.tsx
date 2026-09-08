@@ -28,13 +28,14 @@ function FunctionList({ functions }: { functions: Overview['functions'] }) {
       ) : (
         <table>
           <thead>
-            <tr><th scope="col">IP</th><th scope="col">Name</th></tr>
+            <tr><th scope="col">IP</th><th scope="col">Name</th><th scope="col">Description</th></tr>
           </thead>
           <tbody>
             {functions.map(func => (
               <tr key={func.ip}>
                 <td><a href={`#/functions/${encodeURIComponent(func.ip)}`}><code>{func.ip}</code></a></td>
                 <td><a href={`#/functions/${encodeURIComponent(func.ip)}`}>{func.name ?? 'Unnamed'}</a></td>
+                <td>{func.desc ?? 'No description.'}</td>
               </tr>
             ))}
           </tbody>

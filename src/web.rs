@@ -105,6 +105,7 @@ struct FunctionOverview<'a> {
     #[ts(type = "string")]
     ip: runtime::SegOfs,
     name: Option<&'a str>,
+    desc: Option<&'a str>,
 }
 
 fn overview(db: &DB) -> Overview<'_> {
@@ -118,6 +119,7 @@ fn overview(db: &DB) -> Overview<'_> {
             .map(|func| FunctionOverview {
                 ip: func.ip,
                 name: func.name.as_deref(),
+                desc: func.desc.as_deref(),
             })
             .collect(),
     }
@@ -290,6 +292,7 @@ mod tests {
                     Function {
                         ip,
                         name: Some("main".into()),
+                        desc: Some("Program entry point".into()),
                         ..Default::default()
                     },
                 ),
@@ -310,8 +313,8 @@ mod tests {
                 "mem_size": 32,
                 "exe": { "filename": "example.exe", "entry_point": "1234:5678" },
                 "functions": [
-                    { "ip": "1234:5678", "name": "main" },
-                    { "ip": "1234:6000", "name": null },
+                    { "ip": "1234:5678", "name": "main", "desc": "Program entry point" },
+                    { "ip": "1234:6000", "name": null, "desc": null },
                 ],
             })
         );

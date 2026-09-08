@@ -37,4 +37,5 @@ dd {
 th, td {
   padding: 4px 16px 4px 0;
   text-align: left;
+  vertical-align: top;
 }

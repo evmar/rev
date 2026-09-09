@@ -1,12 +1,13 @@
 name = "toupper_string"
 desc = "Converts an ASCII string of length CX pointed to by DI to uppercase in-place."
+details = "Iterates through CX bytes of an ASCII string buffer pointed to by DI. For each byte, checks if it falls within the lowercase ASCII range ('a'-'z', 0x61 to 0x7A) and masks it with 0x5F to convert to uppercase. Preserves both DI and CX registers on return."
 ip = "0823:0b54"
 
 [[params]]
 name = "str"
 value = "di"
-type = "char*"
-desc = "Pointer to the input ASCII string"
+type = "*mut u8"
+desc = "Pointer to the input ASCII string to convert"
 
 [[params]]
 name = "len"
@@ -19,7 +20,7 @@ desc = "Length of the string in bytes"
 0823:0b54 push di
 0823:0b55 push cx
 
-; Check if character is a lowercase ASCII letter ('a' through 'z')
+; Check if character is lowercase ASCII ('a'-'z')
 0823:0b56 mov al,[di]
 0823:0b58 cmp al,61h
 @jmp '4
@@ -32,7 +33,7 @@ desc = "Length of the string in bytes"
 ; Convert lowercase character to uppercase by clearing bit 5
 0823:0b60 and al,5Fh
 
-; Store character back to memory, advance pointer, and loop for CX characters
+; Store modified byte, advance pointer, and loop until CX reaches 0
 0823:0b62 mov [di],al
 0823:0b64 inc di
 @jmp '1

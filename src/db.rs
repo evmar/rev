@@ -1,6 +1,6 @@
 use std::{
     collections::{BTreeMap, HashSet},
-    path::PathBuf,
+    path::{Path, PathBuf},
 };
 
 use runtime::SegOfs;
@@ -49,8 +49,7 @@ impl DB {
     pub fn write(&self) -> anyhow::Result<()> {
         assert!(!self.project_path.as_os_str().is_empty());
         let path = self.meta();
-        std::fs::write(&path, toml::to_string(&self.exe)?)?;
-        println!("wrote {}", path.display());
+        write_if_changed(&path, toml::to_string(&self.exe)?.as_bytes())?;
 
         let fn_dir = self.project_path("fn");
         std::fs::create_dir_all(&fn_dir)?;
@@ -61,10 +60,9 @@ impl DB {
                 None => format!("{:04x}_{:04x}.toml", func.ip.seg, func.ip.ofs),
             };
             let path = fn_dir.join(&name);
-            let mut f = std::fs::File::create(&path)?;
-            func.serialize(&mut f)?;
-            drop(f);
-            println!("wrote {}", path.display());
+            let mut contents = Vec::new();
+            func.serialize(&mut contents)?;
+            write_if_changed(&path, &contents)?;
             names.insert(name);
         }
 
@@ -87,4 +85,16 @@ impl DB {
     pub fn meta(&self) -> PathBuf {
         self.project_path("db.toml")
     }
+}
+
+fn write_if_changed(path: &Path, contents: &[u8]) -> std::io::Result<()> {
+    match std::fs::read(path) {
+        Ok(current) if current == contents => return Ok(()),
+        Ok(_) => {}
+        Err(err) if err.kind() == std::io::ErrorKind::NotFound => {}
+        Err(err) => return Err(err),
+    }
+    std::fs::write(path, contents)?;
+    println!("wrote {}", path.display());
+    Ok(())
 }

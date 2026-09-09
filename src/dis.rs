@@ -105,9 +105,8 @@ fn gather_block(
         //     code = instr
         // );
         instrs.push(Instr {
-            comment: None,
-            jmp: None,
             iced: instr,
+            ..Default::default()
         });
 
         use iced_x86::FlowControl::*;

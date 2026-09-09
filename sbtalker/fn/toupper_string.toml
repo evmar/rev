@@ -40,6 +40,7 @@ desc = "Length of the string in bytes"
 0823:0b65 loop 0B56h
 
 ; Restore registers and return
+@label 'return
 0823:0b67 pop cx
 0823:0b68 pop di
 0823:0b69 ret

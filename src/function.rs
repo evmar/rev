@@ -34,6 +34,9 @@ impl Function {
                 if let Some(jmp) = &instr.jmp {
                     writeln!(w, "@jmp {jmp}")?;
                 }
+                if let Some(label) = &instr.label {
+                    writeln!(w, "@label {label}")?;
+                }
                 writeln!(w, "{ip} {instr}", instr = instr.iced)?;
             }
             writeln!(w)?;
@@ -54,6 +57,7 @@ impl Function {
             instrs: vec![],
         });
         let mut comment = String::new();
+        let mut label = None;
         let mut jmp = None;
         for (i, line) in body.lines().enumerate() {
             if line.is_empty() {
@@ -71,6 +75,9 @@ impl Function {
                 use std::str::FromStr;
                 jmp =
                     Some(XRef::from_str(r).map_err(|err| anyhow::anyhow!("bad xref {r}: {err}"))?);
+                continue;
+            } else if let Some(l) = line.strip_prefix("@label ") {
+                label = Some(l.to_owned());
                 continue;
             }
 
@@ -92,6 +99,7 @@ impl Function {
                 } else {
                     Some(std::mem::take(&mut comment))
                 },
+                label: std::mem::take(&mut label),
                 jmp: std::mem::take(&mut jmp),
                 iced: instr,
             });
@@ -120,8 +128,10 @@ impl Block {
     }
 }
 
+#[derive(Default)]
 pub struct Instr {
     pub comment: Option<String>,
+    pub label: Option<String>,
     pub jmp: Option<XRef>,
     pub iced: iced_x86::Instruction,
 }

@@ -39,6 +39,7 @@ struct InstructionDetail {
     ip: String,
     text: String,
     comment: Option<String>,
+    label: Option<String>,
     jmp: Option<String>,
 }
 
@@ -66,6 +67,7 @@ fn function_detail(func: &crate::function::Function) -> FunctionDetail<'_> {
                         ip: block.ip.with_ofs(instr.iced.ip16()).to_string(),
                         text: instr.iced.to_string(),
                         comment: instr.comment.clone(),
+                        label: instr.label.clone(),
                         jmp: instr.jmp.as_ref().map(ToString::to_string),
                     })
                     .collect(),

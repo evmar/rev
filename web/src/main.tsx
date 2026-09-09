@@ -142,11 +142,13 @@ function FunctionView({ ip }: { ip: string }) {
               <section key={index}>
                 {block.instrs.length === 0 ? <p>No instructions in this block.</p> : (
                   <pre><code>{block.instrs.map(instr => {
+                    const label = instr.label !== null ? `${instr.label}:\n` : '';
                     const comment = instr.comment
                       ? instr.comment.split('\n').map(line => `; ${line}\n`).join('')
                       : '';
-                    const jumpComment = instr.jmp !== null ? ` ; ${instr.jmp}` : '';
-                    return `${comment}${instr.ip} ${instr.text}${jumpComment}`;
+                    const jumpTarget = instr.jmp?.replace(/^'(.+)@\d+$/, '$1');
+                    const jumpComment = jumpTarget != null ? ` ; ${jumpTarget}` : '';
+                    return `${comment}${label}${instr.ip} ${instr.text}${jumpComment}`;
                   }).join('\n')}</code></pre>
                 )}
               </section>

@@ -8,6 +8,7 @@ use runtime::SegOfs;
 use crate::{
     function::Function,
     load::{EXE, load_exe},
+    xref,
 };
 
 #[derive(Default)]
@@ -39,6 +40,8 @@ impl DB {
             };
             db.functions.insert(func.ip, func);
         }
+
+        xref::update_xrefs(&mut db);
 
         Ok(db)
     }

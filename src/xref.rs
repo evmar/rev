@@ -7,12 +7,7 @@ use crate::{
     function::{Function, XRef},
 };
 
-/// wip
-#[derive(argh::FromArgs)]
-#[argh(subcommand, name = "analyze")]
-pub struct Args {}
-
-pub fn run(db: &mut DB, _args: Args) -> anyhow::Result<()> {
+pub fn update_xrefs(db: &mut DB) {
     let names = db
         .functions
         .values()
@@ -24,9 +19,6 @@ pub fn run(db: &mut DB, _args: Args) -> anyhow::Result<()> {
             None => XRef::Addr(ip),
         });
     }
-
-    db.write()?;
-    Ok(())
 }
 
 fn analyze(func: &mut Function, xref: impl Fn(SegOfs) -> XRef) {

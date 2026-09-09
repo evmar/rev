@@ -3,13 +3,13 @@ use std::path::PathBuf;
 use crate::db::DB;
 
 mod ai;
-mod analyze;
 mod db;
 mod dis;
 mod function;
 mod init;
 mod load;
 mod web;
+mod xref;
 
 #[derive(argh::FromArgs)]
 #[argh(subcommand)]
@@ -17,7 +17,7 @@ enum Mode {
     Init(init::Args),
     Dis(dis::Args),
     AI(ai::Args),
-    Analyze(analyze::Args),
+    RoundTrip(RoundTrip),
     Web(web::Args),
 }
 
@@ -31,6 +31,11 @@ struct Args {
     #[argh(subcommand)]
     mode: Mode,
 }
+
+/// load and save db
+#[derive(argh::FromArgs)]
+#[argh(subcommand, name = "roundtrip")]
+struct RoundTrip {}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -52,9 +57,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             ai::run(&mut db, args).await?;
             Ok(())
         }
-        Mode::Analyze(args) => {
-            let mut db = DB::load(project)?;
-            analyze::run(&mut db, args)?;
+        Mode::RoundTrip(_) => {
+            let db = DB::load(project)?;
+            db.write()?;
             Ok(())
         }
     }

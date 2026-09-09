@@ -11,9 +11,9 @@ pub fn update_xrefs(db: &mut DB) {
         .filter_map(|func| Some((func.ip, func.name.as_ref()?.clone())))
         .collect::<HashMap<_, _>>();
     for func in db.functions.values_mut() {
-        analyze(func, |ip| match names.get(&ip) {
-            Some(name) => XRef::Name(name.clone()),
-            None => XRef::Addr(ip),
+        analyze(func, |ip| {
+            let name = names.get(&ip).cloned();
+            XRef::External(name, ip)
         });
     }
 }
@@ -32,7 +32,7 @@ fn analyze(func: &mut Function, xref: impl Fn(SegOfs) -> XRef) {
         let ip = block.ip;
         for instr in block.instrs.iter_mut() {
             let Some(xref) = xref_from_instr(ip, &instr.iced, |ip| match ip_to_block.get(&ip) {
-                Some(idx) => XRef::Block(*idx, block_to_label[*idx].clone()),
+                Some(idx) => XRef::Block(block_to_label[*idx].clone(), *idx),
                 None => xref(ip),
             }) else {
                 continue;
@@ -40,7 +40,7 @@ fn analyze(func: &mut Function, xref: impl Fn(SegOfs) -> XRef) {
             instr.jmp = Some(xref.clone());
 
             match &xref {
-                XRef::Name(_) | XRef::Addr(_) => {
+                XRef::External(_, _) => {
                     all_xrefs.insert(xref);
                 }
                 XRef::Block(_, _) => {}
@@ -74,8 +74,8 @@ fn xref_from_instr(
                     };
                     Some(xref(ip))
                 }
-                Memory => Some(XRef::Name("mem?".into())),
-                Register => Some(XRef::Name("reg?".into())),
+                Memory => Some(XRef::External(Some("mem?".into()), Default::default())),
+                Register => Some(XRef::External(Some("reg?".into()), Default::default())),
                 d => todo!("unhandled jmp {d:?}"),
             }
         }
@@ -94,29 +94,31 @@ fn xref_from_instr(
     Hash,
 )]
 pub enum XRef {
-    Name(String),
-    Addr(SegOfs),
-    Block(usize, Option<String>),
+    External(Option<String>, SegOfs),
+    Block(Option<String>, usize),
 }
 
 impl std::str::FromStr for XRef {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let xref = if let Some(label) = s.strip_prefix("'") {
-            let label = if let Some((_, block)) = label.split_once('@') {
-                block
+        let xref = if let Some(local) = s.strip_prefix("'") {
+            let (name, block) = if let Some((name, block)) = local.split_once('@') {
+                (Some(name.to_owned()), block)
             } else {
-                label
+                (None, local)
             };
             XRef::Block(
-                usize::from_str(label).map_err(|err| format!("xref {:?}: {}", s, err))?,
-                None,
+                name,
+                usize::from_str(block).map_err(|err| format!("xref {:?}: {}", s, err))?,
             )
-        } else if s.contains(':') {
-            XRef::Addr(SegOfs::parse(s)?)
         } else {
-            XRef::Name(s.to_owned())
+            let (name, ip) = if let Some((name, ip)) = s.split_once('@') {
+                (Some(name.to_owned()), ip)
+            } else {
+                (None, s)
+            };
+            XRef::External(name, SegOfs::parse(ip)?)
         };
         Ok(xref)
     }
@@ -125,10 +127,10 @@ impl std::str::FromStr for XRef {
 impl std::fmt::Display for XRef {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            XRef::Addr(segofs) => write!(f, "{segofs}"),
-            XRef::Name(name) => f.write_str(name),
-            XRef::Block(idx, None) => write!(f, "'{idx}"),
-            XRef::Block(idx, Some(label)) => write!(f, "'{label}@{idx}"),
+            XRef::External(None, ip) => write!(f, "{ip}"),
+            XRef::External(Some(name), ip) => write!(f, "{name}@{ip}"),
+            XRef::Block(None, idx) => write!(f, "'{idx}"),
+            XRef::Block(Some(label), idx) => write!(f, "'{label}@{idx}"),
         }
     }
 }
@@ -140,10 +142,16 @@ mod tests {
     #[test]
     fn xref_forms_round_trip() {
         let cases = [
-            ("main", XRef::Name("main".into())),
-            ("1234:abcd", XRef::Addr(SegOfs::new(0x1234, 0xabcd))),
-            ("'0", XRef::Block(0, None)),
-            ("'42", XRef::Block(42, None)),
+            (
+                "main@1234:abcd",
+                XRef::External(Some("main".into()), SegOfs::new(0x1234, 0xabcd)),
+            ),
+            (
+                "1234:abcd",
+                XRef::External(None, SegOfs::new(0x1234, 0xabcd)),
+            ),
+            ("'foo@0", XRef::Block(Some("foo".into()), 0)),
+            ("'42", XRef::Block(None, 42)),
         ];
 
         for (text, expected) in cases {
@@ -153,17 +161,5 @@ mod tests {
             assert_eq!(expected.to_string(), text);
             assert!(expected.to_string().parse::<XRef>().unwrap() == expected);
         }
-    }
-
-    #[test]
-    fn labeled_xref_round_trip_preserves_block_index() {
-        let xref = XRef::Block(42, Some("loop".into()));
-        assert_eq!(xref.to_string(), "'loop@42");
-
-        // Labels are display annotations; parsing retains only the block index.
-        let parsed: XRef = xref.to_string().parse().unwrap();
-        assert!(parsed == XRef::Block(42, None));
-        assert_eq!(parsed.to_string(), "'42");
-        assert!(parsed.to_string().parse::<XRef>().unwrap() == parsed);
     }
 }

@@ -1,5 +1,5 @@
 name = "entry_point"
-xrefs = ["backup_ivt", "load_driver", "parse_cmdline", "print_string_with_suffix", "0823:0943", "0823:0aa0", "0823:0b3c", "0823:0f5b"]
+xrefs = ["0823:0943", "0823:0aa0", "0823:0b3c", "0823:0f5b", "backup_ivt@0823:09e5", "load_driver@0823:0c86", "parse_cmdline@0823:0be7", "print_string_with_suffix@0823:0c79"]
 ip = "0823:0cec"
 
 ---
@@ -57,11 +57,11 @@ ip = "0823:0cec"
 0823:0d40 add bx,dx
 0823:0d42 mov cs:[0A9h],bx
 0823:0d47 mov al,1
-@jmp backup_ivt
+@jmp backup_ivt@0823:09e5
 0823:0d49 call 09E5h
-@jmp parse_cmdline
+@jmp parse_cmdline@0823:0be7
 0823:0d4c call 0BE7h
-@jmp load_driver
+@jmp load_driver@0823:0c86
 0823:0d4f call 0C86h
 @jmp 0823:0f5b
 0823:0d52 call 0F5Bh
@@ -86,7 +86,7 @@ ip = "0823:0cec"
 ; DX = offset of the resident portion's end
 0823:0d77 lea dx,ds:[0ABh]
 ; shrink the memory block down to the resident part
-@jmp print_string_with_suffix
+@jmp print_string_with_suffix@0823:0c79
 0823:0d7b call 0C79h
 ; terminate and stay resident (AH=31h), keeping DX paragraphs
 0823:0d7e mov ax,3100h

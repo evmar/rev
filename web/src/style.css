@@ -1,6 +1,11 @@
+:root {
+  color-scheme: light dark;
+  -webkit-font-smoothing: antialiased;
+}
+
 body {
   font-family: system-ui, sans-serif;
-  background: #eee;
+  background: light-dark(#eee, #1e1e1e);
   margin: 24px;
 }
 
@@ -12,7 +17,7 @@ main {
 .panel {
   margin-bottom: 20px;
   padding: 16px;
-  border: 1px solid black;
+  border: 1px solid light-dark(black, #777);
   border-radius: 4px;
 }
 

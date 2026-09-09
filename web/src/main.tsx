@@ -125,6 +125,7 @@ function FunctionView({ ip }: { ip: string }) {
         <>
           <section class="panel">
             <p>{func.desc ?? 'No description.'}</p>
+            <p>{func.details}</p>
             <dl>
               <dt>Cross-references</dt>
               <dd>{func.xrefs?.join(', ') || 'None'}</dd>

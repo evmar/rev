@@ -19,6 +19,7 @@ struct FunctionDetail<'a> {
     ip: String,
     name: Option<&'a str>,
     desc: Option<&'a str>,
+    details: Option<&'a str>,
     xrefs: Option<Vec<String>>,
     params: &'a Option<Vec<crate::ai::Var>>,
     ret: &'a Option<crate::ai::Var>,
@@ -46,6 +47,7 @@ fn function_detail(func: &crate::function::Function) -> FunctionDetail<'_> {
         ip: func.ip.to_string(),
         name: func.name.as_deref(),
         desc: func.desc.as_deref(),
+        details: func.details.as_deref(),
         xrefs: func
             .xrefs
             .as_ref()

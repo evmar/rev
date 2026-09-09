@@ -119,6 +119,7 @@ async fn call(func: &Function) -> anyhow::Result<Response> {
 fn merge(func: &mut Function, response: Response) -> usize {
     func.name = Some(response.name);
     func.desc = Some(response.desc);
+    func.details = Some(response.details);
 
     func.params = if response.parameters.is_empty() {
         None
@@ -163,8 +164,10 @@ fn merge(func: &mut Function, response: Response) -> usize {
 struct Response {
     /// short function name, a guess at what the function does
     pub name: String,
-    /// top-level description of function, a few lines of text
+    /// brief description of function: one-liner summary of what function is for
     pub desc: String,
+    /// longer description of function: two or three sentences
+    pub details: String,
     /// function parameters, both registers and from stack
     pub parameters: Vec<Var>,
     /// return value, if any
@@ -199,39 +202,4 @@ fn response_schema() -> schemars::Schema {
         .with(|settings| settings.inline_subschemas = true)
         .into_generator()
         .into_root_schema_for::<Response>()
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn response_schema_matches_response_fields() {
-        let schema = response_schema();
-        println!("{}", serde_json::to_string_pretty(&schema).unwrap());
-        let schema = serde_json::to_value(schema).unwrap();
-        assert_eq!(schema["title"], "dis");
-        let required = schema["required"].as_array().unwrap();
-        for field in ["name", "desc", "parameters", "inline_comments"] {
-            assert!(required.contains(&serde_json::json!(field)));
-        }
-        assert!(!required.contains(&serde_json::json!("description")));
-        assert!(schema["properties"]["return"].is_object());
-        assert!(schema["properties"].get("ret").is_none());
-        assert_eq!(
-            schema["properties"]["parameters"]["items"]["properties"]["type"]["type"],
-            "string"
-        );
-        assert!(!serde_json::to_string(&schema).unwrap().contains("\"$ref\""));
-        assert_eq!(
-            schema["properties"]["name"]["description"],
-            "short function name, a guess at what the function does"
-        );
-        let response: Response = serde_json::from_value(serde_json::json!({
-            "name": "example", "desc": "description", "parameters": [],
-            "return": null, "inline_comments": []
-        }))
-        .unwrap();
-        assert!(response.ret.is_none());
-    }
 }

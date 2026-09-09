@@ -1,32 +1,52 @@
 name = "parse_cmdline_p_switch"
-desc = "Searches an input string (such as command line arguments) for the switch '/P' followed by a 4-digit hexadecimal value. It converts the 4 hex digits into a 16-bit word and stores the result into CS:[01B2h]. If the switch is not found or conversion fails, zero is stored."
+desc = "Searches an input string for the switch '/P' followed by a 4-digit hexadecimal value and stores the result."
+details = "Scans the input buffer pointed to by ES:DI for the switch '/P'. If located, it parses the next 4 hexadecimal digits into a 16-bit word using an external digit parser and stores the result at CS:[01B2h]. If the switch is not found or an invalid hex digit is encountered, 0 is stored instead."
 xrefs = ["parse_hex_digit"]
 ip = "0823:0bb2"
 
+[[params]]
+name = "cmdline"
+value = "es:di"
+type = "char*"
+desc = "Pointer to the command line buffer to scan"
+
+[[params]]
+name = "len"
+value = "cx"
+type = "u16"
+desc = "Length of the command line buffer in bytes"
+
+[ret]
+name = "value"
+value = "bx"
+type = "u16"
+desc = "Parsed 16-bit hexadecimal value (also written to CS:[01B2h]), or 0 on failure"
+
 ---
-; Save registers, clear direction flag, and initialize result BX to 0.
+; Save registers, clear direction flag, and initialize result to 0
 0823:0bb2 push di
 0823:0bb3 push cx
 0823:0bb4 xor bx,bx
 0823:0bb6 cld
 
-; Scan string for '/' followed by 'P'; exit if end of string is reached.
+; Scan input string for '/' character; exit if end of buffer is reached
 0823:0bb7 mov al,2Fh
 0823:0bb9 repne scasb
 @jmp '7
 0823:0bbb jcxz 0BDFh
 
+; Check if character following '/' is 'P'; continue scanning if not
 0823:0bbd cmp byte ptr [di],50h
 @jmp '1
 0823:0bc0 jne short 0BB7h
 
-; Skip 'P' and set up counter to parse 4 hexadecimal digits.
+; Skip 'P' and set up loop counter to parse 4 hexadecimal digits
 0823:0bc2 inc di
 0823:0bc3 xor bx,bx
 0823:0bc5 mov dx,4
 0823:0bc8 mov cx,4
 
-; Read each character, convert it to a numeric nibble, and accumulate it into BX.
+; Fetch next character and convert hex ASCII to numeric value; abort on error
 0823:0bcb mov al,[di]
 0823:0bcd inc di
 @jmp parse_hex_digit
@@ -35,6 +55,7 @@ ip = "0823:0bb2"
 @jmp '7
 0823:0bd4 jne short 0BDFh
 
+; Shift current 16-bit value left by 4 bits and accumulate new nibble
 0823:0bd6 shl bx,cl
 0823:0bd8 add bx,ax
 0823:0bda dec dx
@@ -44,7 +65,7 @@ ip = "0823:0bb2"
 @jmp '7
 0823:0bdd jmp short 0BDFh
 
-; Save the parsed 16-bit value at CS:[01B2h], restore registers, and return.
+; Store the parsed 16-bit result into CS:[01B2h], restore registers, and return
 0823:0bdf mov cs:[1B2h],bx
 0823:0be4 pop cx
 0823:0be5 pop di

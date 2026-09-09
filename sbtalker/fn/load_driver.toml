@@ -1,5 +1,6 @@
 name = "load_driver"
-desc = 'Parses an optional driver name parameter from an internal buffer (cs:01AAh), constructs the driver file path by appending the name and the extension ".DRV" to a buffer at cs:01B5h, and calls a routine to load the driver. If loading fails, it displays an error message and terminates the program via DOS interrupt 21h, function 4Ch.'
+desc = "Parses an optional driver name, formats a driver filename with a .DRV extension, and attempts to load it, exiting on failure."
+details = "Checks an internal buffer at cs:01AAh for an optional driver filename. If specified, it copies up to eight characters into the path buffer at cs:01B5h, appends the '.DRV' extension, and null-pads the remainder of the filename. It then calls an internal loader routine at 0823:0C12h; if the routine fails (indicated by CF=1), it outputs an error message and terminates the process via DOS interrupt 21h, function 4Ch."
 xrefs = ["print_string_with_suffix", "0823:0c12"]
 ip = "0823:0c86"
 
@@ -11,13 +12,13 @@ ip = "0823:0c86"
 0823:0c89 push ax
 0823:0c8a push ds
 0823:0c8b push es
-; Check if an argument/driver name is present at cs:[01AAh]; skip if it begins with a space
+; Check if a driver name argument is present at cs:[01AAh]; skip if it starts with a space
 0823:0c8c mov bx,1AAh
 0823:0c8f cmp byte ptr cs:[bx],20h
 @jmp '7
 0823:0c93 je short 0CCFh
 
-; Copy up to 8 characters of the driver name into cs:[01B9h]
+; Copy up to 8 characters of the driver name into path buffer at cs:[01B9h]
 0823:0c95 mov si,1B5h
 0823:0c98 add si,4
 0823:0c9b mov cx,8
@@ -37,7 +38,7 @@ ip = "0823:0c86"
 @jmp '2
 0823:0cae loop 0C9Eh
 
-; Append extension ".DRV" and null-pad the remainder of the filename buffer
+; Append '.DRV' extension and null-pad the remainder of the filename buffer
 0823:0cb0 mov byte ptr cs:[si],2Eh
 0823:0cb4 inc si
 0823:0cb5 mov byte ptr cs:[si],44h
@@ -54,14 +55,14 @@ ip = "0823:0c86"
 @jmp '6
 0823:0ccd ja short 0CC4h
 
-; Call driver loader routine with path buffer at cs:[01B5h]
+; Call driver loader routine using path buffer at cs:[01B5h]
 0823:0ccf mov si,1B5h
 @jmp 0823:0c12
 0823:0cd2 call 0C12h
 @jmp '9
 0823:0cd5 jae short 0CE5h
 
-; On load failure, print error message at cs:[0189h] and terminate with exit code 1
+; On load failure, print error message and exit program with code 1
 0823:0cd7 push cs
 0823:0cd8 pop ds
 0823:0cd9 lea dx,ds:[189h]

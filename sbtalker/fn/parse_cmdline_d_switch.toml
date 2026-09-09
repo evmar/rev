@@ -1,6 +1,19 @@
 name = "parse_cmdline_d_switch"
-desc = "Parses a command-line string to locate the '/D' switch and extracts up to an 8-character argument immediately following it into an internal buffer in the code segment."
+desc = "Parses a command-line string to locate the '/D' switch and extracts up to an 8-character argument immediately following it into an internal buffer."
+details = "Searches the string referenced by ES:DI for the forward slash ('/') character across CX bytes using REPNE SCASB. When found, it inspects the subsequent character to check if it matches 'D'. If matched, it reads up to 8 characters following '/D' until it encounters another '/' switch character or runs out of input characters, copying each character into a buffer located at CS:01AAh."
 ip = "0823:0b87"
+
+[[params]]
+name = "cmdline_ptr"
+value = "es:di"
+type = "far cstr"
+desc = "Pointer to the input string (e.g. command line) to scan"
+
+[[params]]
+name = "cmdline_len"
+value = "cx"
+type = "u16"
+desc = "Length of the input string"
 
 ---
 ; Save registers and ensure forward string traversal
@@ -14,12 +27,12 @@ ip = "0823:0b87"
 @jmp '7
 0823:0b8e jcxz 0BAFh
 
-; Verify if the character following '/' is 'D'; if not, continue searching
+; Check if character following '/' is 'D'; if not, resume search
 0823:0b90 cmp byte ptr [di],44h
 @jmp '1
 0823:0b93 jne short 0B8Ah
 
-; Initialize destination buffer (CS:01AAh) and set maximum length to 8 characters
+; Set up destination buffer in CS (01AAh) and max copy count of 8
 0823:0b95 mov bx,1AAh
 0823:0b98 mov dx,8
 @jmp '7
@@ -28,7 +41,7 @@ ip = "0823:0b87"
 @jmp '7
 0823:0b9b jcxz 0BAFh
 
-; Copy parameter characters until reaching end of string, another '/', or 8 characters
+; Copy parameter characters into CS buffer until another '/', end of string, or 8 bytes reached
 0823:0b9d inc di
 0823:0b9e mov al,[di]
 0823:0ba0 cmp al,2Fh

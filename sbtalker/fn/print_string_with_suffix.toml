@@ -1,5 +1,6 @@
 name = "print_string_with_suffix"
-desc = "Prints a '$'-terminated string passed via DS:DX using DOS INT 21h function 09h, followed by printing a secondary fixed string located at DS:[01B9h] (likely a newline/trailer)."
+desc = "Prints a '$'-terminated string passed via DS:DX, followed by a fixed suffix string at DS:[01B9h]."
+details = "Calls DOS INT 21h function 09h to output the '$'-terminated string passed in DX. It then loads DX with the offset 01B9h and invokes INT 21h function 09h again to print a secondary string (such as a newline or standard message trailer) before returning."
 ip = "0823:0c79"
 
 [[params]]
@@ -9,10 +10,10 @@ type = "char*"
 desc = "Offset address in DS of the '$'-terminated string to print"
 
 ---
-; Print the primary string passed in DX
+; Print the primary string pointed to by DX using DOS INT 21h, AH=09h
 0823:0c79 mov ah,9
 0823:0c7b int 21h
-; Print the trailing/suffix string located at DS:[1B9h]
+; Print the secondary suffix string located at DS:[01B9h]
 0823:0c7d lea dx,ds:[1B9h]
 0823:0c81 mov ah,9
 0823:0c83 int 21h

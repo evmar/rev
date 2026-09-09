@@ -1,9 +1,10 @@
 name = "backup_ivt"
-desc = "Saves the CPU registers and backs up the entire 1024-byte Interrupt Vector Table (IVT) from memory address 0000:0000 into an internal buffer located at CS:03FC, then restores the registers and returns."
+desc = "Backs up the entire 1024-byte Interrupt Vector Table (IVT) into an internal buffer."
+details = "Preserves caller registers on the stack, sets DS:SI to point to the base of the real-mode IVT at 0000:0000 and ES:DI to internal buffer at CS:03FC, copies 200h words (1024 bytes) covering all 256 interrupt vectors, restores registers, and returns."
 ip = "0823:09e5"
 
 ---
-; Preserve registers on the stack.
+; Preserve caller registers on the stack
 0823:09e5 push ds
 0823:09e6 push es
 0823:09e7 push si
@@ -12,16 +13,16 @@ ip = "0823:09e5"
 0823:09ea push dx
 0823:09eb push ax
 0823:09ec sub cx,cx
-; Set DS:SI to point to the base of the IVT (0000:0000) and ES:DI to CS:03FC.
+; Set DS:SI to 0000:0000 (IVT) and ES:DI to CS:03FC (backup buffer)
 0823:09ee mov ds,cx
 0823:09f0 push cs
 0823:09f1 pop es
 0823:09f2 mov si,cx
 0823:09f4 mov di,3FCh
-; Copy 200h words (1024 bytes) from IVT to CS:03FC.
+; Copy 200h words (1024 bytes) from IVT to backup buffer
 0823:09f7 mov cx,200h
 0823:09fa repne movsw
-; Restore preserved registers and return.
+; Restore preserved registers and return
 0823:09fc pop ax
 0823:09fd pop dx
 0823:09fe pop cx

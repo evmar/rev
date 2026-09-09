@@ -8,6 +8,7 @@ use crate::ai::Var;
 pub struct Function {
     pub name: Option<String>,
     pub desc: Option<String>,
+    pub details: Option<String>,
     pub xrefs: Option<Vec<XRef>>,
 
     pub params: Option<Vec<Var>>,

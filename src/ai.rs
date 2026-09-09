@@ -137,7 +137,12 @@ fn merge(func: &mut Function, response: Response) -> usize {
     }
 
     let mut found = 0;
-    for InlineComment { addr, text } in response.inline_comments {
+    for Annotation {
+        addr,
+        label,
+        inline_comment,
+    } in response.annotations
+    {
         let Ok(addr) = SegOfs::parse(&addr) else {
             eprintln!("bad comment address {addr}");
             continue;
@@ -150,10 +155,13 @@ fn merge(func: &mut Function, response: Response) -> usize {
             eprintln!("comment on nonexistent {addr}");
             continue;
         };
-        instr.comment = Some(match instr.comment.as_mut() {
-            Some(c) => format!("{c}; {text}"),
-            None => text,
-        });
+        if let Some(comment) = inline_comment {
+            instr.comment = Some(match instr.comment.as_mut() {
+                Some(prev) => format!("{prev}; {comment}"),
+                None => comment,
+            });
+        }
+        instr.label = label;
         found += 1;
     }
     found
@@ -173,14 +181,18 @@ struct Response {
     /// return value, if any
     #[serde(rename = "return")]
     pub ret: Option<Var>,
-    /// inline comments on code, describing what each block of code does
-    pub inline_comments: Vec<InlineComment>,
+    /// annotations on specific instructions or blocks
+    pub annotations: Vec<Annotation>,
 }
 
 #[derive(serde::Deserialize, Debug, schemars::JsonSchema)]
-struct InlineComment {
+struct Annotation {
+    /// address of annotation
     pub addr: String,
-    pub text: String,
+    /// name for the label, for when this instruction it the target of a local jmp
+    pub label: Option<String>,
+    /// comment describing what the instruction or following block does
+    pub inline_comment: Option<String>,
 }
 
 #[derive(serde::Deserialize, serde::Serialize, Debug, ts_rs::TS, schemars::JsonSchema)]

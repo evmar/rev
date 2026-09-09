@@ -16,28 +16,29 @@ type = "u16"
 desc = "Length of the string in bytes"
 
 ---
-; Save registers
+; Save registers to preserve caller state
 0823:0b54 push di
 0823:0b55 push cx
 
 ; Check if character is lowercase ASCII ('a'-'z')
-@label loop
+@label loop_start
 0823:0b56 mov al,[di]
 0823:0b58 cmp al,61h
-@jmp '4
+@jmp 'skip_upper@4
 0823:0b5a jb short 0B62h
 
 0823:0b5c cmp al,7Ah
-@jmp '4
+@jmp 'skip_upper@4
 0823:0b5e ja short 0B62h
 
-; Convert lowercase character to uppercase by clearing bit 5
+; Clear bit 5 to convert 'a'-'z' to uppercase
 0823:0b60 and al,5Fh
 
-; Store modified byte, advance pointer, and loop until CX reaches 0
+; Write byte back, advance pointer, and repeat for CX characters
+@label skip_upper
 0823:0b62 mov [di],al
 0823:0b64 inc di
-@jmp 'loop@1
+@jmp 'loop_start@1
 0823:0b65 loop 0B56h
 
 ; Restore registers and return

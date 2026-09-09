@@ -190,7 +190,7 @@ pub struct Var {
     pub name: String,
     /// the parameter's value, either a register or an stack offset like [sp+4]
     pub value: String,
-    /// value type, e.g. u32 or cstr
+    /// value type as expressed in Rust, e.g. u32 or CStr
     #[serde(rename = "type")]
     pub typ: String,
     /// human-readable description

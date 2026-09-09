@@ -30,18 +30,20 @@ pub fn run(db: &mut DB, _args: Args) -> anyhow::Result<()> {
 }
 
 fn analyze(func: &mut Function, xref: impl Fn(SegOfs) -> XRef) {
-    let block_ips = func
-        .blocks
-        .iter()
-        .enumerate()
-        .map(|(i, block)| (block.ip, i))
-        .collect::<HashMap<_, _>>();
+    let mut ip_to_block = HashMap::new();
+    let mut block_to_label = Vec::new();
+    for (i, block) in func.blocks.iter().enumerate() {
+        let ip = block.ip;
+        ip_to_block.insert(ip, i);
+        block_to_label.push(block.instrs[0].label.clone());
+    }
+
     let mut all_xrefs = HashSet::new();
     for block in func.blocks.iter_mut() {
         let ip = block.ip;
         for instr in block.instrs.iter_mut() {
-            let Some(xref) = xref_from_instr(ip, &instr.iced, |ip| match block_ips.get(&ip) {
-                Some(idx) => XRef::Block(*idx),
+            let Some(xref) = xref_from_instr(ip, &instr.iced, |ip| match ip_to_block.get(&ip) {
+                Some(idx) => XRef::Block(*idx, block_to_label[*idx].clone()),
                 None => xref(ip),
             }) else {
                 continue;
@@ -52,10 +54,11 @@ fn analyze(func: &mut Function, xref: impl Fn(SegOfs) -> XRef) {
                 XRef::Name(_) | XRef::Addr(_) => {
                     all_xrefs.insert(xref);
                 }
-                XRef::Block(_) => {}
+                XRef::Block(_, _) => {}
             }
         }
     }
+
     let mut xrefs = all_xrefs.into_iter().collect::<Vec<_>>();
     if !xrefs.is_empty() {
         xrefs.sort();

@@ -10,7 +10,7 @@ name: string,
  */
 value: string, 
 /**
- * value type, e.g. u32 or cstr
+ * value type as expressed in Rust, e.g. u32 or CStr
  */
 type: string, 
 /**

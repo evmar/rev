@@ -3,6 +3,7 @@ import { useEffect, useState } from 'preact/hooks';
 import type { Overview } from './bindings/Overview';
 import type { FunctionDetail } from './bindings/FunctionDetail';
 import './style.css';
+import type { XRefDetail } from './bindings/XRefDetail';
 
 function OverviewDetails({ overview }: { overview: Overview }) {
   return (
@@ -89,8 +90,8 @@ function OverviewView() {
   );
 }
 
-function FunctionRefs({ refs }: { refs: FunctionDetail['callers'] }) {
-  if (!refs?.length) return <>None</>;
+function FunctionRefs({ refs }: { refs: XRefDetail[] }) {
+  if (!refs?.length) return null;
 
   return <>{refs.map(([name, ip], index) => {
     return <span key={index}>
@@ -140,16 +141,24 @@ function FunctionView({ ip }: { ip: string }) {
             <p>{func.desc ?? 'No description.'}</p>
             <p>{func.details}</p>
             <dl>
-              <dt>Called by</dt>
-              <dd><FunctionRefs refs={func.callers} /></dd>
-              <dt>Calls</dt>
-              <dd><FunctionRefs refs={func.callees} /></dd>
-              <dt>Parameters</dt>
-              <dd>{func.params?.length ? <ul>{func.params.map((param, index) => (
-                <li key={index}><code>{param.name}: {param.type}</code> — {param.value} {param.desc}</li>
-              ))}</ul> : 'None'}</dd>
-              <dt>Return value</dt>
-              <dd>{func.ret ? <><code>{func.ret.name}: {func.ret.type}</code> — {func.ret.value} {func.ret.desc}</> : 'None'}</dd>
+              {!!func.callers?.length && <>
+                <dt>Called by</dt>
+                <dd><FunctionRefs refs={func.callers} /></dd>
+              </>}
+              {!!func.callees?.length && <>
+                <dt>Calls</dt>
+                <dd><FunctionRefs refs={func.callees} /></dd>
+              </>}
+              {!!func.params?.length && <>
+                <dt>Parameters</dt>
+                <dd><ul>{func.params.map((param, index) => (
+                  <li key={index}><code>{param.name}: {param.type}</code> — {param.value} {param.desc}</li>
+                ))}</ul></dd>
+              </>}
+              {func.ret && <>
+                <dt>Return value</dt>
+                <dd><code>{func.ret.name}: {func.ret.type}</code> — {func.ret.value} {func.ret.desc}</dd>
+              </>}
             </dl>
           </section>
           <section class="panel">

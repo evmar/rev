@@ -1,0 +1,1 @@
+{"addr":"1483:0014","name":"overlay_segment_14h","desc":"Overlay/driver load segment address, written as part of an array/table of segment pointers at 1483:0008..0018","typ":"u16","functions":[{"ip":"0823:0c12","name":"load_overlay","desc":"Loads an executable overlay into allocated memory"}]}

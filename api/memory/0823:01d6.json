@@ -1,0 +1,1 @@
+{"addr":"0823:01d6","name":"io_port_param","desc":"Copy of the 16-bit I/O port address or hexadecimal parameter parsed from the command-line '/P' option (initially stored at cs:[01B2h])","typ":"u16","functions":[{"ip":"0823:0b3c","name":"init_callback_ptr","desc":"Initializes a callback/handler pointer and copies a state variable"}]}

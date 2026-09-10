@@ -1,0 +1,1 @@
+{"addr":"1483:000c","name":"driver_overlay_segment","desc":"Base segment address of the loaded driver overlay","typ":"u16","functions":[{"ip":"0823:0c12","name":"load_overlay","desc":"Loads an executable overlay into allocated memory"}]}

@@ -1,0 +1,1 @@
+{"addr":"0823:0e53","name":"saved_ds","desc":"Saved caller data segment (DS) register","typ":"u16","functions":[{"ip":"0823:0f5b","name":"dispatch_command","desc":"Dispatches driver/subsystem API commands based on a function index in AL"}]}

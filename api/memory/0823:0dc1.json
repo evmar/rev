@@ -1,0 +1,1 @@
+{"addr":"0823:0dc1","name":"cmd_0d_param_seg","desc":"Segment component of a far pointer parameter unstacked and stored by driver API command 0Dh","typ":"u16","functions":[{"ip":"0823:0f5b","name":"dispatch_command","desc":"Dispatches driver/subsystem API commands based on a function index in AL"}]}

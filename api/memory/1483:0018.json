@@ -1,0 +1,1 @@
+{"addr":"1483:0018","name":"driver_seg","desc":"Loaded driver/overlay segment address written to the driver communication or interface block at 1483h","typ":"u16","functions":[{"ip":"0823:0c12","name":"load_overlay","desc":"Loads an executable overlay into allocated memory"}]}

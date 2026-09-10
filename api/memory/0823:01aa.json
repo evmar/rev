@@ -1,0 +1,1 @@
+{"addr":"0823:01aa","name":"driver_name_arg","desc":"Buffer storing the driver name specified via the '/D' command-line switch","typ":"[u8; 8]","functions":[{"ip":"0823:0c86","name":"load_driver","desc":"Parses an optional driver name, formats a driver filename with a .DRV extension, and attempts to load it, exiting on failure."}]}

@@ -1,0 +1,1 @@
+{"addr":"0823:007e","name":"prev_int2f_seg","desc":"Saved segment of the previous INT 2Fh interrupt handler vector","typ":"u16","functions":[{"ip":"0823:0cec","name":"entry_point","desc":"TSR installer and program entry point"}]}

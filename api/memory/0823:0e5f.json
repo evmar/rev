@@ -1,0 +1,1 @@
+{"addr":"0823:0e5f","name":"saved_caller_ss","desc":"Caller's stack segment (SS) saved upon entry to the API dispatcher","typ":"u16","functions":[{"ip":"0823:0f5b","name":"dispatch_command","desc":"Dispatches driver/subsystem API commands based on a function index in AL"}]}

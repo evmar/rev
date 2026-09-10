@@ -1,0 +1,1 @@
+{"addr":"0823:01cb","name":"ems_initialized","desc":"Boolean flag indicating whether Expanded Memory (EMS) is available and initialized","typ":"bool","functions":[{"ip":"0823:0aa0","name":"ems_init","desc":"Initializes Expanded Memory (EMS) and allocates pages"}]}

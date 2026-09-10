@@ -1,0 +1,1 @@
+{"addr":"0823:0002","name":"heap_size_bytes_hi","desc":"High 16 bits of the total heap capacity in bytes (calculated as 16KB block count multiplied by 16384)","typ":"u16","functions":[{"ip":"0823:0943","name":"init_heap_bounds","desc":"Initializes memory management variables and heap size"}]}

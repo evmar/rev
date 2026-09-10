@@ -1,0 +1,1 @@
+{"addr":"0823:0e51","name":"saved_caller_ip","desc":"Saved caller return instruction pointer (IP) during driver command dispatch","typ":"u16","functions":[{"ip":"0823:0f5b","name":"dispatch_command","desc":"Dispatches driver/subsystem API commands based on a function index in AL"}]}

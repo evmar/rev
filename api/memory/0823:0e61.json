@@ -1,0 +1,1 @@
+{"addr":"0823:0e61","name":"saved_sp","desc":"Caller's stack pointer (SP) saved upon entering the driver command dispatcher","typ":"u16","functions":[{"ip":"0823:0f5b","name":"dispatch_command","desc":"Dispatches driver/subsystem API commands based on a function index in AL"}]}

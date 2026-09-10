@@ -1,0 +1,1 @@
+{"addr":"0823:01d4","name":"callback_seg","desc":"Segment portion of far pointer (CS:01D2h) to callback or handler function (initialized to 0823h)","typ":"u16","functions":[{"ip":"0823:0b3c","name":"init_callback_ptr","desc":"Initializes a callback/handler pointer and copies a state variable"}]}

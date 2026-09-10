@@ -1,0 +1,1 @@
+{"addr":"1483:0010","name":"driver_segment","desc":"Overlay/driver load segment or relocation factor stored in the sound/driver dispatch table","typ":"u16","functions":[{"ip":"0823:0c12","name":"load_overlay","desc":"Loads an executable overlay into allocated memory"}]}

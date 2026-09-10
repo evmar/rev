@@ -1,0 +1,1 @@
+{"addr":"0823:0e63","name":"saved_caller_ip","desc":"Temporary storage for the caller's return instruction pointer (IP) offset while popping arguments from the stack during command dispatch","typ":"u16","functions":[{"ip":"0823:0f5b","name":"dispatch_command","desc":"Dispatches driver/subsystem API commands based on a function index in AL"}]}

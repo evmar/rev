@@ -1,0 +1,1 @@
+{"addr":"0823:01d2","name":"callback_offset","desc":"Offset of the callback routine (0AE2h) stored as the lower word of a far function pointer","typ":"u16","functions":[{"ip":"0823:0b3c","name":"init_callback_ptr","desc":"Initializes a callback/handler pointer and copies a state variable"}]}

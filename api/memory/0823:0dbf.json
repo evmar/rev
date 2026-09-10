@@ -1,0 +1,1 @@
+{"addr":"0823:0dbf","name":"cmd_0d_callback_ptr","desc":"Far pointer (offset at 0823:0dbf, segment at 0823:0dc1) passed via API command 0Dh, stored to register a custom callback or handler","typ":"Option<extern \"far-cdecl\" fn()>","functions":[{"ip":"0823:0f5b","name":"dispatch_command","desc":"Dispatches driver/subsystem API commands based on a function index in AL"}]}

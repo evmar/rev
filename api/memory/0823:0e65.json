@@ -1,0 +1,1 @@
+{"addr":"0823:0e65","name":"saved_ret_cs","desc":"Temporary storage for the caller's return code segment (CS) while unstacking far pointer arguments from the stack in commands 0Ch and 0Dh","typ":"u16","functions":[{"ip":"0823:0f5b","name":"dispatch_command","desc":"Dispatches driver/subsystem API commands based on a function index in AL"}]}

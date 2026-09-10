@@ -13,7 +13,7 @@ mod xref;
 
 #[derive(argh::FromArgs)]
 #[argh(subcommand)]
-enum Mode {
+enum Command {
     Init(init::Args),
     Dis(dis::Args),
     AI(ai::Args),
@@ -29,7 +29,7 @@ struct Args {
     project: PathBuf,
 
     #[argh(subcommand)]
-    mode: Mode,
+    cmd: Command,
 }
 
 /// load and save db
@@ -39,25 +39,25 @@ struct RoundTrip {}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let Args { project, mode } = argh::from_env::<Args>();
-    match mode {
-        Mode::Web(args) => {
+    let Args { project, cmd } = argh::from_env::<Args>();
+    match cmd {
+        Command::Web(args) => {
             let db = DB::load(project)?;
             web::run(db, args).await?;
             Ok(())
         }
-        Mode::Init(args) => init::init(project, args),
-        Mode::Dis(args) => {
+        Command::Init(args) => init::init(project, args),
+        Command::Dis(args) => {
             let mut db = DB::load(project)?;
             dis::run(&mut db, args)?;
             Ok(())
         }
-        Mode::AI(args) => {
+        Command::AI(args) => {
             let mut db = DB::load(project)?;
             ai::run(&mut db, args).await?;
             Ok(())
         }
-        Mode::RoundTrip(_) => {
+        Command::RoundTrip(_) => {
             let db = DB::load(project)?;
             db.write()?;
             Ok(())

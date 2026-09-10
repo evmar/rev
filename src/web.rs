@@ -20,8 +20,8 @@ struct FunctionDetail<'a> {
     name: Option<&'a str>,
     desc: Option<&'a str>,
     details: Option<&'a str>,
-    callers: Option<Vec<(String, String)>>,
-    callees: Option<Vec<(String, String)>>,
+    callers: Option<Vec<XRefDetail>>,
+    callees: Option<Vec<XRefDetail>>,
     params: &'a Option<Vec<crate::ai::Var>>,
     ret: &'a Option<crate::ai::Var>,
     blocks: Vec<BlockDetail>,
@@ -41,15 +41,30 @@ struct InstructionDetail {
     text: String,
     comment: Option<String>,
     label: Option<String>,
-    jmp: Option<String>,
+    jmp: Option<XRefDetail>,
 }
 
-fn function_ref(xref: &XRef) -> Option<(String, String)> {
-    match xref {
-        XRef::External(name, ip) => {
-            let ip = ip.to_string();
-            Some((name.clone().unwrap_or_else(|| ip.clone()), ip))
+/// Display name and target IP; an empty IP denotes a non-function reference.
+#[derive(serde::Serialize, ts_rs::TS)]
+#[ts(export_to = "../web/src/bindings/")]
+struct XRefDetail(String, String);
+
+impl From<&XRef> for XRefDetail {
+    fn from(xref: &XRef) -> Self {
+        match xref {
+            XRef::External(name, ip) => {
+                let ip = ip.to_string();
+                Self(name.clone().unwrap_or_else(|| ip.clone()), ip)
+            }
+            XRef::Block(Some(label), _) => Self(label.clone(), String::new()),
+            _ => Self(xref.to_string(), String::new()),
         }
+    }
+}
+
+fn function_ref(xref: &XRef) -> Option<XRefDetail> {
+    match xref {
+        XRef::External(_, _) => Some(xref.into()),
         _ => None,
     }
 }
@@ -83,7 +98,7 @@ fn function_detail(func: &crate::function::Function) -> FunctionDetail<'_> {
                         text: instr.iced.to_string(),
                         comment: instr.comment.clone(),
                         label: instr.label.clone(),
-                        jmp: instr.jmp.as_ref().map(ToString::to_string),
+                        jmp: instr.jmp.as_ref().map(XRefDetail::from),
                     })
                     .collect(),
             })

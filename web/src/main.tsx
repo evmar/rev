@@ -156,15 +156,28 @@ function FunctionView({ ip }: { ip: string }) {
             {func.blocks.length === 0 ? <p>No instructions found.</p> : func.blocks.map((block, index) => (
               <section key={index}>
                 {block.instrs.length === 0 ? <p>No instructions in this block.</p> : (
-                  <pre><code>{block.instrs.map(instr => {
+                  <pre><code>{block.instrs.map((instr) => {
                     const label = instr.label !== null ? `${instr.label}:\n` : '';
                     const comment = instr.comment
                       ? instr.comment.split('\n').map(line => `; ${line}\n`).join('')
                       : '';
-                    const jumpTarget = instr.jmp?.replace(/^'(.+)@\d+$/, '$1');
-                    const jumpComment = jumpTarget != null ? ` ; ${jumpTarget}` : '';
-                    return `${comment}${label}${instr.ip} ${instr.text}${jumpComment}`;
-                  }).join('\n')}</code></pre>
+                    const [jumpTarget, targetIp] = instr.jmp ?? [];
+                    let jumpComment;
+                    if (jumpTarget) {
+                      if (targetIp) {
+                        jumpComment = <a href={`#/functions/${encodeURIComponent(targetIp)}`}>
+                          {jumpTarget}
+                        </a>;
+                      } else {
+                        jumpComment = jumpTarget;
+                      }
+                    }
+                    if (jumpComment) jumpComment = <>{' ; '}{jumpComment}</>;
+                    return <div key={instr.ip}>
+                      {`${comment}${label}${instr.ip} ${instr.text}`}
+                      {jumpComment}
+                    </div>;
+                  })}</code></pre>
                 )}
               </section>
             ))}

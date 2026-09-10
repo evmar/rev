@@ -1,4 +1,7 @@
-use std::{path::Path, sync::Arc};
+use std::{
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 
 use axum::{
     Json, Router,
@@ -117,7 +120,8 @@ async fn get_function(
     State(db): State<AppState>,
     axum::extract::Path(ip): axum::extract::Path<String>,
 ) -> Result<Response, StatusCode> {
-    let ip = runtime::SegOfs::parse(&ip).map_err(|_| StatusCode::BAD_REQUEST)?;
+    let ip = ip.strip_suffix(".json").ok_or(StatusCode::BAD_REQUEST)?;
+    let ip = runtime::SegOfs::parse(ip).map_err(|_| StatusCode::BAD_REQUEST)?;
     let db = db.read().await;
     let func = db.functions.get(&ip).ok_or(StatusCode::NOT_FOUND)?;
     Ok(Json(function_detail(func)).into_response())
@@ -163,9 +167,38 @@ pub struct Args {
     /// proxy to the Vite development server on port 5173
     #[argh(switch)]
     pub dev: bool,
+    /// export static API data to a directory instead of starting the server
+    #[argh(option)]
+    pub export: Option<PathBuf>,
+}
+
+fn export_site(db: &DB, output: &Path) -> anyhow::Result<()> {
+    std::fs::create_dir_all(output)?;
+    let api = output.join("api");
+    // Require fresh API data so old functions cannot survive an export.
+    std::fs::create_dir(&api)?;
+    std::fs::create_dir_all(api.join("functions"))?;
+    std::fs::write(
+        api.join("overview.json"),
+        serde_json::to_vec(&overview(db))?,
+    )?;
+    for func in db.functions.values() {
+        std::fs::write(
+            api.join("functions").join(format!("{}.json", func.ip)),
+            serde_json::to_vec(&function_detail(func))?,
+        )?;
+    }
+    Ok(())
 }
 
 pub async fn run(db: DB, args: Args) -> anyhow::Result<()> {
+    let dist = Path::new(env!("CARGO_MANIFEST_DIR")).join("web/dist");
+    if let Some(output) = args.export {
+        anyhow::ensure!(!args.dev, "--export cannot be combined with --dev");
+        export_site(&db, &output)?;
+        println!("exported site to {}", output.display());
+        return Ok(());
+    }
     let db = Arc::new(RwLock::new(db));
     let app = if args.dev {
         anyhow::ensure!(
@@ -180,7 +213,6 @@ pub async fn run(db: DB, args: Args) -> anyhow::Result<()> {
         };
         Router::new().fallback_service(axum_vite::spa_router(config))
     } else {
-        let dist = Path::new(env!("CARGO_MANIFEST_DIR")).join("web/dist");
         anyhow::ensure!(
             dist.join("index.html").is_file(),
             "Frontend build missing; run `npm --prefix web run build` first"
@@ -188,7 +220,7 @@ pub async fn run(db: DB, args: Args) -> anyhow::Result<()> {
         Router::new().fallback_service(ServeDir::new(dist))
     };
     let app = app
-        .route("/api/overview", get(get_overview))
+        .route("/api/overview.json", get(get_overview))
         .route("/api/functions/{ip}", get(get_function))
         .with_state(db);
     let listener = tokio::net::TcpListener::bind("127.0.0.1:3000").await?;

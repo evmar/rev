@@ -33,3 +33,18 @@ For production, build the frontend and serve its static files:
 npm --prefix web run build
 cargo run -- --project . web
 ```
+
+To export a static snapshot, build the frontend and choose a new output directory:
+
+```sh
+npm --prefix web run build -- --outDir /path/to/site
+cargo run -- --project /path/to/project web --export /path/to/site
+```
+
+Upload the contents of that directory to a static host. It contains the frontend,
+`api/overview.json`, and `api/functions/{ip}.json`. The live server uses these same
+URLs, so the frontend needs no mode switch. Relative URLs and hash navigation
+also support hosting under a subdirectory. Serve the export over HTTP rather
+than opening `index.html` directly. The build writes the frontend directly to the
+export path; the Rust command adds the JSON files. The `api` directory must not
+already exist when running the export.

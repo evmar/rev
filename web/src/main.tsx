@@ -53,7 +53,7 @@ function OverviewView() {
 
     async function loadOverview() {
       try {
-        const response = await fetch('/api/overview', {
+        const response = await fetch('api/overview.json', {
           signal: controller.signal,
         });
         if (!response.ok) {
@@ -109,7 +109,7 @@ function FunctionView({ ip }: { ip: string }) {
     const controller = new AbortController();
     async function loadFunction() {
       try {
-        const response = await fetch(`/api/functions/${encodeURIComponent(ip)}`, {
+        const response = await fetch(`api/functions/${encodeURIComponent(ip)}.json`, {
           signal: controller.signal,
         });
         if (!response.ok) {

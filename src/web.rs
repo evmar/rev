@@ -126,8 +126,6 @@ async fn get_function(
 #[derive(serde::Serialize, ts_rs::TS)]
 #[ts(export, export_to = "../web/src/bindings/")]
 struct Overview<'a> {
-    #[ts(type = "string")]
-    project_path: &'a Path,
     mem_size: usize,
     exe: &'a EXE,
     functions: Vec<FunctionOverview<'a>>,
@@ -144,7 +142,6 @@ struct FunctionOverview<'a> {
 
 fn overview(db: &DB) -> Overview<'_> {
     Overview {
-        project_path: &db.project_path,
         mem_size: db.mem.len(),
         exe: &db.exe,
         functions: db

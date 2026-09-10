@@ -2,4 +2,4 @@
 import type { EXE } from "./EXE";
 import type { FunctionOverview } from "./FunctionOverview";
 
-export type Overview = { project_path: string, mem_size: number, exe: EXE, functions: Array<FunctionOverview>, };
+export type Overview = { mem_size: number, exe: EXE, functions: Array<FunctionOverview>, };

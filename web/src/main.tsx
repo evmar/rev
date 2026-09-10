@@ -8,12 +8,10 @@ import type { XRefDetail } from './bindings/XRefDetail';
 function OverviewDetails({ overview }: { overview: Overview }) {
   return (
     <dl class="panel">
-      <dt>Project path</dt>
-      <dd>{overview.project_path}</dd>
-      <dt>Memory size</dt>
-      <dd>{overview.mem_size.toLocaleString()} bytes</dd>
       <dt>Executable</dt>
       <dd>{overview.exe.filename}</dd>
+      <dt>Memory size</dt>
+      <dd>{overview.mem_size.toLocaleString()} bytes</dd>
       <dt>Entry point</dt>
       <dd><code>{overview.exe.entry_point}</code></dd>
     </dl>

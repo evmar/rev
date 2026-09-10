@@ -14,6 +14,11 @@ main {
   margin-inline: auto;
 }
 
+pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 .panel {
   margin-bottom: 20px;
   padding: 16px;

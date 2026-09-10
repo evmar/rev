@@ -1,7 +1,7 @@
 name = "load_overlay"
 desc = "Loads an executable overlay into allocated memory"
 details = "Opens the specified file to check its size, closes it, and calls a memory allocation routine. It then configures an EXEC overlay parameter block at CS:[SI] with the allocated segment and invokes DOS function 4B03h (Load Overlay) to load the file into memory."
-xrefs = ["expand_memory_block@0823:0de3"]
+callees = ["expand_memory_block@0823:0de3"]
 ip = "0823:0c12"
 
 [[params]]

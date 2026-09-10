@@ -20,7 +20,7 @@ struct FunctionDetail<'a> {
     name: Option<&'a str>,
     desc: Option<&'a str>,
     details: Option<&'a str>,
-    xrefs: Option<Vec<String>>,
+    callees: Option<Vec<String>>,
     params: &'a Option<Vec<crate::ai::Var>>,
     ret: &'a Option<crate::ai::Var>,
     blocks: Vec<BlockDetail>,
@@ -49,8 +49,8 @@ fn function_detail(func: &crate::function::Function) -> FunctionDetail<'_> {
         name: func.name.as_deref(),
         desc: func.desc.as_deref(),
         details: func.details.as_deref(),
-        xrefs: func
-            .xrefs
+        callees: func
+            .callees
             .as_ref()
             .map(|refs| refs.iter().map(ToString::to_string).collect()),
         params: &func.params,

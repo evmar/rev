@@ -1,7 +1,7 @@
 name = "parse_cmdline"
 desc = "Parses and processes command-line arguments from the DOS Program Segment Prefix (PSP)."
 details = "Saves registers and sets both DS and ES to the PSP segment stored at cs:[8Eh]. Checks the command-line tail length byte at PSP offset 80h; if arguments are present, it advances DI to offset 81h and invokes toupper_string, parse_cmdline_p_switch, and parse_cmdline_d_switch before restoring the saved registers and returning."
-xrefs = ["parse_cmdline_d_switch@0823:0b87", "parse_cmdline_p_switch@0823:0bb2", "toupper_string@0823:0b54"]
+callees = ["parse_cmdline_d_switch@0823:0b87", "parse_cmdline_p_switch@0823:0bb2", "toupper_string@0823:0b54"]
 ip = "0823:0be7"
 
 ---

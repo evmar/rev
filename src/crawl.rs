@@ -15,10 +15,10 @@ pub struct Args {}
 pub async fn run(db: &mut DB, _args: Args) -> anyhow::Result<()> {
     let mut queue = VecDeque::new();
     for func in db.functions.values() {
-        let Some(xrefs) = &func.xrefs else {
+        let Some(callees) = &func.callees else {
             continue;
         };
-        for xref in xrefs.iter() {
+        for xref in callees.iter() {
             let ip = match xref {
                 XRef::External(_, ip) => *ip,
                 _ => continue,
@@ -39,7 +39,7 @@ pub async fn run(db: &mut DB, _args: Args) -> anyhow::Result<()> {
         };
         println!("visiting {ip}");
         let func = dis_func(db, ip);
-        xref::update_xrefs(func, |ip| XRef::External(None, ip));
+        xref::update_callees(func, |ip| XRef::External(None, ip));
         ai::analyze(func).await?;
         db.write()?;
     }

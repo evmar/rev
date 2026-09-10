@@ -7,7 +7,7 @@ pub struct Function {
     pub name: Option<String>,
     pub desc: Option<String>,
     pub details: Option<String>,
-    pub xrefs: Option<Vec<XRef>>,
+    pub callees: Option<Vec<XRef>>,
 
     pub params: Option<Vec<Var>>,
     pub ret: Option<Var>,

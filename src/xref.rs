@@ -11,14 +11,14 @@ pub fn update_all_xrefs(db: &mut DB) {
         .filter_map(|func| Some((func.ip, func.name.as_ref()?.clone())))
         .collect::<HashMap<_, _>>();
     for func in db.functions.values_mut() {
-        update_xrefs(func, |ip| {
+        update_callees(func, |ip| {
             let name = names.get(&ip).cloned();
             XRef::External(name, ip)
         });
     }
 }
 
-pub fn update_xrefs(func: &mut Function, xref: impl Fn(SegOfs) -> XRef) {
+pub fn update_callees(func: &mut Function, xref: impl Fn(SegOfs) -> XRef) {
     let mut ip_to_block = HashMap::new();
     let mut block_to_label = Vec::new();
     for (i, block) in func.blocks.iter().enumerate() {
@@ -52,7 +52,7 @@ pub fn update_xrefs(func: &mut Function, xref: impl Fn(SegOfs) -> XRef) {
     let mut xrefs = all_xrefs.into_iter().collect::<Vec<_>>();
     if !xrefs.is_empty() {
         xrefs.sort();
-        func.xrefs = Some(xrefs);
+        func.callees = Some(xrefs);
     }
 }
 

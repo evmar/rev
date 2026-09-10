@@ -2,4 +2,4 @@
 import type { BlockDetail } from "./BlockDetail";
 import type { Var } from "./Var";
 
-export type FunctionDetail = { ip: string, name: string | null, desc: string | null, details: string | null, callers: Array<string> | null, callees: Array<string> | null, params: Array<Var> | null, ret: Var | null, blocks: Array<BlockDetail>, };
+export type FunctionDetail = { ip: string, name: string | null, desc: string | null, details: string | null, callers: Array<[string, string]> | null, callees: Array<[string, string]> | null, params: Array<Var> | null, ret: Var | null, blocks: Array<BlockDetail>, };

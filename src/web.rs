@@ -11,7 +11,7 @@ use axum_vite::ViteConfig;
 use tokio::sync::RwLock;
 use tower_http::services::ServeDir;
 
-use crate::{db::DB, load::EXE};
+use crate::{db::DB, load::EXE, xref::XRef};
 
 #[derive(serde::Serialize, ts_rs::TS)]
 #[ts(export, export_to = "../web/src/bindings/")]
@@ -20,8 +20,8 @@ struct FunctionDetail<'a> {
     name: Option<&'a str>,
     desc: Option<&'a str>,
     details: Option<&'a str>,
-    callers: Option<Vec<String>>,
-    callees: Option<Vec<String>>,
+    callers: Option<Vec<(String, String)>>,
+    callees: Option<Vec<(String, String)>>,
     params: &'a Option<Vec<crate::ai::Var>>,
     ret: &'a Option<crate::ai::Var>,
     blocks: Vec<BlockDetail>,
@@ -44,6 +44,16 @@ struct InstructionDetail {
     jmp: Option<String>,
 }
 
+fn function_ref(xref: &XRef) -> Option<(String, String)> {
+    match xref {
+        XRef::External(name, ip) => {
+            let ip = ip.to_string();
+            Some((name.clone().unwrap_or_else(|| ip.clone()), ip))
+        }
+        _ => None,
+    }
+}
+
 fn function_detail(func: &crate::function::Function) -> FunctionDetail<'_> {
     FunctionDetail {
         ip: func.ip.to_string(),
@@ -53,11 +63,11 @@ fn function_detail(func: &crate::function::Function) -> FunctionDetail<'_> {
         callers: func
             .callers
             .as_ref()
-            .map(|refs| refs.iter().map(ToString::to_string).collect()),
+            .map(|refs| refs.iter().filter_map(function_ref).collect()),
         callees: func
             .callees
             .as_ref()
-            .map(|refs| refs.iter().map(ToString::to_string).collect()),
+            .map(|refs| refs.iter().filter_map(function_ref).collect()),
         params: &func.params,
         ret: &func.ret,
         blocks: func

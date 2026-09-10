@@ -89,6 +89,19 @@ function OverviewView() {
   );
 }
 
+function FunctionRefs({ refs }: { refs: FunctionDetail['callers'] }) {
+  if (!refs?.length) return <>None</>;
+
+  return <>{refs.map(([name, ip], index) => {
+    return <span key={index}>
+      {index > 0 && ', '}
+      {ip ? (
+        <a href={`#/functions/${encodeURIComponent(ip)}`}>{name}</a>
+      ) : name}
+    </span>;
+  })}</>;
+}
+
 function FunctionView({ ip }: { ip: string }) {
   const [func, setFunction] = useState<FunctionDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -128,9 +141,9 @@ function FunctionView({ ip }: { ip: string }) {
             <p>{func.details}</p>
             <dl>
               <dt>Called by</dt>
-              <dd>{func.callers?.join(', ') || 'None'}</dd>
+              <dd><FunctionRefs refs={func.callers} /></dd>
               <dt>Calls</dt>
-              <dd>{func.callees?.join(', ') || 'None'}</dd>
+              <dd><FunctionRefs refs={func.callees} /></dd>
               <dt>Parameters</dt>
               <dd>{func.params?.length ? <ul>{func.params.map((param, index) => (
                 <li key={index}><code>{param.name}: {param.type}</code> — {param.value} {param.desc}</li>

@@ -1,0 +1,1 @@
+{"addr":"0823:238c","name":"dma_port_clear_ff","desc":"DMA clear flip-flop register I/O port (0x0C for 8-bit DMA controller)","typ":"u16","functions":[{"ip":"0823:0d0e","name":"dma_setup_transfer","desc":"Program 8237 DMA controller for 8-bit sound transfer"}]}

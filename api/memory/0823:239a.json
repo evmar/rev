@@ -1,0 +1,1 @@
+{"addr":"0823:239a","name":"sb_saved_ax","desc":"Temporary storage for AX register during driver operations","typ":"u16","functions":[{"ip":"0823:1071","name":"sb_driver_init","desc":"Initialize the Sound Blaster driver and hook interrupt 0xF3"},{"ip":"0823:11bb","name":"sb_flush_and_wait","desc":"Flush audio buffer and wait for Sound Blaster playback completion"}]}

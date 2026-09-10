@@ -1,0 +1,1 @@
+{"addr":"0823:0c3d","name":"sb_irq_vector","desc":"Sound Blaster interrupt vector number (e.g. 7 for IRQ 7, 0x6A for IRQ 10)","typ":"u8","functions":[]}

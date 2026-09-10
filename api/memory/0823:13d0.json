@@ -1,0 +1,1 @@
+{"addr":"0823:13d0","name":"echo_write_idx","desc":"Echo delay buffer write index","typ":"u16","functions":[{"ip":"0823:11f1","name":"apply_echo_sample","desc":"Apply echo/delay effect to an 8-bit PCM audio sample"}]}

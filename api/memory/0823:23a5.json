@@ -1,0 +1,1 @@
+{"addr":"0823:23a5","name":"sb_dma","desc":"Sound Blaster DMA channel parsed from BLASTER environment variable (e.g. 1)","typ":"u8","functions":[{"ip":"0823:1071","name":"sb_driver_init","desc":"Initialize the Sound Blaster driver and hook interrupt 0xF3"}]}

@@ -1,0 +1,1 @@
+{"addr":"0823:0c40","name":"sb_buffer_len","desc":"Total length of sound buffer in bytes (passed into playback function in BX)","typ":"u16","functions":[{"ip":"0823:0f49","name":"sb_play_sound_buffer","desc":"Start playing an audio buffer via Sound Blaster DMA"}]}

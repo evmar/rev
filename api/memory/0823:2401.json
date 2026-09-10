@@ -1,0 +1,1 @@
+{"addr":"0823:2401","name":"blaster_val_buf","desc":"Buffer storing the value string of BLASTER environment variable, terminated by CR LF '$'","typ":"[u8; 80]","functions":[]}

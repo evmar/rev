@@ -1,0 +1,1 @@
+{"addr":"0823:238a","name":"dma_port_mask","desc":"DMA mask register I/O port (0x0A for 8-bit DMA channels 0-3)","typ":"u16","functions":[{"ip":"0823:0d0e","name":"dma_setup_transfer","desc":"Program 8237 DMA controller for 8-bit sound transfer"}]}

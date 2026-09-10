@@ -1,6 +1,7 @@
 name = "expand_memory_block"
 desc = "Expands the heap or DOS memory block by a requested byte size."
 details = "Converts the requested byte size into paragraphs and attempts to resize the DOS memory block using INT 21h Function 4Ah, or delegates to an installed memory hook if present. On success, it updates internal memory tracking structures and returns a far pointer to the memory; on failure, it returns NULL (DX:AX = 0)."
+callers = ["load_overlay@0823:0c12"]
 callees = ["0823:0dc7", "unknown:mem"]
 ip = "0823:0de3"
 

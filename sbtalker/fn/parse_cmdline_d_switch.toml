@@ -1,6 +1,7 @@
 name = "parse_cmdline_d_switch"
 desc = "Parses a command-line string to locate the '/D' switch and extracts up to an 8-character argument immediately following it into an internal buffer."
 details = "Searches the string referenced by ES:DI for the forward slash ('/') character across CX bytes using REPNE SCASB. When found, it inspects the subsequent character to check if it matches 'D'. If matched, it reads up to 8 characters following '/D' until it encounters another '/' switch character or runs out of input characters, copying each character into a buffer located at CS:01AAh."
+callers = ["parse_cmdline@0823:0be7"]
 ip = "0823:0b87"
 
 [[params]]

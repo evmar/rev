@@ -1,6 +1,7 @@
 name = "init_heap_bounds"
 desc = "Initializes memory management variables and heap size"
 details = "Calculates the base segment for the heap by adding the program's paragraph size to its load segment. It determines available paragraphs up to the stack segment, rounds the capacity to 16KB blocks, and records the segment base, paragraph count, block count, and 32-bit total byte capacity into header variables in the code segment."
+callers = ["entry_point@0823:0cec"]
 ip = "0823:0943"
 
 ---

@@ -1,6 +1,7 @@
 name = "dispatch_command"
 desc = "Dispatches driver/subsystem API commands based on a function index in AL"
 details = "Saves caller context and stack pointers, then routes execution based on the function code passed in AL. Functions 0Ch and 0Dh are handled as parameter-unstacking routines that retrieve far pointers into internal storage before returning; all other commands index into an indirect far jump table."
+callers = ["entry_point@0823:0cec"]
 callees = ["unknown:mem"]
 ip = "0823:0f5b"
 

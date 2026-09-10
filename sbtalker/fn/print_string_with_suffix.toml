@@ -1,6 +1,7 @@
 name = "print_string_with_suffix"
 desc = "Prints a '$'-terminated string passed via DS:DX, followed by a fixed suffix string at DS:[01B9h]."
 details = "Calls DOS INT 21h function 09h to output the '$'-terminated string passed in DX. It then loads DX with the offset 01B9h and invokes INT 21h function 09h again to print a secondary string (such as a newline or standard message trailer) before returning."
+callers = ["load_driver@0823:0c86", "entry_point@0823:0cec"]
 ip = "0823:0c79"
 
 [[params]]

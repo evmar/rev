@@ -1,6 +1,7 @@
 name = "toupper_string"
 desc = "Converts an ASCII string of length CX pointed to by DI to uppercase in-place."
 details = "Iterates through CX bytes of an ASCII string buffer pointed to by DI. For each byte, checks if it falls within the lowercase ASCII range ('a'-'z', 0x61 to 0x7A) and masks it with 0x5F to convert to uppercase. Preserves both DI and CX registers on return."
+callers = ["parse_cmdline@0823:0be7"]
 ip = "0823:0b54"
 
 [[params]]

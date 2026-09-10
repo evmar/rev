@@ -10,15 +10,21 @@ pub fn update_all_xrefs(db: &mut DB) {
         .values()
         .filter_map(|func| Some((func.ip, func.name.as_ref()?.clone())))
         .collect::<HashMap<_, _>>();
+    let mut callers = HashMap::<SegOfs, Vec<XRef>>::new();
     for func in db.functions.values_mut() {
+        let xref = XRef::External(func.name.clone(), func.ip);
         update_callees(func, |ip| {
+            callers.entry(ip).or_default().push(xref.clone());
             let name = names.get(&ip).cloned();
             XRef::External(name, ip)
         });
     }
+    for func in db.functions.values_mut() {
+        func.callers = callers.remove(&func.ip);
+    }
 }
 
-pub fn update_callees(func: &mut Function, xref: impl Fn(SegOfs) -> XRef) {
+pub fn update_callees(func: &mut Function, mut xref: impl FnMut(SegOfs) -> XRef) {
     let mut ip_to_block = HashMap::new();
     let mut block_to_label = Vec::new();
     for (i, block) in func.blocks.iter().enumerate() {
@@ -59,7 +65,7 @@ pub fn update_callees(func: &mut Function, xref: impl Fn(SegOfs) -> XRef) {
 fn xref_from_instr(
     ip: SegOfs,
     instr: &iced_x86::Instruction,
-    xref: impl Fn(SegOfs) -> XRef,
+    mut xref: impl FnMut(SegOfs) -> XRef,
 ) -> Option<XRef> {
     use iced_x86::FlowControl::*;
     match instr.flow_control() {

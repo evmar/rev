@@ -1,6 +1,7 @@
 name = "backup_ivt"
 desc = "Backs up the entire 1024-byte Interrupt Vector Table (IVT) into an internal buffer."
 details = "Preserves caller registers on the stack, sets DS:SI to point to the base of the real-mode IVT at 0000:0000 and ES:DI to internal buffer at CS:03FC, copies 200h words (1024 bytes) covering all 256 interrupt vectors, restores registers, and returns."
+callers = ["entry_point@0823:0cec"]
 ip = "0823:09e5"
 
 ---

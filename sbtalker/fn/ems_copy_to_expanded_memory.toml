@@ -1,6 +1,7 @@
 name = "ems_copy_to_expanded_memory"
 desc = "Copies a block of conventional memory into an EMS expanded memory handle page by page."
 details = "Saves the current EMS page map state via INT 67h, AH=47h. It then iterates over the specified number of logical pages (cs:[9Ah]), mapping each logical page into physical frame 0 (segment at cs:[9Ch]) and copying 16 KB (2000h words) from the conventional memory source buffer (cs:[09h]). Finally, it restores the EMS page map state via INT 67h, AH=48h and updates an internal tracker at cs:[90h]."
+callers = ["ems_init@0823:0aa0"]
 ip = "0823:0983"
 
 ---

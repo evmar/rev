@@ -1,6 +1,7 @@
 name = "parse_hex_digit"
 desc = "Converts an ASCII hexadecimal character to its numeric value (0-15)"
 details = "This routine takes an ASCII character in AL and checks if it falls within the ranges '0'-'9' or uppercase 'A'-'F'. If valid, it converts the character to its 4-bit numeric value (0-15) in AL and returns AH = 0. If the input is not a valid uppercase hex digit, AH is set to 1 to signal an error."
+callers = ["parse_cmdline_p_switch@0823:0bb2"]
 ip = "0823:0b6a"
 
 [[params]]

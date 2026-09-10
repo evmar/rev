@@ -1,6 +1,7 @@
 name = "init_callback_ptr"
 desc = "Initializes a callback/handler pointer and copies a state variable"
 details = "Stores the far address 0823:0AE2 into code-segment variables at cs:[01D2h] and cs:[01D4h]. It then copies the 16-bit word located at cs:[01B2h] into cs:[01D6h]."
+callers = ["entry_point@0823:0cec"]
 ip = "0823:0b3c"
 
 ---

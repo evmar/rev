@@ -127,8 +127,10 @@ function FunctionView({ ip }: { ip: string }) {
             <p>{func.desc ?? 'No description.'}</p>
             <p>{func.details}</p>
             <dl>
-              <dt>Cross-references</dt>
-              <dd>{func.xrefs?.join(', ') || 'None'}</dd>
+              <dt>Called by</dt>
+              <dd>{func.callers?.join(', ') || 'None'}</dd>
+              <dt>Calls</dt>
+              <dd>{func.callees?.join(', ') || 'None'}</dd>
               <dt>Parameters</dt>
               <dd>{func.params?.length ? <ul>{func.params.map((param, index) => (
                 <li key={index}><code>{param.name}: {param.type}</code> — {param.value} {param.desc}</li>

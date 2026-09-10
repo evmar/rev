@@ -31,14 +31,15 @@ desc = "Parsed 16-bit hexadecimal value (also written to CS:[01B2h]), or 0 on fa
 0823:0bb6 cld
 
 ; Scan input string for '/' character; exit if end of buffer is reached
+@label scan_slash
 0823:0bb7 mov al,2Fh
 0823:0bb9 repne scasb
-@jmp '7
+@jmp 'done@7
 0823:0bbb jcxz 0BDFh
 
 ; Check if character following '/' is 'P'; continue scanning if not
 0823:0bbd cmp byte ptr [di],50h
-@jmp '1
+@jmp 'scan_slash@1
 0823:0bc0 jne short 0BB7h
 
 ; Skip 'P' and set up loop counter to parse 4 hexadecimal digits
@@ -48,25 +49,27 @@ desc = "Parsed 16-bit hexadecimal value (also written to CS:[01B2h]), or 0 on fa
 0823:0bc8 mov cx,4
 
 ; Fetch next character and convert hex ASCII to numeric value; abort on error
+@label parse_digit_loop
 0823:0bcb mov al,[di]
 0823:0bcd inc di
 @jmp parse_hex_digit@0823:0b6a
 0823:0bce call 0B6Ah
 0823:0bd1 cmp ah,0
-@jmp '7
+@jmp 'done@7
 0823:0bd4 jne short 0BDFh
 
 ; Shift current 16-bit value left by 4 bits and accumulate new nibble
 0823:0bd6 shl bx,cl
 0823:0bd8 add bx,ax
 0823:0bda dec dx
-@jmp '4
+@jmp 'parse_digit_loop@4
 0823:0bdb jne short 0BCBh
 
-@jmp '7
+@jmp 'done@7
 0823:0bdd jmp short 0BDFh
 
 ; Store the parsed 16-bit result into CS:[01B2h], restore registers, and return
+@label done
 0823:0bdf mov cs:[1B2h],bx
 0823:0be4 pop cx
 0823:0be5 pop di

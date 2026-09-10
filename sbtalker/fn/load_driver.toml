@@ -16,7 +16,7 @@ ip = "0823:0c86"
 ; Check if a driver name argument is present at cs:[01AAh]; skip if it starts with a space
 0823:0c8c mov bx,1AAh
 0823:0c8f cmp byte ptr cs:[bx],20h
-@jmp '7
+@jmp 'do_load@7
 0823:0c93 je short 0CCFh
 
 ; Copy up to 8 characters of the driver name into path buffer at cs:[01B9h]
@@ -24,22 +24,24 @@ ip = "0823:0c86"
 0823:0c98 add si,4
 0823:0c9b mov cx,8
 
+@label copy_name_loop
 0823:0c9e mov al,cs:[bx]
 0823:0ca1 cmp al,20h
-@jmp '5
+@jmp 'append_extension@5
 0823:0ca3 je short 0CB0h
 
 0823:0ca5 cmp al,0Dh
-@jmp '5
+@jmp 'append_extension@5
 0823:0ca7 je short 0CB0h
 
 0823:0ca9 mov cs:[si],al
 0823:0cac inc si
 0823:0cad inc bx
-@jmp '2
+@jmp 'copy_name_loop@2
 0823:0cae loop 0C9Eh
 
 ; Append '.DRV' extension and null-pad the remainder of the filename buffer
+@label append_extension
 0823:0cb0 mov byte ptr cs:[si],2Eh
 0823:0cb4 inc si
 0823:0cb5 mov byte ptr cs:[si],44h
@@ -49,18 +51,21 @@ ip = "0823:0c86"
 0823:0cbf mov byte ptr cs:[si],56h
 0823:0cc3 inc cx
 
+; Null-pad remaining characters in filename buffer
+@label null_pad_loop
 0823:0cc4 inc si
 0823:0cc5 mov byte ptr cs:[si],0
 0823:0cc9 dec cx
 0823:0cca cmp cx,0
-@jmp '6
+@jmp 'null_pad_loop@6
 0823:0ccd ja short 0CC4h
 
 ; Call driver loader routine using path buffer at cs:[01B5h]
+@label do_load
 0823:0ccf mov si,1B5h
 @jmp load_overlay@0823:0c12
 0823:0cd2 call 0C12h
-@jmp '9
+@jmp 'load_success@9
 0823:0cd5 jae short 0CE5h
 
 ; On load failure, print error message and exit program with code 1
@@ -73,6 +78,7 @@ ip = "0823:0c86"
 0823:0ce3 int 21h
 
 ; Restore registers and return on success
+@label load_success
 0823:0ce5 pop es
 0823:0ce6 pop ds
 0823:0ce7 pop ax

@@ -1,0 +1,1 @@
+{"addr":"0823:0c1f","name":"sb_old_irq_vector","desc":"Saved old interrupt vector (far pointer offset:segment) for Sound Blaster IRQ","typ":"u32","functions":[]}

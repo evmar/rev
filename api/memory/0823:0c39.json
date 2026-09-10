@@ -1,0 +1,1 @@
+{"addr":"0823:0c39","name":"sb_dma_end_offset","desc":"End physical offset (bits 0-15) of playback buffer (linear start + length - 1)","typ":"u16","functions":[]}

@@ -1,0 +1,1 @@
+{"addr":"0823:0c42","name":"sb_buffer_offset","desc":"Offset in caller's segment (or CS) of sound buffer to play","typ":"u16","functions":[{"ip":"0823:0f49","name":"sb_play_sound_buffer","desc":"Start playing an audio buffer via Sound Blaster DMA"}]}

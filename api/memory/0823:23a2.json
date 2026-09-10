@@ -1,0 +1,1 @@
+{"addr":"0823:23a2","name":"sb_base_port","desc":"Sound Blaster base I/O port address parsed from BLASTER environment variable (e.g. 0x220)","typ":"u16","functions":[]}

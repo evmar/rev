@@ -1,0 +1,1 @@
+{"addr":"0823:2388","name":"sb_dma_mask_reg","desc":"DMA single channel mask port (e.g. 0x0A or similar DMA port register)","typ":"u8","functions":[{"ip":"0823:0d0e","name":"dma_setup_transfer","desc":"Program 8237 DMA controller for 8-bit sound transfer"},{"ip":"0823:1071","name":"sb_driver_init","desc":"Initialize the Sound Blaster driver and hook interrupt 0xF3"}]}

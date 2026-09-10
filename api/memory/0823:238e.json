@@ -1,0 +1,1 @@
+{"addr":"0823:238e","name":"dma_port_mode","desc":"DMA mode register I/O port (0x0B for 8-bit DMA controller)","typ":"u16","functions":[{"ip":"0823:0d0e","name":"dma_setup_transfer","desc":"Program 8237 DMA controller for 8-bit sound transfer"}]}

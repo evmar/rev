@@ -1,0 +1,1 @@
+{"addr":"0823:061f","name":"audio_buffer_2","desc":"Second Sound Blaster PCM audio ping-pong buffer (0x600 bytes)","typ":"[u8; 1536]","functions":[]}

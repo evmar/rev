@@ -1,0 +1,1 @@
+{"addr":"0823:0c30","name":"sb_dma_cur_offset","desc":"Physical DMA offset (bits 0-15) for current audio buffer chunk","typ":"u16","functions":[]}

@@ -41,7 +41,7 @@ impl DB {
             db.functions.insert(func.ip, func);
         }
 
-        xref::update_xrefs(&mut db);
+        xref::update_all_xrefs(&mut db);
 
         Ok(db)
     }

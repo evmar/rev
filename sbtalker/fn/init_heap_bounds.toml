@@ -1,0 +1,43 @@
+name = "init_heap_bounds"
+desc = "Initializes memory management variables and heap size"
+details = "Calculates the base segment for the heap by adding the program's paragraph size to its load segment. It determines available paragraphs up to the stack segment, rounds the capacity to 16KB blocks, and records the segment base, paragraph count, block count, and 32-bit total byte capacity into header variables in the code segment."
+ip = "0823:0943"
+
+---
+0823:0943 push ds
+0823:0944 push bx
+0823:0945 push ax
+0823:0946 push si
+; Calculate end of program segment (CS + paragraph size of program image)
+0823:0947 mov ax,823h
+0823:094a mov bx,1123h
+0823:094d mov cl,4
+0823:094f shr bx,cl
+0823:0951 inc bx
+0823:0952 add ax,bx
+; Store heap base segment at cs:[0x0009]
+0823:0954 mov cs:[9],ax
+; Calculate available paragraphs between heap base and stack (plus 0x180 paragraphs)
+0823:0958 mov bx,ss
+0823:095a sub bx,ax
+0823:095c add bx,180h
+; Store available paragraphs at cs:[0x0092]
+0823:0960 mov cs:[92h],bx
+; Convert paragraphs to 16KB blocks (shr 10, rounded up)
+0823:0965 mov ax,bx
+0823:0967 mov cl,0Ah
+0823:0969 shr ax,cl
+0823:096b inc ax
+; Store block count at cs:[0x009A]
+0823:096c mov cs:[9Ah],ax
+; Compute total heap size in bytes (blocks * 0x4000) and store 32-bit result at cs:[0x0000]
+0823:0970 mov bx,4000h
+0823:0973 mul bx
+0823:0975 mov cs:[0],ax
+0823:0979 mov cs:[2],dx
+0823:097e pop si
+0823:097f pop ax
+0823:0980 pop bx
+0823:0981 pop ds
+0823:0982 ret
+

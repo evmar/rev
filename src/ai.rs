@@ -46,15 +46,18 @@ pub async fn run(db: &mut DB, args: Args) -> anyhow::Result<()> {
     let Some(func) = db.functions.get_mut(&args.addr) else {
         anyhow::bail!("no function {}", args.addr);
     };
+    analyze(func).await?;
+    db.write()?;
+    Ok(())
+}
 
+pub async fn analyze(func: &mut Function) -> anyhow::Result<()> {
     let response = call(func).await?;
 
     let merged = merge(func, response);
     if merged == 0 {
         anyhow::bail!("no comments found");
     }
-
-    db.write()?;
     Ok(())
 }
 

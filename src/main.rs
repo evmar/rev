@@ -3,6 +3,7 @@ use std::path::PathBuf;
 use crate::db::DB;
 
 mod ai;
+mod crawl;
 mod db;
 mod dis;
 mod function;
@@ -17,6 +18,7 @@ enum Command {
     Init(init::Args),
     Dis(dis::Args),
     AI(ai::Args),
+    Crawl(crawl::Args),
     RoundTrip(RoundTrip),
     Web(web::Args),
 }
@@ -60,6 +62,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Command::RoundTrip(_) => {
             let db = DB::load(project)?;
             db.write()?;
+            Ok(())
+        }
+        Command::Crawl(args) => {
+            let mut db = DB::load(project)?;
+            crawl::run(&mut db, args).await?;
             Ok(())
         }
     }

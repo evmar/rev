@@ -1,0 +1,49 @@
+name = "ems_init"
+desc = "Initializes Expanded Memory (EMS) and allocates pages"
+details = "Checks for the presence of an Expanded Memory Manager (EMM) by inspecting the device header name at the INT 67h interrupt handler offset 000Ah. If valid, retrieves the EMS page frame address, allocates the required number of logical pages specified at [009Ah], stores the allocated handle and page frame segment, and flags EMS as active."
+xrefs = ["ems_copy_to_expanded_memory@0823:0983"]
+ip = "0823:0aa0"
+
+---
+; Get interrupt vector for INT 67h (EMS driver) into ES:BX
+0823:0aa0 mov ax,3567h
+0823:0aa3 int 21h
+; Check for "EMMXXXX0" signature at ES:000Ah
+0823:0aa5 mov di,0Ah
+0823:0aa8 mov si,823h
+0823:0aab mov ds,si
+0823:0aad mov si,0A0h
+0823:0ab0 mov cx,8
+0823:0ab3 cld
+0823:0ab4 repe cmpsb
+; Jump to exit if EMS driver not found
+@jmp 'done@4
+0823:0ab6 jne short 0AE1h
+
+; INT 67h, AH=41h: Get page frame segment address
+0823:0ab8 mov ah,41h
+0823:0aba int 67h
+0823:0abc or ah,ah
+@jmp 'done@4
+0823:0abe jne short 0AE1h
+
+; Save page frame segment
+0823:0ac0 mov cs:[9Ch],bx
+; INT 67h, AH=43h: Allocate requested number of EMS pages
+0823:0ac5 mov bx,cs:[9Ah]
+0823:0aca mov ax,4300h
+0823:0acd int 67h
+0823:0acf or ah,ah
+@jmp 'done@4
+0823:0ad1 jne short 0AE1h
+
+; Save EMM handle and set initialized flag
+0823:0ad3 mov cs:[9Eh],dx
+0823:0ad8 mov byte ptr cs:[1CBh],1
+; Map initial EMS pages or configure buffers
+@jmp ems_copy_to_expanded_memory@0823:0983
+0823:0ade call 0983h
+
+@label done
+0823:0ae1 ret
+

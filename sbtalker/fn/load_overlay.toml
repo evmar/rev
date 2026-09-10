@@ -1,0 +1,93 @@
+name = "load_overlay"
+desc = "Loads an executable overlay into allocated memory"
+details = "Opens the specified file to check its size, closes it, and calls a memory allocation routine. It then configures an EXEC overlay parameter block at CS:[SI] with the allocated segment and invokes DOS function 4B03h (Load Overlay) to load the file into memory."
+xrefs = ["expand_memory_block@0823:0de3"]
+ip = "0823:0c12"
+
+[[params]]
+name = "desc_ptr"
+value = "si"
+type = "u16"
+desc = "Pointer within CS to overlay descriptor block; CS:[SI+4] contains the ASCIIZ filename, and CS:[SI] receives the overlay parameter block"
+
+[ret]
+name = "cf"
+value = "FLAGS.CF"
+type = "bool"
+desc = "Carry flag: clear on success, set on error"
+
+---
+; Get pointer to filename at CS:[SI+4]
+0823:0c12 mov ax,si
+0823:0c14 add ax,4
+0823:0c17 mov dx,ax
+; Open overlay file read-only (INT 21h, AH=3Dh)
+0823:0c19 mov ax,3D00h
+0823:0c1c push ds
+0823:0c1d push cs
+0823:0c1e pop ds
+0823:0c1f clc
+0823:0c20 int 21h
+0823:0c22 pop ds
+@jmp 'done@5
+0823:0c23 jb short 0C78h
+
+; Seek to end of file to determine file size (INT 21h, AX=4202h)
+0823:0c25 mov bx,ax
+0823:0c27 mov ax,4202h
+0823:0c2a mov cx,0
+0823:0c2d mov dx,0
+0823:0c30 int 21h
+@jmp 'done@5
+0823:0c32 jb short 0C78h
+
+; Add 0x20 bytes padding and save requested size
+0823:0c34 add ax,20h
+0823:0c37 push ax
+; Close file (INT 21h, AH=3Eh)
+0823:0c38 mov ah,3Eh
+0823:0c3a int 21h
+0823:0c3c push cs
+; Allocate memory for overlay; returns base segment in DX
+@jmp expand_memory_block@0823:0de3
+0823:0c3d call 0DE3h
+0823:0c40 cmp dx,0
+@jmp 'done@5
+0823:0c43 je short 0C78h
+
+; Record allocated segment in data segment at 1483h
+0823:0c45 push ds
+0823:0c46 mov ax,1483h
+0823:0c49 mov ds,ax
+0823:0c4b mov ax,dx
+0823:0c4d inc ax
+0823:0c4e mov ds:[8],ax
+0823:0c51 mov ds:[0Ch],ax
+0823:0c54 mov ds:[10h],ax
+0823:0c57 mov ds:[14h],ax
+0823:0c5a mov ds:[18h],ax
+0823:0c5d push cs
+0823:0c5e pop ds
+; Initialize overlay param block at CS:[SI]: load segment and relocation factor
+0823:0c5f mov [si],ax
+0823:0c61 mov [si+2],ax
+0823:0c64 mov ax,si
+0823:0c66 add ax,4
+0823:0c69 mov dx,ax
+0823:0c6b push si
+0823:0c6c pop bx
+0823:0c6d push cs
+0823:0c6e pop es
+; Load overlay (EXEC function 3: INT 21h, AX=4B03h)
+0823:0c6f mov ax,4B03h
+0823:0c72 int 21h
+0823:0c74 pop ds
+@jmp 'done@5
+0823:0c75 jb short 0C78h
+
+0823:0c77 clc
+
+; Return (CF set on error, cleared on success)
+@label done
+0823:0c78 ret
+

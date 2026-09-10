@@ -1,0 +1,76 @@
+name = "expand_memory_block"
+desc = "Expands the heap or DOS memory block by a requested byte size."
+details = "Converts the requested byte size into paragraphs and attempts to resize the DOS memory block using INT 21h Function 4Ah, or delegates to an installed memory hook if present. On success, it updates internal memory tracking structures and returns a far pointer to the memory; on failure, it returns NULL (DX:AX = 0)."
+xrefs = ["0823:0dc7", "mem?@0000:0000"]
+ip = "0823:0de3"
+
+[[params]]
+name = "size_bytes"
+value = "[bp+6]"
+type = "u16"
+desc = "Additional memory size requested in bytes"
+
+[ret]
+name = "ptr"
+value = "dx:ax"
+type = "*mut u8"
+desc = "Far pointer to allocated memory block or NULL (0:0) on failure"
+
+---
+; Set up stack frame
+0823:0de3 push bp
+0823:0de4 mov bp,sp
+; Convert requested byte size into paragraphs (round up and divide by 16)
+0823:0de6 mov bx,[bp+6]
+0823:0de9 add bx,0Fh
+0823:0dec mov cl,4
+0823:0dee shr bx,cl
+; Check if a custom memory management callback hook is set
+0823:0df0 mov ax,cs:[0DBDh]
+0823:0df4 or ax,cs:[0DBBh]
+@jmp 'call_hook@2
+0823:0df9 jne short 0E0Ch
+
+; Add existing size and resize block via DOS AH=4Ah (SETBLOCK)
+0823:0dfb add bx,cs:[90h]
+0823:0e00 mov ax,cs:[8Eh]
+0823:0e04 mov es,ax
+0823:0e06 mov ah,4Ah
+0823:0e08 int 21h
+@jmp 'check_status@3
+0823:0e0a jmp short 0E11h
+
+; Invoke the custom allocation/resize hook
+@jmp mem?@0000:0000
+@label call_hook
+0823:0e0c call dword ptr cs:[0DBBh]
+@jmp 'alloc_success@5
+0823:0e11 jae short 0E19h
+
+; Check carry flag (DOS error flag)
+@jmp 'alloc_success@5
+@label check_status
+0823:0e11 jae short 0E19h
+
+; Return NULL (0:0) on failure
+@label alloc_failed
+0823:0e13 sub dx,dx
+0823:0e15 sub ax,ax
+@jmp 'exit@6
+0823:0e17 jmp short 0E26h
+
+; Success handler: update internal tracking and return pointer
+@label alloc_success
+0823:0e19 mov ax,cs:[0A9h]
+0823:0e1d dec ax
+0823:0e1e mov dx,ax
+@jmp 0823:0dc7
+0823:0e20 call 0DC7h
+0823:0e23 mov ax,10h
+
+; Restore stack frame and far return
+@label exit
+0823:0e26 mov sp,bp
+0823:0e28 pop bp
+0823:0e29 retf 2
+

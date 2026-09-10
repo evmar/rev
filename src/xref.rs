@@ -4,21 +4,21 @@ use runtime::SegOfs;
 
 use crate::{db::DB, function::Function};
 
-pub fn update_xrefs(db: &mut DB) {
+pub fn update_all_xrefs(db: &mut DB) {
     let names = db
         .functions
         .values()
         .filter_map(|func| Some((func.ip, func.name.as_ref()?.clone())))
         .collect::<HashMap<_, _>>();
     for func in db.functions.values_mut() {
-        analyze(func, |ip| {
+        update_xrefs(func, |ip| {
             let name = names.get(&ip).cloned();
             XRef::External(name, ip)
         });
     }
 }
 
-fn analyze(func: &mut Function, xref: impl Fn(SegOfs) -> XRef) {
+pub fn update_xrefs(func: &mut Function, xref: impl Fn(SegOfs) -> XRef) {
     let mut ip_to_block = HashMap::new();
     let mut block_to_label = Vec::new();
     for (i, block) in func.blocks.iter().enumerate() {

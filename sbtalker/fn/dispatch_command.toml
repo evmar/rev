@@ -1,0 +1,67 @@
+name = "dispatch_command"
+desc = "Dispatches driver/subsystem API commands based on a function index in AL"
+details = "Saves caller context and stack pointers, then routes execution based on the function code passed in AL. Functions 0Ch and 0Dh are handled as parameter-unstacking routines that retrieve far pointers into internal storage before returning; all other commands index into an indirect far jump table."
+xrefs = ["mem?@0000:0000"]
+ip = "0823:0f5b"
+
+[[params]]
+name = "cmd"
+value = "al"
+type = "u8"
+desc = "Command or function number"
+
+---
+; Save caller's SS:SP
+0823:0f5b mov cs:[0E5Fh],ss
+0823:0f60 mov cs:[0E61h],sp
+; Handle command 0Ch separately
+0823:0f65 cmp al,0Ch
+@jmp 'check_cmd_0d@2
+0823:0f67 jne short 0F6Ch
+
+@jmp 'cmd_0c_handler@5
+0823:0f69 jmp near ptr 10E5h
+
+; Handle command 0Dh separately
+@label check_cmd_0d
+0823:0f6c cmp al,0Dh
+@jmp 'dispatch_table@4
+0823:0f6e jne short 0F73h
+
+@jmp 'cmd_0d_handler@6
+0823:0f70 jmp near ptr 1104h
+
+; Save return IP and segments, switch DS to driver data segment
+@label dispatch_table
+0823:0f73 pop word ptr cs:[0E51h]
+0823:0f78 mov cs:[0E53h],ds
+0823:0f7d mov cs:[0E55h],ss
+0823:0f82 mov bx,30F7h
+0823:0f85 mov ds,bx
+; Calculate jump table offset (AL * 2) and dispatch
+0823:0f87 sub ah,ah
+0823:0f89 add ax,ax
+0823:0f8b mov bx,ax
+@jmp mem?@0000:0000
+0823:0f8d jmp word ptr cs:[bx+0D8Eh]
+
+; Command 0Ch: pop a far pointer parameter from caller's stack into cs:[0DBBh], restore far return address, and retf
+@label cmd_0c_handler
+0823:10e5 pop word ptr cs:[0E63h]
+0823:10ea pop word ptr cs:[0E65h]
+0823:10ef pop word ptr cs:[0DBBh]
+0823:10f4 pop word ptr cs:[0DBDh]
+0823:10f9 push word ptr cs:[0E65h]
+0823:10fe push word ptr cs:[0E63h]
+0823:1103 retf
+
+; Command 0Dh: pop a far pointer parameter from caller's stack into cs:[0DBFh], restore far return address, and retf
+@label cmd_0d_handler
+0823:1104 pop word ptr cs:[0E63h]
+0823:1109 pop word ptr cs:[0E65h]
+0823:110e pop word ptr cs:[0DBFh]
+0823:1113 pop word ptr cs:[0DC1h]
+0823:1118 push word ptr cs:[0E65h]
+0823:111d push word ptr cs:[0E63h]
+0823:1122 retf
+

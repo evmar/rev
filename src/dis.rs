@@ -15,23 +15,23 @@ pub struct Args {
 
 pub fn run(db: &mut DB, args: Args) -> anyhow::Result<()> {
     let ip = args.addr;
-    let func = match db.functions.get_mut(&ip) {
-        Some(func) => func,
-        None => {
-            let func = Function {
-                ip,
-                ..Default::default()
-            };
-            db.functions.insert(ip, func);
-            db.functions.get_mut(&ip).unwrap()
-        }
-    };
-
-    func.blocks = gather(&db.mem, ip);
-    check_coverage(&func);
-
+    dis_func(db, ip);
     db.write()?;
     Ok(())
+}
+
+pub fn dis_func<'db>(db: &'db mut DB, ip: SegOfs) -> &'db mut Function {
+    if !db.functions.contains_key(&ip) {
+        let func = Function {
+            ip,
+            ..Default::default()
+        };
+        db.functions.insert(ip, func);
+    }
+    let func = db.functions.get_mut(&ip).unwrap();
+    func.blocks = gather(&db.mem, ip);
+    check_coverage(func);
+    func
 }
 
 fn check_coverage(func: &Function) {

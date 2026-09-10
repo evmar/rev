@@ -1,7 +1,7 @@
 name = "entry_point"
 desc = "TSR installer and program entry point"
 details = "Initializes registers, frees the program's DOS environment block, and queries INT 2Fh (AX=FBFBh) to determine whether the TSR is already installed. If already resident, it terminates via INT 21h AH=4Ch with exit code 0FBh; otherwise, it records MCB allocation details, executes configuration and hardware setup routines, hooks INT 2Fh to its resident handler, and terminates via INT 21h AH=31h to stay resident."
-xrefs = ["0823:0943", "0823:0aa0", "0823:0b3c", "0823:0f5b", "backup_ivt@0823:09e5", "load_driver@0823:0c86", "parse_cmdline@0823:0be7", "print_string_with_suffix@0823:0c79"]
+xrefs = ["backup_ivt@0823:09e5", "dispatch_command@0823:0f5b", "ems_init@0823:0aa0", "init_callback_ptr@0823:0b3c", "init_heap_bounds@0823:0943", "load_driver@0823:0c86", "parse_cmdline@0823:0be7", "print_string_with_suffix@0823:0c79"]
 ip = "0823:0cec"
 
 ---
@@ -63,13 +63,13 @@ ip = "0823:0cec"
 0823:0d4c call 0BE7h
 @jmp load_driver@0823:0c86
 0823:0d4f call 0C86h
-@jmp 0823:0f5b
+@jmp dispatch_command@0823:0f5b
 0823:0d52 call 0F5Bh
-@jmp 0823:0943
+@jmp init_heap_bounds@0823:0943
 0823:0d55 call 0943h
-@jmp 0823:0b3c
+@jmp init_callback_ptr@0823:0b3c
 0823:0d58 call 0B3Ch
-@jmp 0823:0aa0
+@jmp ems_init@0823:0aa0
 0823:0d5b call 0AA0h
 ; Hook INT 2Fh to internal handler at CS:0898h, saving the old vector
 0823:0d5e mov ax,352Fh

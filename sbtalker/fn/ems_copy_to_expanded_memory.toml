@@ -1,0 +1,67 @@
+name = "ems_copy_to_expanded_memory"
+desc = "Copies a block of conventional memory into an EMS expanded memory handle page by page."
+details = "Saves the current EMS page map state via INT 67h, AH=47h. It then iterates over the specified number of logical pages (cs:[9Ah]), mapping each logical page into physical frame 0 (segment at cs:[9Ch]) and copying 16 KB (2000h words) from the conventional memory source buffer (cs:[09h]). Finally, it restores the EMS page map state via INT 67h, AH=48h and updates an internal tracker at cs:[90h]."
+ip = "0823:0983"
+
+---
+; Save registers
+0823:0983 push ax
+0823:0984 push bx
+0823:0985 push cx
+0823:0986 push dx
+0823:0987 push ds
+0823:0988 push es
+0823:0989 push si
+0823:098a push di
+; EMS: Save page map state (AH=47h, DX=handle)
+0823:098b mov ah,47h
+0823:098d mov dx,cs:[9Eh]
+0823:0992 int 67h
+; Initialize mapping to physical page 0, logical page 0
+0823:0994 mov ah,44h
+0823:0996 mov al,0
+0823:0998 mov bx,0
+; DS = source buffer segment; ES = EMS page frame segment
+0823:099b push word ptr cs:[9]
+0823:09a0 pop ds
+0823:09a1 push word ptr cs:[9Ch]
+0823:09a6 pop es
+
+; EMS: Map logical page BX into physical page 0 (AH=44h)
+@label page_copy_loop
+0823:09a7 mov dx,cs:[9Eh]
+0823:09ac int 67h
+; Copy 16KB (2000h words) from conventional memory to EMS page
+0823:09ae mov cx,2000h
+0823:09b1 mov si,0
+0823:09b4 mov di,0
+0823:09b7 repne movsw
+; Advance source pointer by 16KB (400h paragraphs)
+0823:09b9 mov ax,ds
+0823:09bb add ax,400h
+0823:09be mov ds,ax
+; Advance to next logical page and loop until all pages copied
+0823:09c0 mov ax,4400h
+0823:09c3 inc bx
+0823:09c4 cmp bx,cs:[9Ah]
+@jmp 'page_copy_loop@1
+0823:09c9 jl short 09A7h
+
+; EMS: Restore original page map state (AH=48h, DX=handle)
+0823:09cb mov ah,48h
+0823:09cd int 67h
+; Subtract transferred size/pages (cs:[90h] -= cs:[92h])
+0823:09cf mov ax,cs:[90h]
+0823:09d3 sub ax,cs:[92h]
+0823:09d8 mov cs:[90h],ax
+; Restore registers and return
+0823:09dc pop di
+0823:09dd pop si
+0823:09de pop es
+0823:09df pop ds
+0823:09e0 pop dx
+0823:09e1 pop cx
+0823:09e2 pop bx
+0823:09e3 pop ax
+0823:09e4 ret
+

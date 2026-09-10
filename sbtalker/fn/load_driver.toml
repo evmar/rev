@@ -1,7 +1,7 @@
 name = "load_driver"
 desc = "Parses an optional driver name, formats a driver filename with a .DRV extension, and attempts to load it, exiting on failure."
 details = "Checks an internal buffer at cs:01AAh for an optional driver filename. If specified, it copies up to eight characters into the path buffer at cs:01B5h, appends the '.DRV' extension, and null-pads the remainder of the filename. It then calls an internal loader routine at 0823:0C12h; if the routine fails (indicated by CF=1), it outputs an error message and terminates the process via DOS interrupt 21h, function 4Ch."
-xrefs = ["0823:0c12", "print_string_with_suffix@0823:0c79"]
+xrefs = ["load_overlay@0823:0c12", "print_string_with_suffix@0823:0c79"]
 ip = "0823:0c86"
 
 ---
@@ -57,7 +57,7 @@ ip = "0823:0c86"
 
 ; Call driver loader routine using path buffer at cs:[01B5h]
 0823:0ccf mov si,1B5h
-@jmp 0823:0c12
+@jmp load_overlay@0823:0c12
 0823:0cd2 call 0C12h
 @jmp '9
 0823:0cd5 jae short 0CE5h

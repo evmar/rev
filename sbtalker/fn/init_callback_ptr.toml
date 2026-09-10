@@ -1,0 +1,16 @@
+name = "init_callback_ptr"
+desc = "Initializes a callback/handler pointer and copies a state variable"
+details = "Stores the far address 0823:0AE2 into code-segment variables at cs:[01D2h] and cs:[01D4h]. It then copies the 16-bit word located at cs:[01B2h] into cs:[01D6h]."
+ip = "0823:0b3c"
+
+---
+; Set up far pointer at cs:[01D2h] pointing to 0823:0AE2h
+0823:0b3c mov ax,823h
+0823:0b3f mov bx,0AE2h
+0823:0b42 mov cs:[1D2h],bx
+0823:0b47 mov cs:[1D4h],ax
+; Copy word from cs:[01B2h] to cs:[01D6h]
+0823:0b4b mov ax,cs:[1B2h]
+0823:0b4f mov cs:[1D6h],ax
+0823:0b53 ret
+

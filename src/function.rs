@@ -36,6 +36,9 @@ impl Function {
                 if let Some(jmp) = &instr.jmp {
                     writeln!(w, "@jmp {jmp}")?;
                 }
+                if let Some(mem) = &instr.memory {
+                    writeln!(w, "@mem {mem}")?;
+                }
                 writeln!(w, "{ip} {instr}", instr = instr.iced)?;
             }
             writeln!(w)?;
@@ -58,6 +61,7 @@ impl Function {
         let mut comment = String::new();
         let mut label = None;
         let mut jmp = None;
+        let mut memory = None;
         for (i, line) in body.lines().enumerate() {
             if line.is_empty() {
                 block = func.blocks.push_mut(Block {
@@ -74,6 +78,9 @@ impl Function {
                 use std::str::FromStr;
                 jmp =
                     Some(XRef::from_str(r).map_err(|err| anyhow::anyhow!("bad xref {r}: {err}"))?);
+                continue;
+            } else if let Some(r) = line.strip_prefix("@mem ") {
+                memory = Some(SegOfs::parse(r).map_err(|err| anyhow::anyhow!("{r:?} {err}"))?);
                 continue;
             } else if let Some(l) = line.strip_prefix("@label ") {
                 label = Some(l.to_owned());
@@ -100,6 +107,7 @@ impl Function {
                 },
                 label: std::mem::take(&mut label),
                 jmp: std::mem::take(&mut jmp),
+                memory: std::mem::take(&mut memory),
                 iced: instr,
             });
         }
@@ -132,5 +140,6 @@ pub struct Instr {
     pub comment: Option<String>,
     pub label: Option<String>,
     pub jmp: Option<XRef>,
+    pub memory: Option<SegOfs>,
     pub iced: iced_x86::Instruction,
 }

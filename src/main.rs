@@ -9,6 +9,7 @@ mod dis;
 mod function;
 mod init;
 mod load;
+mod memory;
 mod web;
 mod xref;
 
@@ -61,6 +62,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         Command::RoundTrip(_) => {
             let db = DB::load(project)?;
+            memory::gather(&db);
             db.write()?;
             Ok(())
         }

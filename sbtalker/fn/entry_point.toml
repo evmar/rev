@@ -1,8 +1,11 @@
 name = "entry_point"
+desc = "TSR installer and program entry point"
+details = "Initializes registers, frees the program's DOS environment block, and queries INT 2Fh (AX=FBFBh) to determine whether the TSR is already installed. If already resident, it terminates via INT 21h AH=4Ch with exit code 0FBh; otherwise, it records MCB allocation details, executes configuration and hardware setup routines, hooks INT 2Fh to its resident handler, and terminates via INT 21h AH=31h to stay resident."
 xrefs = ["0823:0943", "0823:0aa0", "0823:0b3c", "0823:0f5b", "backup_ivt@0823:09e5", "load_driver@0823:0c86", "parse_cmdline@0823:0be7", "print_string_with_suffix@0823:0c79"]
 ip = "0823:0cec"
 
 ---
+; Initialize segment registers and clear general registers
 0823:0cec mov ax,cs
 0823:0cee sub ax,10h
 0823:0cf1 mov ds,ax
@@ -15,47 +18,44 @@ ip = "0823:0cec"
 0823:0cff sub di,di
 0823:0d01 push ax
 0823:0d02 pop bp
-; get current PSP segment (AH=51h)
+; Get current PSP and free environment memory block
 0823:0d03 mov ah,51h
 0823:0d05 int 21h
 0823:0d07 mov es,bx
-; fetch environment block segment from PSP:[2Ch]
 0823:0d09 mov ax,es:[2Ch]
 0823:0d0d mov es,ax
-; free the environment's memory block (AH=49h)
 0823:0d0f mov ah,49h
 0823:0d11 int 21h
-; get current INT 2Fh vector (AX=352Fh)
+; Check if INT 2Fh is present and test if TSR is already resident via multiplex AX=FBFBh
 0823:0d13 mov ax,352Fh
 0823:0d16 int 21h
 0823:0d18 mov ax,es
 0823:0d1a cmp ax,0
-; if no INT 2Fh handler installed, go install ourselves
-@jmp '2
+@jmp 'setup_memory@2
+@label install
 0823:0d1d je short 0D28h
 
-; multiplex call AX=FBFBh: ask if our TSR is already resident
 0823:0d1f mov ax,0FBFBh
 0823:0d22 int 2Fh
 0823:0d24 or ax,ax
-; if it answered (AX=0), exit instead of installing a second copy
-@jmp '3
+; Already installed; jump to exit
+@jmp 'exit_already_installed@3
 0823:0d26 je short 0D88h
 
-; save PSP segment; PSP-1 is our own MCB
+; Inspect MCB to record block size and calculate next block segment
+@label setup_memory
 0823:0d28 mov bx,cs
 0823:0d2a sub bx,10h
 0823:0d2d mov cs:[8Eh],bx
 0823:0d32 dec bx
 0823:0d33 mov ds,bx
-; read owned block size (paragraphs) at MCB+3
 0823:0d35 mov si,3
 0823:0d38 mov dx,[si]
 0823:0d3a mov cs:[90h],dx
-; compute segment of the next MCB (end of our memory block)
 0823:0d3f inc bx
 0823:0d40 add bx,dx
 0823:0d42 mov cs:[0A9h],bx
+; Call initialization routines (IVT backup, command-line parsing, driver setup, etc.)
 0823:0d47 mov al,1
 @jmp backup_ivt@0823:09e5
 0823:0d49 call 09E5h
@@ -71,29 +71,26 @@ ip = "0823:0cec"
 0823:0d58 call 0B3Ch
 @jmp 0823:0aa0
 0823:0d5b call 0AA0h
-; fetch INT 2Fh vector again to chain to
+; Hook INT 2Fh to internal handler at CS:0898h, saving the old vector
 0823:0d5e mov ax,352Fh
 0823:0d61 int 21h
-; save original INT 2Fh vector for the resident handler
 0823:0d63 mov cs:[7Eh],es
 0823:0d68 mov cs:[80h],bx
 0823:0d6d push cs
 0823:0d6e pop ds
 0823:0d6f mov dx,898h
-; hook INT 2Fh to our handler at CS:0898
 0823:0d72 mov ax,252Fh
 0823:0d75 int 21h
-; DX = offset of the resident portion's end
+; Prepare resident size and invoke DOS TSR (INT 21h, AH=31h)
 0823:0d77 lea dx,ds:[0ABh]
-; shrink the memory block down to the resident part
 @jmp print_string_with_suffix@0823:0c79
 0823:0d7b call 0C79h
-; terminate and stay resident (AH=31h), keeping DX paragraphs
 0823:0d7e mov ax,3100h
 0823:0d81 mov dx,cs:[90h]
 0823:0d86 int 21h
 
-; terminate with exit code FBh (TSR already loaded)
+; Exit program with error code 0FBh when TSR is already loaded
+@label exit_already_installed
 0823:0d88 mov ah,4Ch
 0823:0d8a mov al,0FBh
 0823:0d8c int 21h

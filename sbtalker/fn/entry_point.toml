@@ -31,8 +31,8 @@ ip = "0823:0cec"
 0823:0d16 int 21h
 0823:0d18 mov ax,es
 0823:0d1a cmp ax,0
-@jmp 'setup_memory@2
 @label install
+@jmp 'setup_memory@2
 0823:0d1d je short 0D28h
 
 0823:0d1f mov ax,0FBFBh

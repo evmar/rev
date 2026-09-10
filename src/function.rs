@@ -29,11 +29,11 @@ impl Function {
                 if let Some(comment) = &instr.comment {
                     writeln!(w, "; {comment}")?;
                 }
-                if let Some(jmp) = &instr.jmp {
-                    writeln!(w, "@jmp {jmp}")?;
-                }
                 if let Some(label) = &instr.label {
                     writeln!(w, "@label {label}")?;
+                }
+                if let Some(jmp) = &instr.jmp {
+                    writeln!(w, "@jmp {jmp}")?;
                 }
                 writeln!(w, "{ip} {instr}", instr = instr.iced)?;
             }

@@ -1,7 +1,7 @@
 name = "dispatch_command"
 desc = "Dispatches driver/subsystem API commands based on a function index in AL"
 details = "Saves caller context and stack pointers, then routes execution based on the function code passed in AL. Functions 0Ch and 0Dh are handled as parameter-unstacking routines that retrieve far pointers into internal storage before returning; all other commands index into an indirect far jump table."
-xrefs = ["mem?@0000:0000"]
+xrefs = ["unknown:mem"]
 ip = "0823:0f5b"
 
 [[params]]
@@ -42,7 +42,7 @@ desc = "Command or function number"
 0823:0f87 sub ah,ah
 0823:0f89 add ax,ax
 0823:0f8b mov bx,ax
-@jmp mem?@0000:0000
+@jmp unknown:mem
 0823:0f8d jmp word ptr cs:[bx+0D8Eh]
 
 ; Command 0Ch: pop a far pointer parameter from caller's stack into cs:[0DBBh], restore far return address, and retf

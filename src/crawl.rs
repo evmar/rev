@@ -21,7 +21,7 @@ pub async fn run(db: &mut DB, _args: Args) -> anyhow::Result<()> {
         for xref in xrefs.iter() {
             let ip = match xref {
                 XRef::External(_, ip) => *ip,
-                XRef::Block(_, _) => continue,
+                _ => continue,
             };
             if db.functions.contains_key(&ip) {
                 continue;

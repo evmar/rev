@@ -37,14 +37,15 @@ pub fn update_xrefs(func: &mut Function, xref: impl Fn(SegOfs) -> XRef) {
             }) else {
                 continue;
             };
-            instr.jmp = Some(xref.clone());
 
             match &xref {
-                XRef::External(_, _) => {
-                    all_xrefs.insert(xref);
+                XRef::External(_, _) | XRef::Unknown(_) => {
+                    all_xrefs.insert(xref.clone());
                 }
-                XRef::Block(_, _) => {}
+                _ => {}
             }
+
+            instr.jmp = Some(xref);
         }
     }
 
@@ -74,8 +75,8 @@ fn xref_from_instr(
                     };
                     Some(xref(ip))
                 }
-                Memory => Some(XRef::External(Some("mem?".into()), Default::default())),
-                Register => Some(XRef::External(Some("reg?".into()), Default::default())),
+                Memory => Some(XRef::Unknown("mem".into())),
+                Register => Some(XRef::Unknown("reg".into())),
                 d => todo!("unhandled jmp {d:?}"),
             }
         }
@@ -96,6 +97,7 @@ fn xref_from_instr(
 pub enum XRef {
     External(Option<String>, SegOfs),
     Block(Option<String>, usize),
+    Unknown(String),
 }
 
 impl std::str::FromStr for XRef {
@@ -112,6 +114,8 @@ impl std::str::FromStr for XRef {
                 name,
                 usize::from_str(block).map_err(|err| format!("xref {:?}: {}", s, err))?,
             )
+        } else if let Some(unk) = s.strip_prefix("unknown:") {
+            XRef::Unknown(unk.to_owned())
         } else {
             let (name, ip) = if let Some((name, ip)) = s.split_once('@') {
                 (Some(name.to_owned()), ip)
@@ -131,6 +135,7 @@ impl std::fmt::Display for XRef {
             XRef::External(Some(name), ip) => write!(f, "{name}@{ip}"),
             XRef::Block(None, idx) => write!(f, "'{idx}"),
             XRef::Block(Some(label), idx) => write!(f, "'{label}@{idx}"),
+            XRef::Unknown(label) => write!(f, "unknown:{label}"),
         }
     }
 }

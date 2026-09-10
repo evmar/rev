@@ -2,7 +2,7 @@ name = "expand_memory_block"
 desc = "Expands the heap or DOS memory block by a requested byte size."
 details = "Converts the requested byte size into paragraphs and attempts to resize the DOS memory block using INT 21h Function 4Ah, or delegates to an installed memory hook if present. On success, it updates internal memory tracking structures and returns a far pointer to the memory; on failure, it returns NULL (DX:AX = 0)."
 callers = ["load_overlay@0823:0c12"]
-callees = ["0823:0dc7", "unknown:mem"]
+callees = ["init_mcb_bounds@0823:0dc7", "unknown:mem"]
 ip = "0823:0de3"
 
 [[params]]
@@ -65,7 +65,7 @@ desc = "Far pointer to allocated memory block or NULL (0:0) on failure"
 0823:0e19 mov ax,cs:[0A9h]
 0823:0e1d dec ax
 0823:0e1e mov dx,ax
-@jmp 0823:0dc7
+@jmp init_mcb_bounds@0823:0dc7
 0823:0e20 call 0DC7h
 0823:0e23 mov ax,10h
 

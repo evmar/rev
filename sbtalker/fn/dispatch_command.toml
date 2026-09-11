@@ -13,7 +13,9 @@ desc = "Command or function number"
 
 ---
 ; Save caller's SS:SP
+@mem 0823:0e5f
 0823:0f5b mov cs:[0E5Fh],ss
+@mem 0823:0e61
 0823:0f60 mov cs:[0E61h],sp
 ; Handle command 0Ch separately
 0823:0f65 cmp al,0Ch
@@ -34,8 +36,11 @@ desc = "Command or function number"
 
 ; Save return IP and segments, switch DS to driver data segment
 @label dispatch_table
+@mem 0823:0e51
 0823:0f73 pop word ptr cs:[0E51h]
+@mem 0823:0e53
 0823:0f78 mov cs:[0E53h],ds
+@mem 0823:0e55
 0823:0f7d mov cs:[0E55h],ss
 0823:0f82 mov bx,30F7h
 0823:0f85 mov ds,bx
@@ -48,21 +53,33 @@ desc = "Command or function number"
 
 ; Command 0Ch: pop a far pointer parameter from caller's stack into cs:[0DBBh], restore far return address, and retf
 @label cmd_0c_handler
+@mem 0823:0e63
 0823:10e5 pop word ptr cs:[0E63h]
+@mem 0823:0e65
 0823:10ea pop word ptr cs:[0E65h]
+@mem 0823:0dbb
 0823:10ef pop word ptr cs:[0DBBh]
+@mem 0823:0dbd
 0823:10f4 pop word ptr cs:[0DBDh]
+@mem 0823:0e65
 0823:10f9 push word ptr cs:[0E65h]
+@mem 0823:0e63
 0823:10fe push word ptr cs:[0E63h]
 0823:1103 retf
 
 ; Command 0Dh: pop a far pointer parameter from caller's stack into cs:[0DBFh], restore far return address, and retf
 @label cmd_0d_handler
+@mem 0823:0e63
 0823:1104 pop word ptr cs:[0E63h]
+@mem 0823:0e65
 0823:1109 pop word ptr cs:[0E65h]
+@mem 0823:0dbf
 0823:110e pop word ptr cs:[0DBFh]
+@mem 0823:0dc1
 0823:1113 pop word ptr cs:[0DC1h]
+@mem 0823:0e65
 0823:1118 push word ptr cs:[0E65h]
+@mem 0823:0e63
 0823:111d push word ptr cs:[0E63h]
 0823:1122 retf
 

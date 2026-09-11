@@ -29,8 +29,10 @@ ip = "0823:0aa0"
 0823:0abe jne short 0AE1h
 
 ; Save page frame segment
+@mem 0823:009c
 0823:0ac0 mov cs:[9Ch],bx
 ; INT 67h, AH=43h: Allocate requested number of EMS pages
+@mem 0823:009a
 0823:0ac5 mov bx,cs:[9Ah]
 0823:0aca mov ax,4300h
 0823:0acd int 67h
@@ -39,7 +41,9 @@ ip = "0823:0aa0"
 0823:0ad1 jne short 0AE1h
 
 ; Save EMM handle and set initialized flag
+@mem 0823:009e
 0823:0ad3 mov cs:[9Eh],dx
+@mem 0823:01cb
 0823:0ad8 mov byte ptr cs:[1CBh],1
 ; Map initial EMS pages or configure buffers
 @jmp ems_copy_to_expanded_memory@0823:0983

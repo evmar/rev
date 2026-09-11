@@ -70,6 +70,7 @@ desc = "Parsed 16-bit hexadecimal value (also written to CS:[01B2h]), or 0 on fa
 
 ; Store the parsed 16-bit result into CS:[01B2h], restore registers, and return
 @label done
+@mem 0823:01b2
 0823:0bdf mov cs:[1B2h],bx
 0823:0be4 pop cx
 0823:0be5 pop di

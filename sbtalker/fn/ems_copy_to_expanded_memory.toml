@@ -16,6 +16,7 @@ ip = "0823:0983"
 0823:098a push di
 ; EMS: Save page map state (AH=47h, DX=handle)
 0823:098b mov ah,47h
+@mem 0823:009e
 0823:098d mov dx,cs:[9Eh]
 0823:0992 int 67h
 ; Initialize mapping to physical page 0, logical page 0
@@ -23,13 +24,16 @@ ip = "0823:0983"
 0823:0996 mov al,0
 0823:0998 mov bx,0
 ; DS = source buffer segment; ES = EMS page frame segment
+@mem 0823:0009
 0823:099b push word ptr cs:[9]
 0823:09a0 pop ds
+@mem 0823:009c
 0823:09a1 push word ptr cs:[9Ch]
 0823:09a6 pop es
 
 ; EMS: Map logical page BX into physical page 0 (AH=44h)
 @label page_copy_loop
+@mem 0823:009e
 0823:09a7 mov dx,cs:[9Eh]
 0823:09ac int 67h
 ; Copy 16KB (2000h words) from conventional memory to EMS page
@@ -44,6 +48,7 @@ ip = "0823:0983"
 ; Advance to next logical page and loop until all pages copied
 0823:09c0 mov ax,4400h
 0823:09c3 inc bx
+@mem 0823:009a
 0823:09c4 cmp bx,cs:[9Ah]
 @jmp 'page_copy_loop@1
 0823:09c9 jl short 09A7h
@@ -52,8 +57,11 @@ ip = "0823:0983"
 0823:09cb mov ah,48h
 0823:09cd int 67h
 ; Subtract transferred size/pages (cs:[90h] -= cs:[92h])
+@mem 0823:0090
 0823:09cf mov ax,cs:[90h]
+@mem 0823:0092
 0823:09d3 sub ax,cs:[92h]
+@mem 0823:0090
 0823:09d8 mov cs:[90h],ax
 ; Restore registers and return
 0823:09dc pop di

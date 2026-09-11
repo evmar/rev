@@ -6,6 +6,7 @@ ip = "0823:0dc7"
 
 ---
 ; Get base segment and step back one paragraph to the MCB
+@mem 0823:008e
 0823:0dc7 mov ax,cs:[8Eh]
 0823:0dcb dec ax
 0823:0dcc mov es,ax
@@ -13,9 +14,12 @@ ip = "0823:0dc7"
 0823:0dce mov di,3
 0823:0dd1 mov ax,es:[di]
 ; Save block size, then calculate and store boundary segment (base + size + 1)
+@mem 0823:0090
 0823:0dd4 mov cs:[90h],ax
+@mem 0823:008e
 0823:0dd8 add ax,cs:[8Eh]
 0823:0ddd inc ax
+@mem 0823:00a9
 0823:0dde mov cs:[0A9h],ax
 0823:0de2 ret
 

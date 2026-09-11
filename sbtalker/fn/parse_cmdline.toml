@@ -14,6 +14,7 @@ ip = "0823:0be7"
 0823:0beb push ds
 0823:0bec push es
 ; Load PSP segment into DS and ES
+@mem 0823:008e
 0823:0bed mov ax,cs:[8Eh]
 0823:0bf1 mov ds,ax
 0823:0bf3 mov es,ax

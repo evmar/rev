@@ -6,6 +6,7 @@ mod ai;
 mod crawl;
 mod db;
 mod dis;
+mod eval;
 mod function;
 mod init;
 mod load;
@@ -61,8 +62,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             Ok(())
         }
         Command::RoundTrip(_) => {
-            let db = DB::load(project)?;
-            memory::gather(&db);
+            let mut db = DB::load(project)?;
+            eval::eval_all(&mut db);
             db.write()?;
             Ok(())
         }

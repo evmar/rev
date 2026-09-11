@@ -8,10 +8,14 @@ ip = "0823:0b3c"
 ; Set up far pointer at cs:[01D2h] pointing to 0823:0AE2h
 0823:0b3c mov ax,823h
 0823:0b3f mov bx,0AE2h
+@mem 0823:01d2
 0823:0b42 mov cs:[1D2h],bx
+@mem 0823:01d4
 0823:0b47 mov cs:[1D4h],ax
 ; Copy word from cs:[01B2h] to cs:[01D6h]
+@mem 0823:01b2
 0823:0b4b mov ax,cs:[1B2h]
+@mem 0823:01d6
 0823:0b4f mov cs:[1D6h],ax
 0823:0b53 ret
 

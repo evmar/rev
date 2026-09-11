@@ -27,13 +27,17 @@ desc = "Far pointer to allocated memory block or NULL (0:0) on failure"
 0823:0dec mov cl,4
 0823:0dee shr bx,cl
 ; Check if a custom memory management callback hook is set
+@mem 0823:0dbd
 0823:0df0 mov ax,cs:[0DBDh]
+@mem 0823:0dbb
 0823:0df4 or ax,cs:[0DBBh]
 @jmp 'call_hook@2
 0823:0df9 jne short 0E0Ch
 
 ; Add existing size and resize block via DOS AH=4Ah (SETBLOCK)
+@mem 0823:0090
 0823:0dfb add bx,cs:[90h]
+@mem 0823:008e
 0823:0e00 mov ax,cs:[8Eh]
 0823:0e04 mov es,ax
 0823:0e06 mov ah,4Ah
@@ -44,6 +48,7 @@ desc = "Far pointer to allocated memory block or NULL (0:0) on failure"
 ; Invoke the custom allocation/resize hook
 @label call_hook
 @jmp unknown:mem
+@mem 0823:0dbb
 0823:0e0c call dword ptr cs:[0DBBh]
 @jmp 'alloc_success@5
 0823:0e11 jae short 0E19h
@@ -62,6 +67,7 @@ desc = "Far pointer to allocated memory block or NULL (0:0) on failure"
 
 ; Success handler: update internal tracking and return pointer
 @label alloc_success
+@mem 0823:00a9
 0823:0e19 mov ax,cs:[0A9h]
 0823:0e1d dec ax
 0823:0e1e mov dx,ax

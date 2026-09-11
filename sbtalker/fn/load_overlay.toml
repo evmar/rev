@@ -62,10 +62,15 @@ desc = "Carry flag: clear on success, set on error"
 0823:0c49 mov ds,ax
 0823:0c4b mov ax,dx
 0823:0c4d inc ax
+@mem 1483:0008
 0823:0c4e mov ds:[8],ax
+@mem 1483:000c
 0823:0c51 mov ds:[0Ch],ax
+@mem 1483:0010
 0823:0c54 mov ds:[10h],ax
+@mem 1483:0014
 0823:0c57 mov ds:[14h],ax
+@mem 1483:0018
 0823:0c5a mov ds:[18h],ax
 0823:0c5d push cs
 0823:0c5e pop ds

@@ -9,8 +9,8 @@ mod dis;
 mod eval;
 mod function;
 mod init;
+mod ir;
 mod load;
-mod memory;
 mod web;
 mod xref;
 

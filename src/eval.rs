@@ -5,6 +5,7 @@ use runtime::SegOfs;
 use crate::{
     db::DB,
     function::{Block, Instr},
+    ir,
 };
 
 pub fn eval_all(db: &mut DB) {
@@ -24,7 +25,7 @@ pub fn eval_block(block: &mut Block) {
 #[derive(Default)]
 struct Eval {
     cs: u16,
-    regs: HashMap<iced_x86::Register, u16>,
+    regs: HashMap<ir::Name, u16>,
 }
 
 impl Eval {
@@ -36,7 +37,18 @@ impl Eval {
     }
 
     fn instr(&mut self, instr: &mut Instr) {
-        if let Some(mem) = self.gather_memory(instr) {
+        println!("instr {}", instr.iced);
+        let stmt = match ir::Stmt::try_from(&instr.iced) {
+            Ok(stmt) => {
+                println!("{stmt}");
+                stmt
+            }
+            Err(err) => {
+                println!("err: {err}");
+                return;
+            }
+        };
+        if let Some(mem) = self.gather_memory(&stmt) {
             match mem {
                 Ok(mem) => {
                     println!("{} ; {}", instr.iced, mem);
@@ -45,85 +57,84 @@ impl Eval {
                 Err(err) => println!("{} ; {}", instr.iced, err),
             }
         }
-        self.eval_instr(&instr.iced);
+        match self.eval_stmt(&stmt) {
+            Ok(_) => {}
+            Err(err) => println!("{}: {}", instr.iced, err),
+        }
     }
 
     /// (attempt to) update self.regs based on instruction's effects
-    fn eval_instr(&mut self, instr: &iced_x86::Instruction) {
-        use iced_x86::Mnemonic::*;
-        match instr.mnemonic() {
-            Mov => {
-                assert_eq!(instr.op_count(), 2);
-                let val = self.eval_op(instr, 1);
-                use iced_x86::OpKind::*;
-                match instr.op0_kind() {
-                    Register => {
-                        let reg = instr.op0_register();
-                        if reg.size() != 2 {
-                            self.regs.clear();
-                            return;
+    fn eval_stmt(&mut self, stmt: &ir::Stmt) -> Result<(), String> {
+        println!("eval {stmt}");
+        match &stmt.kind {
+            ir::StmtKind::Do(_) => {}
+            ir::StmtKind::Set(dst, src) => match dst {
+                ir::Expr::Reg(dst) => {
+                    match self.eval_expr(src) {
+                        Some(val) => {
+                            self.regs.insert(dst.clone(), val);
                         }
-                        match val {
-                            Some(val) => {
-                                self.regs.insert(reg, val);
-                                println!("{reg:?} = {val:x}");
-                            }
-                            None => {
-                                self.regs.remove(&reg);
-                            }
+                        None => {
+                            println!("eval {src} failed");
+                            self.regs.remove(dst);
                         }
-                    }
-                    _ => {}
+                    };
                 }
-            }
-            _ => {
-                self.regs.clear();
-            }
+                ir::Expr::Todo(_) => todo!(),
+                _ => {}
+            },
+            ir::StmtKind::Let(_, _) => todo!(),
+            ir::StmtKind::Jmp(_, _) => {}
+            ir::StmtKind::Raw(_) => todo!(),
         }
+        Ok(())
     }
 
     /// if instruction touches memory, return its address
-    fn gather_memory(&self, instr: &Instr) -> Option<Result<SegOfs, String>> {
-        use iced_x86::OpKind::*;
-        for op in 0..instr.iced.op_count() {
-            match instr.iced.op_kind(op) {
-                Memory => {
-                    let seg = instr.iced.memory_segment();
-                    let Some(seg) = self.get_reg(seg) else {
-                        return Some(Err(format!("unknown seg {seg:?} {:?}", self.regs)));
-                    };
-                    let base = instr.iced.memory_base();
-                    if base != iced_x86::Register::None {
-                        // [base + ...]
-                        return Some(Err("base reg".into()));
-                    }
-                    let index = instr.iced.memory_index();
-                    if index != iced_x86::Register::None {
-                        // [... + index*scale + ...]
-                        return Some(Err("scale".into()));
-                    }
-                    let disp = instr.iced.memory_displacement32() as u16;
-                    return Some(Ok((seg, disp).into()));
-                }
-                // TODO: stosb etc
-                _ => {}
+    fn gather_memory(&self, stmt: &ir::Stmt) -> Option<Result<SegOfs, String>> {
+        // rather than looking for memory ops, look for segofs calls.
+        // this catches "lea", though maybe evaluation could just as well too
+
+        let mut mem = None;
+        ir::visit_stmt_expr(stmt, &mut |expr: &ir::Expr| {
+            let ir::Expr::Call(call) = expr else {
+                return;
+            };
+            if call.func != "segofs" {
+                return;
             }
-        }
-        None
+            let [seg, ofs] = &call.args.as_slice() else {
+                panic!();
+            };
+            let seg = match self.eval_expr(seg) {
+                Some(seg) => seg,
+                None => {
+                    mem = Some(Err(format!("{seg} unknown")));
+                    return;
+                }
+            };
+            let ofs = match self.eval_expr(ofs) {
+                Some(ofs) => ofs,
+                None => {
+                    mem = Some(Err(format!("{ofs} unknown")));
+                    return;
+                }
+            };
+            mem = Some(Ok(SegOfs::new(seg, ofs)));
+        });
+        mem
     }
 
-    fn eval_op(&mut self, instr: &iced_x86::Instruction, op: u32) -> Option<u16> {
-        use iced_x86::OpKind::*;
-        match instr.op_kind(op) {
-            Register => self.get_reg(instr.op_register(op)),
-            Immediate16 => Some(instr.immediate16()),
-            Immediate8to16 => Some(instr.immediate8to16() as u16),
-            _ => None,
-        }
+    fn eval_expr(&self, expr: &ir::Expr) -> Option<u16> {
+        Some(match expr {
+            ir::Expr::Val(v) => *v as u16,
+            ir::Expr::Reg(name) => self.get_reg(name)?,
+            _ => return None,
+        })
     }
 
-    fn get_reg(&self, reg: iced_x86::Register) -> Option<u16> {
-        if reg == iced_x86::Register::CS {
+    fn get_reg(&self, reg: &ir::Name) -> Option<u16> {
+        if reg == "cs" {
             return Some(self.cs);
         }
         self.regs.get(&reg).cloned()

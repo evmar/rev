@@ -15,6 +15,7 @@ ip = "0823:0c86"
 0823:0c8b push es
 ; Check if a driver name argument is present at cs:[01AAh]; skip if it starts with a space
 0823:0c8c mov bx,1AAh
+@mem 0823:01aa
 0823:0c8f cmp byte ptr cs:[bx],20h
 @jmp 'do_load@7
 0823:0c93 je short 0CCFh

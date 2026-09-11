@@ -127,7 +127,8 @@ pub struct Block {
 
 impl Block {
     pub fn span(&self) -> std::ops::Range<SegOfs> {
-        self.ip..self.ip.with_ofs(self.instrs.last().unwrap().iced.ip16())
+        let end_ofs = self.instrs.last().unwrap().iced.next_ip16();
+        self.ip..self.ip.with_ofs(end_ofs)
     }
 
     pub fn contains_ip(&self, ip: SegOfs) -> bool {

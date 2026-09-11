@@ -7,8 +7,8 @@ ip = "0823:0b87"
 [[params]]
 name = "cmdline_ptr"
 value = "es:di"
-type = "far cstr"
-desc = "Pointer to the input string (e.g. command line) to scan"
+type = "*const u8"
+desc = "Pointer to the input string to scan"
 
 [[params]]
 name = "cmdline_len"
@@ -22,42 +22,46 @@ desc = "Length of the input string"
 0823:0b88 push cx
 0823:0b89 cld
 
-; Scan string for the forward slash ('/') switch character
+; Scan for next '/' character
+@label scan_for_slash
 0823:0b8a mov al,2Fh
 0823:0b8c repne scasb
-@jmp '7
+; If end of string reached without finding switch, exit
+@jmp 'exit@7
 0823:0b8e jcxz 0BAFh
 
-; Check if character following '/' is 'D'; if not, resume search
+; Check if character immediately following '/' is 'D'
 0823:0b90 cmp byte ptr [di],44h
-@jmp '1
+@jmp 'scan_for_slash@1
 0823:0b93 jne short 0B8Ah
 
-; Set up destination buffer in CS (01AAh) and max copy count of 8
+; Initialize destination buffer pointer and maximum argument length of 8 bytes
 0823:0b95 mov bx,1AAh
 0823:0b98 mov dx,8
-@jmp '7
+
+; Check remaining string length
+@label copy_loop
+@jmp 'exit@7
 0823:0b9b jcxz 0BAFh
 
-@jmp '7
-0823:0b9b jcxz 0BAFh
-
-; Copy parameter characters into CS buffer until another '/', end of string, or 8 bytes reached
+; Read next character; stop if another '/' switch is encountered
 0823:0b9d inc di
 0823:0b9e mov al,[di]
 0823:0ba0 cmp al,2Fh
-@jmp '7
+@jmp 'exit@7
 0823:0ba2 je short 0BAFh
 
+; Store character into CS:01AAh buffer and loop until 8 characters copied or CX is exhausted
 0823:0ba4 mov cs:[bx],al
 0823:0ba7 inc bx
 0823:0ba8 dec cx
 0823:0ba9 dec dx
 0823:0baa cmp dx,0
-@jmp '4
+@jmp 'copy_loop@4
 0823:0bad jne short 0B9Bh
 
 ; Restore registers and return
+@label exit
 0823:0baf pop cx
 0823:0bb0 pop di
 0823:0bb1 ret

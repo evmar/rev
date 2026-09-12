@@ -20,7 +20,7 @@ pub struct Function {
 }
 
 impl Function {
-    pub fn serialize(&self, w: &mut impl std::io::Write) -> anyhow::Result<()> {
+    pub fn serialize(&self, w: &mut impl std::fmt::Write) -> anyhow::Result<()> {
         writeln!(w, "{}", toml::to_string(self)?)?;
         writeln!(w, "---")?;
 
@@ -122,6 +122,14 @@ impl Function {
 
         Ok(func)
     }
+
+    pub fn clone_bare(&self) -> Function {
+        Function {
+            ip: self.ip,
+            blocks: self.blocks.iter().map(|block| block.clone_bare()).collect(),
+            ..Default::default()
+        }
+    }
 }
 
 pub struct Block {
@@ -138,6 +146,13 @@ impl Block {
     pub fn contains_ip(&self, ip: SegOfs) -> bool {
         ip.seg == self.ip.seg && self.span().contains(&ip)
     }
+
+    pub fn clone_bare(&self) -> Block {
+        Block {
+            ip: self.ip,
+            instrs: self.instrs.iter().map(|instr| instr.clone_bare()).collect(),
+        }
+    }
 }
 
 #[derive(Default)]
@@ -147,4 +162,13 @@ pub struct Instr {
     pub jmp: Option<XRef>,
     pub memory: Option<Result<SegOfs, String>>,
     pub iced: iced_x86::Instruction,
+}
+
+impl Instr {
+    pub fn clone_bare(&self) -> Instr {
+        Instr {
+            iced: self.iced,
+            ..Default::default()
+        }
+    }
 }

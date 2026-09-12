@@ -60,9 +60,9 @@ impl DB {
                 None => format!("{:04x}_{:04x}.toml", func.ip.seg, func.ip.ofs),
             };
             let path = fn_dir.join(&name);
-            let mut contents = Vec::new();
+            let mut contents = String::new();
             func.serialize(&mut contents)?;
-            write_if_changed(&path, &contents)?;
+            write_if_changed(&path, contents.as_bytes())?;
             names.insert(name);
         }
 

@@ -1,6 +1,6 @@
 name = "toupper_string"
-desc = "Converts an ASCII string of length CX pointed to by DI to uppercase in-place."
-details = "Iterates through CX bytes of an ASCII string buffer pointed to by DI. For each byte, checks if it falls within the lowercase ASCII range ('a'-'z', 0x61 to 0x7A) and masks it with 0x5F to convert to uppercase. Preserves both DI and CX registers on return."
+desc = "Converts a buffer of characters to uppercase in-place"
+details = "Iterates through `cx` characters starting at `ds:di`. Any ASCII lowercase letter between 'a' and 'z' is converted to uppercase by clearing bit 5 (`and al, 5Fh`). Register state of `di` and `cx` is preserved."
 callers = ["parse_cmdline@0823:0be7"]
 ip = "0823:0b54"
 
@@ -8,43 +8,41 @@ ip = "0823:0b54"
 name = "str"
 value = "di"
 type = "*mut u8"
-desc = "Pointer to the input ASCII string to convert"
+desc = "Pointer to character buffer"
 
 [[params]]
 name = "len"
 value = "cx"
 type = "u16"
-desc = "Length of the string in bytes"
+desc = "Number of characters to process"
 
 ---
-; Save registers to preserve caller state
 0823:0b54 push di
 0823:0b55 push cx
 
-; Check if character is lowercase ASCII ('a'-'z')
-@label loop_start
+@label next_char
 @mem [ds unknown]
 0823:0b56 mov al,[di]
+; Check if character is >= 'a'
 0823:0b58 cmp al,61h
-@jmp 'skip_upper@4
+@jmp 'store_char@4
 0823:0b5a jb short 0B62h
 
+; Check if character is <= 'z'
 0823:0b5c cmp al,7Ah
-@jmp 'skip_upper@4
+@jmp 'store_char@4
 0823:0b5e ja short 0B62h
 
-; Clear bit 5 to convert 'a'-'z' to uppercase
+; Convert lowercase to uppercase
 0823:0b60 and al,5Fh
 
-; Write byte back, advance pointer, and repeat for CX characters
-@label skip_upper
+@label store_char
 @mem [ds unknown]
 0823:0b62 mov [di],al
 0823:0b64 inc di
-@jmp 'loop_start@1
+@jmp 'next_char@1
 0823:0b65 loop 0B56h
 
-; Restore registers and return
 0823:0b67 pop cx
 0823:0b68 pop di
 0823:0b69 ret

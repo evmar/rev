@@ -49,13 +49,7 @@ impl Eval {
             }
         };
         if let Some(mem) = self.gather_memory(&stmt) {
-            match mem {
-                Ok(mem) => {
-                    println!("{} ; {}", instr.iced, mem);
-                    instr.memory = Some(mem);
-                }
-                Err(err) => println!("{} ; {}", instr.iced, err),
-            }
+            instr.memory = Some(mem.map_err(|err| format!("[{err}]")));
         }
         match self.eval_stmt(&stmt) {
             Ok(_) => {}

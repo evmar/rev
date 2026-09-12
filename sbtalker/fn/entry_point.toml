@@ -22,6 +22,7 @@ ip = "0823:0cec"
 0823:0d03 mov ah,51h
 0823:0d05 int 21h
 0823:0d07 mov es,bx
+@mem [es unknown]
 0823:0d09 mov ax,es:[2Ch]
 0823:0d0d mov es,ax
 0823:0d0f mov ah,49h
@@ -51,6 +52,7 @@ ip = "0823:0cec"
 0823:0d32 dec bx
 0823:0d33 mov ds,bx
 0823:0d35 mov si,3
+@mem [ds unknown]
 0823:0d38 mov dx,[si]
 @mem 0823:0090
 0823:0d3a mov cs:[90h],dx
@@ -87,6 +89,7 @@ ip = "0823:0cec"
 0823:0d72 mov ax,252Fh
 0823:0d75 int 21h
 ; Prepare resident size and invoke DOS TSR (INT 21h, AH=31h)
+@mem [ds unknown]
 0823:0d77 lea dx,ds:[0ABh]
 @jmp print_string_with_suffix@0823:0c79
 0823:0d7b call 0C79h

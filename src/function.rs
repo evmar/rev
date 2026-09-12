@@ -37,7 +37,10 @@ impl Function {
                     writeln!(w, "@jmp {jmp}")?;
                 }
                 if let Some(mem) = &instr.memory {
-                    writeln!(w, "@mem {mem}")?;
+                    match mem {
+                        Ok(mem) => writeln!(w, "@mem {mem}")?,
+                        Err(err) => writeln!(w, "@mem {err}")?,
+                    }
                 }
                 writeln!(w, "{ip} {instr}", instr = instr.iced)?;
             }
@@ -61,7 +64,7 @@ impl Function {
         let mut comment = String::new();
         let mut label = None;
         let mut jmp = None;
-        let mut memory = None;
+        let mut memory: Option<Result<SegOfs, String>> = None;
         for (i, line) in body.lines().enumerate() {
             if line.is_empty() {
                 block = func.blocks.push_mut(Block {
@@ -79,8 +82,8 @@ impl Function {
                 jmp =
                     Some(XRef::from_str(r).map_err(|err| anyhow::anyhow!("bad xref {r}: {err}"))?);
                 continue;
-            } else if let Some(r) = line.strip_prefix("@mem ") {
-                memory = Some(SegOfs::parse(r).map_err(|err| anyhow::anyhow!("{r:?} {err}"))?);
+            } else if let Some(m) = line.strip_prefix("@mem ") {
+                memory = Some(SegOfs::parse(m).map_err(|_| format!("[{m}]")));
                 continue;
             } else if let Some(l) = line.strip_prefix("@label ") {
                 label = Some(l.to_owned());
@@ -141,6 +144,6 @@ pub struct Instr {
     pub comment: Option<String>,
     pub label: Option<String>,
     pub jmp: Option<XRef>,
-    pub memory: Option<SegOfs>,
+    pub memory: Option<Result<SegOfs, String>>,
     pub iced: iced_x86::Instruction,
 }

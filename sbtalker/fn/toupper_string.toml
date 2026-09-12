@@ -23,6 +23,7 @@ desc = "Length of the string in bytes"
 
 ; Check if character is lowercase ASCII ('a'-'z')
 @label loop_start
+@mem [ds unknown]
 0823:0b56 mov al,[di]
 0823:0b58 cmp al,61h
 @jmp 'skip_upper@4
@@ -37,6 +38,7 @@ desc = "Length of the string in bytes"
 
 ; Write byte back, advance pointer, and repeat for CX characters
 @label skip_upper
+@mem [ds unknown]
 0823:0b62 mov [di],al
 0823:0b64 inc di
 @jmp 'loop_start@1

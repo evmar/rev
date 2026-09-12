@@ -12,6 +12,7 @@ ip = "0823:0dc7"
 0823:0dcc mov es,ax
 ; Read block size (in paragraphs) from MCB offset 3
 0823:0dce mov di,3
+@mem [es unknown]
 0823:0dd1 mov ax,es:[di]
 ; Save block size, then calculate and store boundary segment (base + size + 1)
 @mem 0823:0090

@@ -31,6 +31,7 @@ desc = "Length of the input string"
 0823:0b8e jcxz 0BAFh
 
 ; Check if character immediately following '/' is 'D'
+@mem [ds unknown]
 0823:0b90 cmp byte ptr [di],44h
 @jmp 'scan_for_slash@1
 0823:0b93 jne short 0B8Ah
@@ -46,12 +47,14 @@ desc = "Length of the input string"
 
 ; Read next character; stop if another '/' switch is encountered
 0823:0b9d inc di
+@mem [ds unknown]
 0823:0b9e mov al,[di]
 0823:0ba0 cmp al,2Fh
 @jmp 'exit@7
 0823:0ba2 je short 0BAFh
 
 ; Store character into CS:01AAh buffer and loop until 8 characters copied or CX is exhausted
+@mem [bx unknown]
 0823:0ba4 mov cs:[bx],al
 0823:0ba7 inc bx
 0823:0ba8 dec cx

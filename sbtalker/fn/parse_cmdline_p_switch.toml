@@ -38,6 +38,7 @@ desc = "Parsed 16-bit hexadecimal value (also written to CS:[01B2h]), or 0 on fa
 0823:0bbb jcxz 0BDFh
 
 ; Check if character following '/' is 'P'; continue scanning if not
+@mem [ds unknown]
 0823:0bbd cmp byte ptr [di],50h
 @jmp 'scan_slash@1
 0823:0bc0 jne short 0BB7h
@@ -50,6 +51,7 @@ desc = "Parsed 16-bit hexadecimal value (also written to CS:[01B2h]), or 0 on fa
 
 ; Fetch next character and convert hex ASCII to numeric value; abort on error
 @label parse_digit_loop
+@mem [ds unknown]
 0823:0bcb mov al,[di]
 0823:0bcd inc di
 @jmp parse_hex_digit@0823:0b6a

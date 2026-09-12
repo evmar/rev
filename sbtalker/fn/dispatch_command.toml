@@ -49,6 +49,7 @@ desc = "Command or function number"
 0823:0f89 add ax,ax
 0823:0f8b mov bx,ax
 @jmp unknown:mem
+@mem [(+ bx 0xd8e) unknown]
 0823:0f8d jmp word ptr cs:[bx+0D8Eh]
 
 ; Command 0Ch: pop a far pointer parameter from caller's stack into cs:[0DBBh], restore far return address, and retf

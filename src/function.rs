@@ -83,7 +83,8 @@ impl Function {
                     Some(XRef::from_str(r).map_err(|err| anyhow::anyhow!("bad xref {r}: {err}"))?);
                 continue;
             } else if let Some(m) = line.strip_prefix("@mem ") {
-                memory = Some(SegOfs::parse(m).map_err(|_| format!("[{m}]")));
+                memory =
+                    Some(SegOfs::parse(m).map_err(|_| format!("[{}]", m.trim_matches(['[', ']']))));
                 continue;
             } else if let Some(l) = line.strip_prefix("@label ") {
                 label = Some(l.to_owned());

@@ -193,12 +193,12 @@ struct MemoryAddressDetail<'a> {
     name: &'a str,
     desc: &'a str,
     typ: &'a str,
-    callers: Vec<FunctionOverview<'a>>,
+    functions: Vec<FunctionOverview<'a>>,
 }
 
 fn memory_address_detail(db: &DB, addr: runtime::SegOfs) -> Option<MemoryAddressDetail<'_>> {
     let location = db.memory.entries.get(&addr)?;
-    let callers = db
+    let functions = db
         .functions
         .values()
         .filter(|func| {
@@ -223,7 +223,7 @@ fn memory_address_detail(db: &DB, addr: runtime::SegOfs) -> Option<MemoryAddress
         name: &location.name,
         desc: &location.desc,
         typ: &location.typ,
-        callers,
+        functions,
     })
 }
 

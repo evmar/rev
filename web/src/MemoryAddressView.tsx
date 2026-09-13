@@ -20,8 +20,8 @@ export function MemoryAddressView({ addr }: { addr: string }) {
             <dd>{memory.desc}</dd>
           </dl>
           <section class="panel">
-            <h2>Called by ({memory.callers.length})</h2>
-            {memory.callers.length === 0 ? (
+            <h2>Used in ({memory.functions.length})</h2>
+            {memory.functions.length === 0 ? (
               <p>No functions reference this address.</p>
             ) : (
               <table>
@@ -29,7 +29,7 @@ export function MemoryAddressView({ addr }: { addr: string }) {
                   <tr><th scope="col">IP</th><th scope="col">Name</th><th scope="col">Description</th></tr>
                 </thead>
                 <tbody>
-                  {memory.callers.map(func => (
+                  {memory.functions.map(func => (
                     <tr key={func.ip}>
                       <td><a href={`#/functions/${encodeURIComponent(func.ip)}`}><code>{func.ip}</code></a></td>
                       <td><a href={`#/functions/${encodeURIComponent(func.ip)}`}>{func.name ?? 'Unnamed'}</a></td>

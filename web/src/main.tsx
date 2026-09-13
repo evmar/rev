@@ -6,6 +6,40 @@ import './style.css';
 import type { XRefDetail } from './bindings/XRefDetail';
 import type { MemoryDetail } from './bindings/MemoryDetail';
 
+function useJson<T>(url: string, notFoundMessage?: string) {
+  const [data, setData] = useState<T | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setData(null);
+    setError(null);
+
+    async function load() {
+      try {
+        const response = await fetch(url, { signal: controller.signal });
+        if (!response.ok) {
+          const message = response.status === 404 && notFoundMessage
+            ? notFoundMessage
+            : `Request failed (${response.status})`;
+          throw new Error(message);
+        }
+        const result: T = await response.json();
+        if (!controller.signal.aborted) setData(result);
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          setError(error instanceof Error ? error.message : String(error));
+        }
+      }
+    }
+
+    void load();
+    return () => controller.abort();
+  }, [url, notFoundMessage]);
+
+  return { data, error };
+}
+
 function OverviewDetails({ overview }: { overview: Overview }) {
   return (
     <dl class="panel">
@@ -46,32 +80,7 @@ function FunctionList({ functions }: { functions: Overview['functions'] }) {
 }
 
 function MemoryView() {
-  const [memory, setMemory] = useState<MemoryDetail | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    async function loadMemory() {
-      try {
-        const response = await fetch('api/memory.json', {
-          signal: controller.signal,
-        });
-        if (!response.ok) {
-          throw new Error(`Request failed (${response.status})`);
-        }
-        const data: MemoryDetail = await response.json();
-        if (!controller.signal.aborted) setMemory(data);
-      } catch (error) {
-        if (!controller.signal.aborted) {
-          setError(error instanceof Error ? error.message : String(error));
-        }
-      }
-    }
-
-    void loadMemory();
-    return () => controller.abort();
-  }, []);
+  const { data: memory, error } = useJson<MemoryDetail>('api/memory.json');
 
   return (
     <main>
@@ -106,32 +115,7 @@ function MemoryView() {
 }
 
 function OverviewView() {
-  const [overview, setOverview] = useState<Overview | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    async function loadOverview() {
-      try {
-        const response = await fetch('api/overview.json', {
-          signal: controller.signal,
-        });
-        if (!response.ok) {
-          throw new Error(`Request failed (${response.status})`);
-        }
-        const data: Overview = await response.json();
-        if (!controller.signal.aborted) setOverview(data);
-      } catch (error) {
-        if (!controller.signal.aborted) {
-          setError(error instanceof Error ? error.message : String(error));
-        }
-      }
-    }
-
-    void loadOverview();
-    return () => controller.abort();
-  }, []);
+  const { data: overview, error } = useJson<Overview>('api/overview.json');
 
   return (
     <main>
@@ -164,30 +148,8 @@ function FunctionRefs({ refs }: { refs: XRefDetail[] }) {
 }
 
 function FunctionView({ ip }: { ip: string }) {
-  const [func, setFunction] = useState<FunctionDetail | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    async function loadFunction() {
-      try {
-        const response = await fetch(`api/functions/${encodeURIComponent(ip)}.json`, {
-          signal: controller.signal,
-        });
-        if (!response.ok) {
-          throw new Error(response.status === 404 ? 'Function not found' : `Request failed (${response.status})`);
-        }
-        const data: FunctionDetail = await response.json();
-        if (!controller.signal.aborted) setFunction(data);
-      } catch (error) {
-        if (!controller.signal.aborted) {
-          setError(error instanceof Error ? error.message : String(error));
-        }
-      }
-    }
-    void loadFunction();
-    return () => controller.abort();
-  }, [ip]);
+  const url = `api/functions/${encodeURIComponent(ip)}.json`;
+  const { data: func, error } = useJson<FunctionDetail>(url, 'Function not found');
 
   return (
     <main>

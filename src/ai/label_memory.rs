@@ -1,4 +1,3 @@
-use futures_util::StreamExt;
 use openrouter_rs::{
     Message, OpenRouterClient,
     api::chat::ChatCompletionRequest,
@@ -83,15 +82,7 @@ async fn call(
         usage: Default::default(),
     };
 
-    let mut content = None;
-    for _ in 0..10 {
-        content = agent_loop.run_one().await?;
-        if content.is_some() {
-            break;
-        }
-    }
-    let content = content.unwrap();
-
+    let content = agent_loop.run().await?;
     let response: Response = serde_json::from_str(&content)?;
     Ok(response)
 }
@@ -130,6 +121,15 @@ struct AgentLoop<'client> {
 }
 
 impl<'client> AgentLoop<'client> {
+    async fn run(&mut self) -> anyhow::Result<String> {
+        for _ in 0..10 {
+            if let Some(content) = self.run_one().await? {
+                return Ok(content);
+            }
+        }
+        anyhow::bail!("no response within turn limit")
+    }
+
     async fn run_one(&mut self) -> anyhow::Result<Option<String>> {
         let request = ChatCompletionRequest::builder()
             .model("google/gemini-3.8-flash")
@@ -142,64 +142,51 @@ impl<'client> AgentLoop<'client> {
             .messages(self.messages.clone())
             .build()?;
 
-        let mut content = String::new();
-        let mut stream = self.client.chat().stream_tool_aware(&request).await?;
-        while let Some(event) = stream.next().await {
-            use openrouter_rs::types::StreamEvent;
-            match event {
-                StreamEvent::Error(err) => panic!("err {err}"),
-                StreamEvent::ContentDelta(c) => {
-                    content.push_str(&c);
+        let resp = self.client.chat().create(&request).await?;
+        if let Some(usage) = &resp.usage {
+            self.usage.add(&usage);
+        }
+
+        let choice = &resp.choices[0];
+
+        if let Some(reasoning) = choice.reasoning() {
+            print!("{reasoning}")
+        }
+
+        if let Some(tool_calls) = choice.tool_calls() {
+            self.messages
+                .push(Message::assistant_with_tool_calls("", tool_calls.to_vec()));
+            for call in tool_calls.iter() {
+                if call.is_tool::<GetFunctionParams>() {
+                    let params = call.parse_params::<GetFunctionParams>()?;
+                    let func = self
+                        .db
+                        .functions
+                        .get(&SegOfs::parse(&params.addr).unwrap())
+                        .unwrap();
+                    println!(
+                        "Reading function {} ({})",
+                        params.addr,
+                        func.name.as_deref().unwrap_or("unknown name")
+                    );
+                    let mut buf = String::new();
+                    func.serialize(&mut buf)?;
+                    self.messages.push(Message::tool_response(call.id(), buf));
+                } else {
+                    panic!();
                 }
-                StreamEvent::ReasoningDelta(reasoning) => print!("{reasoning}"),
-                StreamEvent::ReasoningDetailsDelta(_) => {}
-                StreamEvent::Done {
-                    tool_calls,
-                    finish_reason,
-                    usage,
-                    ..
-                } => {
-                    if let Some(usage) = usage {
-                        self.usage.add(&usage);
-                    }
-                    if let Some(finish) = finish_reason {
-                        use openrouter_rs::types::FinishReason;
-                        match finish {
-                            FinishReason::ToolCalls => {
-                                self.messages.push(Message::assistant_with_tool_calls(
-                                    "",
-                                    tool_calls.clone(),
-                                ));
-                                for call in tool_calls.iter() {
-                                    if call.is_tool::<GetFunctionParams>() {
-                                        let params = call.parse_params::<GetFunctionParams>()?;
-                                        let func = self
-                                            .db
-                                            .functions
-                                            .get(&SegOfs::parse(&params.addr).unwrap())
-                                            .unwrap();
-                                        println!(
-                                            "Reading function {} ({})",
-                                            params.addr,
-                                            func.name.as_deref().unwrap_or("unknown name")
-                                        );
-                                        let mut buf = String::new();
-                                        func.serialize(&mut buf)?;
-                                        self.messages.push(Message::tool_response(call.id(), buf));
-                                    } else {
-                                        panic!();
-                                    }
-                                }
-                            }
-                            FinishReason::Stop => {
-                                self.usage.print();
-                                return Ok(Some(content));
-                            }
-                            _ => todo!("finish {:?}", finish),
-                        }
-                    }
+            }
+        }
+
+        if let Some(reason) = choice.finish_reason() {
+            use openrouter_rs::types::FinishReason;
+            match reason {
+                FinishReason::ToolCalls => {}
+                FinishReason::Stop => {
+                    self.usage.print();
+                    return Ok(choice.content().map(|s| s.to_owned()));
                 }
-                _ => todo!(),
+                _ => todo!("finish {:?}", reason),
             }
         }
         Ok(None)

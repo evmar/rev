@@ -8,6 +8,7 @@ use runtime::SegOfs;
 use crate::{
     function::Function,
     load::{EXE, load_exe},
+    memory::Memory,
     xref,
 };
 
@@ -17,14 +18,18 @@ pub struct DB {
     pub mem: Vec<u8>,
     pub exe: EXE,
     pub functions: BTreeMap<SegOfs, Function>,
+    pub memory: Memory,
 }
 
 impl DB {
     pub fn load(project_path: PathBuf) -> anyhow::Result<Self> {
         let exe: EXE = toml::from_slice(&std::fs::read(project_path.join("db.toml"))?)?;
+        let memory: Memory = toml::from_slice(&std::fs::read(project_path.join("memory.toml"))?)?;
+
         let mut db = DB {
             project_path,
             exe,
+            memory,
             ..Default::default()
         };
         load_exe(&mut db);
@@ -50,6 +55,11 @@ impl DB {
         assert!(!self.project_path.as_os_str().is_empty());
         let path = self.meta();
         write_if_changed(&path, toml::to_string(&self.exe)?.as_bytes())?;
+
+        write_if_changed(
+            &self.project_path.join("memory.toml"),
+            toml::to_string(&self.memory)?.as_bytes(),
+        )?;
 
         let fn_dir = self.project_path("fn");
         std::fs::create_dir_all(&fn_dir)?;

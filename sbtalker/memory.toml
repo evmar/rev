@@ -1,0 +1,4 @@
+[entries."0823:008e"]
+name = "psp_segment"
+desc = "Segment address of the program's Program Segment Prefix (PSP)"
+typ = "u16"

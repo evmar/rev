@@ -31,7 +31,9 @@ fn print_usage(start: std::time::Instant, usage: &ResponseUsage) {
 }
 
 pub async fn run(db: &mut DB, args: Args) -> anyhow::Result<()> {
-    label_memory::run(db, &client()?, args.addr).await
+    label_memory::run(db, &client()?, args.addr).await?;
+    db.write()?;
+    Ok(())
 }
 
 #[allow(dead_code)]

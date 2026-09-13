@@ -6,7 +6,7 @@ use openrouter_rs::{
 use runtime::SegOfs;
 use schemars::schema_for;
 
-use crate::db::DB;
+use crate::{db::DB, memory::MemoryLocation};
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 struct GetFunctionParams {
@@ -48,8 +48,12 @@ pub async fn run(db: &mut DB, client: &OpenRouterClient, addr: SegOfs) -> anyhow
         }
     }
 
-    let response = call(db, client, functions, addr).await;
-    println!("resp {response:#?}");
+    let Response { name, desc, typ } = call(db, client, functions, addr).await?;
+    println!("{addr}: {name} {typ}");
+    println!("{desc}");
+    db.memory
+        .entries
+        .insert(addr, MemoryLocation { name, desc, typ });
     Ok(())
 }
 

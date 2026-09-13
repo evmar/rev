@@ -21,7 +21,7 @@ desc = "Number of characters to process"
 0823:0b55 push cx
 
 @label next_char
-@mem [ds unknown]
+@mem ; [ds unknown]
 0823:0b56 mov al,[di]
 ; Check if character is >= 'a'
 0823:0b58 cmp al,61h
@@ -37,7 +37,7 @@ desc = "Number of characters to process"
 0823:0b60 and al,5Fh
 
 @label store_char
-@mem [ds unknown]
+@mem ; [ds unknown]
 0823:0b62 mov [di],al
 0823:0b64 inc di
 @jmp 'next_char@1

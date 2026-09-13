@@ -26,7 +26,7 @@ ip = "0823:0c86"
 0823:0c9b mov cx,8
 
 @label copy_name_loop
-@mem [bx unknown]
+@mem ; [bx unknown]
 0823:0c9e mov al,cs:[bx]
 0823:0ca1 cmp al,20h
 @jmp 'append_extension@5
@@ -36,7 +36,7 @@ ip = "0823:0c86"
 @jmp 'append_extension@5
 0823:0ca7 je short 0CB0h
 
-@mem [si unknown]
+@mem ; [si unknown]
 0823:0ca9 mov cs:[si],al
 0823:0cac inc si
 0823:0cad inc bx
@@ -45,23 +45,23 @@ ip = "0823:0c86"
 
 ; Append '.DRV' extension and null-pad the remainder of the filename buffer
 @label append_extension
-@mem [si unknown]
+@mem ; [si unknown]
 0823:0cb0 mov byte ptr cs:[si],2Eh
 0823:0cb4 inc si
-@mem [si unknown]
+@mem ; [si unknown]
 0823:0cb5 mov byte ptr cs:[si],44h
 0823:0cb9 inc si
-@mem [si unknown]
+@mem ; [si unknown]
 0823:0cba mov byte ptr cs:[si],52h
 0823:0cbe inc si
-@mem [si unknown]
+@mem ; [si unknown]
 0823:0cbf mov byte ptr cs:[si],56h
 0823:0cc3 inc cx
 
 ; Null-pad remaining characters in filename buffer
 @label null_pad_loop
 0823:0cc4 inc si
-@mem [si unknown]
+@mem ; [si unknown]
 0823:0cc5 mov byte ptr cs:[si],0
 0823:0cc9 dec cx
 0823:0cca cmp cx,0
@@ -79,7 +79,7 @@ ip = "0823:0c86"
 ; On load failure, print error message and exit program with code 1
 0823:0cd7 push cs
 0823:0cd8 pop ds
-@mem [ds unknown]
+@mem ; [ds unknown]
 0823:0cd9 lea dx,ds:[189h]
 @jmp print_string_with_suffix@0823:0c79
 0823:0cdd call 0C79h

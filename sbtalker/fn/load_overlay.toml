@@ -75,9 +75,9 @@ desc = "Carry flag: clear on success, set on error"
 0823:0c5d push cs
 0823:0c5e pop ds
 ; Initialize overlay param block at CS:[SI]: load segment and relocation factor
-@mem [ds unknown]
+@mem ; [ds unknown]
 0823:0c5f mov [si],ax
-@mem [ds unknown]
+@mem ; [ds unknown]
 0823:0c61 mov [si+2],ax
 0823:0c64 mov ax,si
 0823:0c66 add ax,4

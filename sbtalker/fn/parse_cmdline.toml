@@ -21,7 +21,7 @@ ip = "0823:0be7"
 ; Check command-line argument length at PSP:0080h; skip if empty
 0823:0bf5 mov di,80h
 0823:0bf8 sub cx,cx
-@mem [ds unknown]
+@mem ; [ds unknown]
 0823:0bfa mov cl,[di]
 0823:0bfc cmp cl,0
 @jmp '2

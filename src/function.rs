@@ -39,7 +39,7 @@ impl Function {
                 if let Some(mem) = &instr.memory {
                     match mem {
                         Ok(mem) => writeln!(w, "@mem {mem}")?,
-                        Err(err) => writeln!(w, "@mem {err}")?,
+                        Err(err) => writeln!(w, "@mem ; {err}")?,
                     }
                 }
                 writeln!(w, "{ip} {instr}", instr = instr.iced)?;
@@ -83,8 +83,9 @@ impl Function {
                     Some(XRef::from_str(r).map_err(|err| anyhow::anyhow!("bad xref {r}: {err}"))?);
                 continue;
             } else if let Some(m) = line.strip_prefix("@mem ") {
-                memory =
-                    Some(SegOfs::parse(m).map_err(|_| format!("[{}]", m.trim_matches(['[', ']']))));
+                memory = Some(
+                    SegOfs::parse(m).map_err(|_| format!("{}", m.strip_prefix("; ").unwrap_or(m))),
+                );
                 continue;
             } else if let Some(l) = line.strip_prefix("@label ") {
                 label = Some(l.to_owned());

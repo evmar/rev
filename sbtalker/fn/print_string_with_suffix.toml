@@ -15,7 +15,7 @@ desc = "Offset address in DS of the '$'-terminated string to print"
 0823:0c79 mov ah,9
 0823:0c7b int 21h
 ; Print the secondary suffix string located at DS:[01B9h]
-@mem [ds unknown]
+@mem ; [ds unknown]
 0823:0c7d lea dx,ds:[1B9h]
 0823:0c81 mov ah,9
 0823:0c83 int 21h

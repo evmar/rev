@@ -22,7 +22,7 @@ desc = "Far pointer to allocated memory block or NULL (0:0) on failure"
 0823:0de3 push bp
 0823:0de4 mov bp,sp
 ; Convert requested byte size into paragraphs (round up and divide by 16)
-@mem [ss unknown]
+@mem ; [ss unknown]
 0823:0de6 mov bx,[bp+6]
 0823:0de9 add bx,0Fh
 0823:0dec mov cl,4

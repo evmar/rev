@@ -23,8 +23,8 @@ export function FunctionView({ ip }: { ip: string }) {
     <main>
       <a href="#/">← Project overview</a>
       <h1>{func?.name ?? 'Function'} <code>{ip}</code></h1>
-      {error ? <p class="panel" role="alert">{error}</p> : func === null ? (
-        <p class="panel" role="status">Loading function…</p>
+      {error ? <p class="panel">{error}</p> : func === null ? (
+        <p class="panel">Loading function…</p>
       ) : (
         <>
           <section class="panel">

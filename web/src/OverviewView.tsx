@@ -16,8 +16,8 @@ function OverviewDetails({ overview }: { overview: Overview }) {
 
 function FunctionList({ functions }: { functions: Overview['functions'] }) {
   return (
-    <section class="panel" aria-labelledby="functions-heading">
-      <h2 id="functions-heading">Functions ({functions.length})</h2>
+    <section class="panel">
+      <h2>Functions ({functions.length})</h2>
       {functions.length === 0 ? (
         <p>No functions found.</p>
       ) : (
@@ -46,9 +46,9 @@ export function OverviewView() {
   return (
     <main>
       {error ? (
-        <p class="panel" role="alert">Could not load overview: {error}</p>
+        <p class="panel">Could not load overview: {error}</p>
       ) : overview === null ? (
-        <p class="panel" role="status">Loading overview…</p>
+        <p class="panel">Loading overview…</p>
       ) : (
         <>
           <OverviewDetails overview={overview} />

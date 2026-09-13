@@ -9,8 +9,8 @@ export function MemoryAddressView({ addr }: { addr: string }) {
     <main>
       <a href="#/memory">← Memory map</a>
       <h1>{memory?.name ?? 'Memory'} <code>{addr}</code></h1>
-      {error ? <p class="panel" role="alert">{error}</p> : memory === null ? (
-        <p class="panel" role="status">Loading memory address…</p>
+      {error ? <p class="panel">{error}</p> : memory === null ? (
+        <p class="panel">Loading memory address…</p>
       ) : (
         <>
           <dl class="panel">
@@ -19,8 +19,8 @@ export function MemoryAddressView({ addr }: { addr: string }) {
             <dt>Description</dt>
             <dd>{memory.desc}</dd>
           </dl>
-          <section class="panel" aria-labelledby="callers-heading">
-            <h2 id="callers-heading">Called by ({memory.callers.length})</h2>
+          <section class="panel">
+            <h2>Called by ({memory.callers.length})</h2>
             {memory.callers.length === 0 ? (
               <p>No functions reference this address.</p>
             ) : (

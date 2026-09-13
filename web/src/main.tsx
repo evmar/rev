@@ -19,7 +19,7 @@ function App() {
     try {
       ip = decodeURIComponent(hash.slice('#/functions/'.length));
     } catch {
-      return <main><a href="#/">Project overview</a><p role="alert">Invalid function address.</p></main>;
+      return <main><a href="#/">Project overview</a><p>Invalid function address.</p></main>;
     }
     return <FunctionView key={ip} ip={ip} />;
   }
@@ -31,7 +31,7 @@ function App() {
     try {
       addr = decodeURIComponent(hash.slice('#/memory/'.length));
     } catch {
-      return <main><a href="#/memory">Memory map</a><p role="alert">Invalid memory address.</p></main>;
+      return <main><a href="#/memory">Memory map</a><p>Invalid memory address.</p></main>;
     }
     return <MemoryAddressView key={addr} addr={addr} />;
   }

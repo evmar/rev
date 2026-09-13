@@ -60,21 +60,20 @@ export function FunctionView({ ip }: { ip: string }) {
                     const comment = instr.comment
                       ? instr.comment.split('\n').map(line => `; ${line}\n`).join('')
                       : '';
-                    const [jumpTarget, targetIp] = instr.jmp ?? [];
-                    let jumpComment;
-                    if (jumpTarget) {
-                      if (targetIp) {
-                        jumpComment = <a href={`#/functions/${encodeURIComponent(targetIp)}`}>
-                          {jumpTarget}
-                        </a>;
-                      } else {
-                        jumpComment = jumpTarget;
-                      }
+                    let [jumpTarget, targetIp] = instr.jmp ?? [];
+                    let jump: preact.ComponentChild = jumpTarget;
+                    if (jumpTarget&&targetIp) {
+                      jump = <a href={`#/functions/${encodeURIComponent(targetIp)}`}>
+                        {jumpTarget}
+                      </a>;
                     }
-                    if (jumpComment) jumpComment = <>{' ; '}{jumpComment}</>;
+                    const memory = instr.memory && (
+                      'Address' in instr.memory ? instr.memory.Address : instr.memory.Note
+                    );
                     return <div key={instr.ip}>
                       {`${comment}${label}${instr.ip} ${instr.text}`}
-                      {jumpComment}
+                      {jump && <> ; {jump}</>}
+                      {memory && ` ; mem ${memory}`}
                     </div>;
                   })}</code></pre>
                 )}

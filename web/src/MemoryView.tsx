@@ -1,8 +1,8 @@
-import type { MemoryDetail } from './bindings/MemoryDetail';
+import type { MemoryEntries } from './bindings/MemoryEntries';
 import { useJson } from './useJson';
 
 export function MemoryView() {
-  const { data: memory, error } = useJson<MemoryDetail>('api/memory.json');
+  const { data: memory, error } = useJson<MemoryEntries>('api/memory.json');
 
   return (
     <main>

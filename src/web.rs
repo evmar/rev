@@ -45,6 +45,14 @@ struct InstructionDetail {
     comment: Option<String>,
     label: Option<String>,
     jmp: Option<XRefDetail>,
+    memory: Option<MemoryDetail>,
+}
+
+#[derive(serde::Serialize, ts_rs::TS)]
+#[ts(export_to = "../web/src/bindings/")]
+enum MemoryDetail {
+    Address(String),
+    Note(String),
 }
 
 /// Display name and target IP; an empty IP denotes a non-function reference.
@@ -102,6 +110,10 @@ fn function_detail(func: &crate::function::Function) -> FunctionDetail<'_> {
                         comment: instr.comment.clone(),
                         label: instr.label.clone(),
                         jmp: instr.jmp.as_ref().map(XRefDetail::from),
+                        memory: instr.memory.as_ref().map(|memory| match memory {
+                            Ok(address) => MemoryDetail::Address(address.to_string()),
+                            Err(note) => MemoryDetail::Note(note.clone()),
+                        }),
                     })
                     .collect(),
             })
@@ -129,12 +141,12 @@ async fn get_function(
 
 async fn get_memory(State(db): State<AppState>) -> Response {
     let db = db.read().await;
-    Json(memory_detail(&db)).into_response()
+    Json(memory_entries(&db)).into_response()
 }
 
 #[derive(serde::Serialize, ts_rs::TS)]
 #[ts(export, export_to = "../web/src/bindings/")]
-struct MemoryDetail<'a> {
+struct MemoryEntries<'a> {
     entries: Vec<MemoryEntry<'a>>,
 }
 
@@ -147,8 +159,8 @@ struct MemoryEntry<'a> {
     typ: &'a str,
 }
 
-fn memory_detail(db: &DB) -> MemoryDetail<'_> {
-    MemoryDetail {
+fn memory_entries(db: &DB) -> MemoryEntries<'_> {
+    MemoryEntries {
         entries: db
             .memory
             .entries
@@ -220,7 +232,7 @@ fn export_site(db: &DB, output: &Path) -> anyhow::Result<()> {
     )?;
     std::fs::write(
         api.join("memory.json"),
-        serde_json::to_vec(&memory_detail(db))?,
+        serde_json::to_vec(&memory_entries(db))?,
     )?;
     for func in db.functions.values() {
         std::fs::write(

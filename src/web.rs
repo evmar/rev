@@ -127,6 +127,42 @@ async fn get_function(
     Ok(Json(function_detail(func)).into_response())
 }
 
+async fn get_memory(State(db): State<AppState>) -> Response {
+    let db = db.read().await;
+    Json(memory_detail(&db)).into_response()
+}
+
+#[derive(serde::Serialize, ts_rs::TS)]
+#[ts(export, export_to = "../web/src/bindings/")]
+struct MemoryDetail<'a> {
+    entries: Vec<MemoryEntry<'a>>,
+}
+
+#[derive(serde::Serialize, ts_rs::TS)]
+#[ts(export_to = "../web/src/bindings/")]
+struct MemoryEntry<'a> {
+    addr: String,
+    name: &'a str,
+    desc: &'a str,
+    typ: &'a str,
+}
+
+fn memory_detail(db: &DB) -> MemoryDetail<'_> {
+    MemoryDetail {
+        entries: db
+            .memory
+            .entries
+            .iter()
+            .map(|(addr, location)| MemoryEntry {
+                addr: addr.to_string(),
+                name: &location.name,
+                desc: &location.desc,
+                typ: &location.typ,
+            })
+            .collect(),
+    }
+}
+
 #[derive(serde::Serialize, ts_rs::TS)]
 #[ts(export, export_to = "../web/src/bindings/")]
 struct Overview<'a> {
@@ -182,6 +218,10 @@ fn export_site(db: &DB, output: &Path) -> anyhow::Result<()> {
         api.join("overview.json"),
         serde_json::to_vec(&overview(db))?,
     )?;
+    std::fs::write(
+        api.join("memory.json"),
+        serde_json::to_vec(&memory_detail(db))?,
+    )?;
     for func in db.functions.values() {
         std::fs::write(
             api.join("functions").join(format!("{}.json", func.ip)),
@@ -221,6 +261,7 @@ pub async fn run(db: DB, args: Args) -> anyhow::Result<()> {
     };
     let app = app
         .route("/api/overview.json", get(get_overview))
+        .route("/api/memory.json", get(get_memory))
         .route("/api/functions/{ip}", get(get_function))
         .with_state(db);
     let listener = tokio::net::TcpListener::bind("127.0.0.1:3000").await?;

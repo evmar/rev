@@ -42,7 +42,7 @@ cargo run -- --project /path/to/project web --export /path/to/site
 ```
 
 Upload the contents of that directory to a static host. It contains the frontend,
-`api/overview.json`, and `api/functions/{ip}.json`. The live server uses these same
+`api/overview.json`, `api/memory.json`, and `api/functions/{ip}.json`. The live server uses these same
 URLs, so the frontend needs no mode switch. Relative URLs and hash navigation
 also support hosting under a subdirectory. Serve the export over HTTP rather
 than opening `index.html` directly. The build writes the frontend directly to the

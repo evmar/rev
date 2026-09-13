@@ -4,6 +4,7 @@ import type { Overview } from './bindings/Overview';
 import type { FunctionDetail } from './bindings/FunctionDetail';
 import './style.css';
 import type { XRefDetail } from './bindings/XRefDetail';
+import type { MemoryDetail } from './bindings/MemoryDetail';
 
 function OverviewDetails({ overview }: { overview: Overview }) {
   return (
@@ -44,6 +45,66 @@ function FunctionList({ functions }: { functions: Overview['functions'] }) {
   );
 }
 
+function MemoryView() {
+  const [memory, setMemory] = useState<MemoryDetail | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadMemory() {
+      try {
+        const response = await fetch('api/memory.json', {
+          signal: controller.signal,
+        });
+        if (!response.ok) {
+          throw new Error(`Request failed (${response.status})`);
+        }
+        const data: MemoryDetail = await response.json();
+        if (!controller.signal.aborted) setMemory(data);
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          setError(error instanceof Error ? error.message : String(error));
+        }
+      }
+    }
+
+    void loadMemory();
+    return () => controller.abort();
+  }, []);
+
+  return (
+    <main>
+      <a href="#/">← Project overview</a>
+      <h1>Memory</h1>
+      {error ? (
+        <p class="panel" role="alert">Could not load memory: {error}</p>
+      ) : memory === null ? (
+        <p class="panel" role="status">Loading memory…</p>
+      ) : (
+        <section class="panel" aria-labelledby="memory-heading">
+          <h2 id="memory-heading">Entries ({memory.entries.length})</h2>
+          <table>
+            <thead>
+              <tr><th scope="col">Address</th><th scope="col">Name</th><th scope="col">Type</th><th scope="col">Description</th></tr>
+            </thead>
+            <tbody>
+              {memory.entries.map(entry => (
+                <tr key={entry.addr}>
+                  <td><code>{entry.addr}</code></td>
+                  <td>{entry.name}</td>
+                  <td><code>{entry.typ}</code></td>
+                  <td>{entry.desc}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      )}
+    </main>
+  );
+}
+
 function OverviewView() {
   const [overview, setOverview] = useState<Overview | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -81,6 +142,7 @@ function OverviewView() {
       ) : (
         <>
           <OverviewDetails overview={overview} />
+          <p><a href="#/memory">View memory map</a></p>
           <FunctionList functions={overview.functions} />
         </>
       )}
@@ -211,6 +273,9 @@ function App() {
       return <main><a href="#/">Project overview</a><p role="alert">Invalid function address.</p></main>;
     }
     return <FunctionView key={ip} ip={ip} />;
+  }
+  if (hash === '#/memory') {
+    return <MemoryView />;
   }
   return <OverviewView />;
 }

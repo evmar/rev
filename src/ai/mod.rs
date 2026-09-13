@@ -11,8 +11,8 @@ use crate::db::DB;
 #[derive(argh::FromArgs)]
 #[argh(subcommand, name = "ai")]
 pub struct Args {
-    #[argh(positional, from_str_fn(SegOfs::parse))]
-    addr: SegOfs,
+    // #[argh(positional, from_str_fn(SegOfs::parse))]
+    // addr: SegOfs,
 }
 
 fn print_usage(start: std::time::Instant, usage: &ResponseUsage) {
@@ -30,19 +30,50 @@ fn print_usage(start: std::time::Instant, usage: &ResponseUsage) {
     }
 }
 
-pub async fn run(db: &mut DB, args: Args) -> anyhow::Result<()> {
-    label_memory::run(db, &client()?, args.addr).await?;
-    db.write()?;
-    Ok(())
+enum Task {
+    AnnotateFunction(SegOfs),
+    LabelMemory(SegOfs),
 }
 
-#[allow(dead_code)]
-pub async fn run_old(db: &mut DB, args: Args) -> anyhow::Result<()> {
-    let Some(func) = db.functions.get_mut(&args.addr) else {
-        anyhow::bail!("no function {}", args.addr);
-    };
-    annotate_function::run(&client()?, func).await?;
-    db.write()?;
+impl Task {
+    fn desc(&self) -> String {
+        match self {
+            Task::AnnotateFunction(ip) => format!("annotate function {ip}"),
+            Task::LabelMemory(addr) => format!("label memory {addr}"),
+        }
+    }
+}
+
+fn next_queued(db: &DB) -> Option<Task> {
+    for func in db.functions.values() {
+        if func.desc.is_none() {
+            return Some(Task::AnnotateFunction(func.ip));
+        }
+
+        for block in func.blocks.iter() {
+            for instr in block.instrs.iter() {
+                if let Some(Ok(addr)) = instr.memory {
+                    if !db.memory.entries.contains_key(&addr) {
+                        return Some(Task::LabelMemory(addr));
+                    }
+                }
+            }
+        }
+    }
+
+    None
+}
+
+pub async fn run(db: &mut DB, _args: Args) -> anyhow::Result<()> {
+    let client = client()?;
+    while let Some(task) = next_queued(db) {
+        println!("next task: {}", task.desc());
+        match task {
+            Task::AnnotateFunction(ip) => annotate_function::run(db, &client, ip).await?,
+            Task::LabelMemory(addr) => label_memory::run(db, &client, addr).await?,
+        }
+        db.write()?;
+    }
     Ok(())
 }
 

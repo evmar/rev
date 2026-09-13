@@ -4,7 +4,10 @@ use futures_util::StreamExt;
 use openrouter_rs::{Message, OpenRouterClient, api::chat::ChatCompletionRequest, types::Role};
 use runtime::SegOfs;
 
-use crate::function::{Function, Instr};
+use crate::{
+    db::DB,
+    function::{Function, Instr},
+};
 
 #[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
 struct Response {
@@ -60,7 +63,10 @@ fn response_schema() -> schemars::Schema {
         .into_root_schema_for::<Response>()
 }
 
-pub async fn run(client: &OpenRouterClient, func: &mut Function) -> anyhow::Result<()> {
+pub async fn run(db: &mut DB, client: &OpenRouterClient, ip: SegOfs) -> anyhow::Result<()> {
+    let Some(func) = db.functions.get_mut(&ip) else {
+        anyhow::bail!("no function {}", ip);
+    };
     let resp = call(client, func).await?;
     merge(func, resp)?;
     Ok(())

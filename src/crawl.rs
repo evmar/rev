@@ -1,7 +1,6 @@
 use std::collections::VecDeque;
 
 use crate::{
-    ai,
     db::DB,
     dis::dis_func,
     xref::{self, XRef},
@@ -40,7 +39,6 @@ pub async fn run(db: &mut DB, _args: Args) -> anyhow::Result<()> {
         println!("visiting {ip}");
         let func = dis_func(db, ip);
         xref::update_callees(func, |ip| XRef::External(None, ip));
-        ai::analyze(func).await?;
         db.write()?;
     }
 

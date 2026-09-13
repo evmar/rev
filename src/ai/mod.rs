@@ -1,10 +1,11 @@
 mod annotate_function;
+mod label_memory;
 
 pub use annotate_function::Var;
 use openrouter_rs::{OpenRouterClient, types::ResponseUsage};
 use runtime::SegOfs;
 
-use crate::{db::DB, function::Function};
+use crate::db::DB;
 
 /// ai
 #[derive(argh::FromArgs)]
@@ -30,16 +31,17 @@ fn print_usage(start: std::time::Instant, usage: &ResponseUsage) {
 }
 
 pub async fn run(db: &mut DB, args: Args) -> anyhow::Result<()> {
+    label_memory::run(db, &client()?, args.addr).await
+}
+
+#[allow(dead_code)]
+pub async fn run_old(db: &mut DB, args: Args) -> anyhow::Result<()> {
     let Some(func) = db.functions.get_mut(&args.addr) else {
         anyhow::bail!("no function {}", args.addr);
     };
-    analyze(func).await?;
+    annotate_function::run(&client()?, func).await?;
     db.write()?;
     Ok(())
-}
-
-pub async fn analyze(func: &mut Function) -> anyhow::Result<()> {
-    annotate_function::run(&client()?, func).await
 }
 
 fn client() -> anyhow::Result<OpenRouterClient> {

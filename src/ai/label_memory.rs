@@ -1,0 +1,207 @@
+use futures_util::StreamExt;
+use openrouter_rs::{
+    Message, OpenRouterClient,
+    api::chat::ChatCompletionRequest,
+    types::{ResponseFormat, ResponseUsage, Role, TypedTool},
+};
+use runtime::SegOfs;
+use schemars::schema_for;
+
+use crate::db::DB;
+
+#[derive(Debug, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
+struct GetFunctionParams {
+    /// address of function to get
+    addr: String,
+}
+
+impl TypedTool for GetFunctionParams {
+    fn name() -> &'static str {
+        "get_function"
+    }
+
+    fn description() -> &'static str {
+        "get a function's name, description, and code"
+    }
+}
+
+#[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
+struct Response {
+    /// short name for the memory location
+    pub name: String,
+    /// description of what the memory holds
+    pub desc: String,
+    /// value type as expressed in Rust, e.g. `u32` or `CStr`
+    pub typ: String,
+}
+
+pub async fn run(db: &mut DB, client: &OpenRouterClient, addr: SegOfs) -> anyhow::Result<()> {
+    let mut functions = vec![];
+    for func in db.functions.values() {
+        for block in func.blocks.iter() {
+            for instr in block.instrs.iter() {
+                if let Some(Ok(mem_ref)) = instr.memory {
+                    if mem_ref == addr {
+                        functions.push(func.ip);
+                    }
+                }
+            }
+        }
+    }
+
+    let response = call(db, client, functions, addr).await;
+    println!("resp {response:#?}");
+    Ok(())
+}
+
+async fn call(
+    db: &mut DB,
+    client: &OpenRouterClient,
+    functions: Vec<SegOfs>,
+    addr: SegOfs,
+) -> anyhow::Result<Response> {
+    let prompt = format!(
+        indoc::indoc! {"
+            analyze usage of memory at address {addr} to figure out its name, description, and type.
+            it is used by these functions: {functions}
+        "},
+        addr = addr,
+        functions = functions
+            .iter()
+            .map(|ip| ip.to_string())
+            .collect::<Vec<_>>()
+            .join(", ")
+    );
+
+    let mut agent_loop = AgentLoop {
+        db,
+        client,
+        messages: vec![
+            Message::new(Role::System, "you analyze x86 assembly for DOS executables"),
+            Message::new(Role::User, prompt),
+        ],
+        usage: Default::default(),
+    };
+
+    let mut content = None;
+    for _ in 0..10 {
+        content = agent_loop.run_one().await?;
+        if content.is_some() {
+            break;
+        }
+    }
+    let content = content.unwrap();
+
+    let response: Response = serde_json::from_str(&content)?;
+    Ok(response)
+}
+
+#[derive(Default)]
+struct Usage {
+    prompt: u32,
+    completion: u32,
+    total: u32,
+    cost: f64,
+}
+
+impl Usage {
+    fn add(&mut self, usage: &ResponseUsage) {
+        self.prompt += usage.prompt_tokens;
+        self.completion = usage.completion_tokens;
+        self.total = usage.total_tokens;
+        if let Some(cost) = usage.cost {
+            self.cost += cost;
+        }
+    }
+
+    fn print(&self) {
+        println!(
+            "{}+{}={} / ${:.5}",
+            self.prompt, self.completion, self.total, self.cost
+        );
+    }
+}
+
+struct AgentLoop<'client> {
+    db: &'client mut DB,
+    client: &'client OpenRouterClient,
+    messages: Vec<Message>,
+    usage: Usage,
+}
+
+impl<'client> AgentLoop<'client> {
+    async fn run_one(&mut self) -> anyhow::Result<Option<String>> {
+        let request = ChatCompletionRequest::builder()
+            .model("google/gemini-3.8-flash")
+            .typed_tool::<GetFunctionParams>()
+            .response_format(ResponseFormat::json_schema(
+                "label",
+                true,
+                schema_for!(Response).to_value(),
+            ))
+            .messages(self.messages.clone())
+            .build()?;
+
+        let mut content = String::new();
+        let mut stream = self.client.chat().stream_tool_aware(&request).await?;
+        while let Some(event) = stream.next().await {
+            use openrouter_rs::types::StreamEvent;
+            match event {
+                StreamEvent::Error(err) => panic!("err {err}"),
+                StreamEvent::ContentDelta(c) => {
+                    content.push_str(&c);
+                }
+                StreamEvent::ReasoningDelta(reasoning) => print!("{reasoning}"),
+                StreamEvent::ReasoningDetailsDelta(_) => {}
+                StreamEvent::Done {
+                    tool_calls,
+                    finish_reason,
+                    usage,
+                    ..
+                } => {
+                    if let Some(usage) = usage {
+                        self.usage.add(&usage);
+                    }
+                    if let Some(finish) = finish_reason {
+                        use openrouter_rs::types::FinishReason;
+                        match finish {
+                            FinishReason::ToolCalls => {
+                                self.messages.push(Message::assistant_with_tool_calls(
+                                    "",
+                                    tool_calls.clone(),
+                                ));
+                                for call in tool_calls.iter() {
+                                    if call.is_tool::<GetFunctionParams>() {
+                                        let params = call.parse_params::<GetFunctionParams>()?;
+                                        let func = self
+                                            .db
+                                            .functions
+                                            .get(&SegOfs::parse(&params.addr).unwrap())
+                                            .unwrap();
+                                        println!(
+                                            "Reading function {} ({})",
+                                            params.addr,
+                                            func.name.as_deref().unwrap_or("unknown name")
+                                        );
+                                        let mut buf = String::new();
+                                        func.serialize(&mut buf)?;
+                                        self.messages.push(Message::tool_response(call.id(), buf));
+                                    } else {
+                                        panic!();
+                                    }
+                                }
+                            }
+                            FinishReason::Stop => {
+                                self.usage.print();
+                                return Ok(Some(content));
+                            }
+                            _ => todo!("finish {:?}", finish),
+                        }
+                    }
+                }
+                _ => todo!(),
+            }
+        }
+        Ok(None)
+    }
+}

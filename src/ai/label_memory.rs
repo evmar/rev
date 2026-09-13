@@ -24,6 +24,25 @@ impl TypedTool for GetFunctionParams {
     }
 }
 
+impl GetFunctionParams {
+    fn call(db: &DB, params: &GetFunctionParams) -> anyhow::Result<String> {
+        let addr = SegOfs::parse(&params.addr)
+            .map_err(|_| anyhow::anyhow!("bad address {:?}", params.addr))?;
+        let func = db
+            .functions
+            .get(&addr)
+            .ok_or_else(|| anyhow::anyhow!("unknown function {addr}"))?;
+        println!(
+            "Reading function {} ({})",
+            params.addr,
+            func.name.as_deref().unwrap_or("unknown name")
+        );
+        let mut buf = String::new();
+        func.serialize(&mut buf)?;
+        Ok(buf)
+    }
+}
+
 #[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
 struct Response {
     /// short name for the memory location
@@ -67,6 +86,7 @@ async fn call(
         indoc::indoc! {"
             analyze usage of memory at address {addr} to figure out its name, description, and type.
             it is used by these functions: {functions}
+            once you have a good guess, you don't need to read every last function.
         "},
         addr = addr,
         functions = functions
@@ -126,7 +146,7 @@ struct AgentLoop<'client> {
 
 impl<'client> AgentLoop<'client> {
     async fn run(&mut self) -> anyhow::Result<String> {
-        for _ in 0..10 {
+        for _ in 0..20 {
             if let Some(content) = self.run_one().await? {
                 return Ok(content);
             }
@@ -163,19 +183,11 @@ impl<'client> AgentLoop<'client> {
             for call in tool_calls.iter() {
                 if call.is_tool::<GetFunctionParams>() {
                     let params = call.parse_params::<GetFunctionParams>()?;
-                    let func = self
-                        .db
-                        .functions
-                        .get(&SegOfs::parse(&params.addr).unwrap())
-                        .unwrap();
-                    println!(
-                        "Reading function {} ({})",
-                        params.addr,
-                        func.name.as_deref().unwrap_or("unknown name")
-                    );
-                    let mut buf = String::new();
-                    func.serialize(&mut buf)?;
-                    self.messages.push(Message::tool_response(call.id(), buf));
+                    let out = match GetFunctionParams::call(self.db, &params) {
+                        Ok(out) => out,
+                        Err(err) => format!("error: {err}"),
+                    };
+                    self.messages.push(Message::tool_response(call.id(), out));
                 } else {
                     panic!();
                 }

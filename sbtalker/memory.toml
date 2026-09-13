@@ -1,4 +1,64 @@
+[entries."0823:0000"]
+name = "heap_size_bytes"
+desc = "Total heap capacity in bytes, computed as the number of 16KB blocks multiplied by 0x4000 (16,384 bytes)."
+typ = "u32"
+
+[entries."0823:0002"]
+name = "heap_size_bytes_hi"
+desc = "High 16 bits of the total heap capacity in bytes (calculated as 16KB block count multiplied by 16384)"
+typ = "u16"
+
+[entries."0823:0009"]
+name = "heap_base_segment"
+desc = "Base segment address of the heap/buffer in conventional memory, located immediately following the program image"
+typ = "u16"
+
 [entries."0823:008e"]
 name = "psp_segment"
 desc = "Segment address of the program's Program Segment Prefix (PSP)"
+typ = "u16"
+
+[entries."0823:0090"]
+name = "mcb_size_paragraphs"
+desc = "Size of the program's conventional DOS memory block/allocation in paragraphs (as read from MCB offset 03h; updated when EMS pages are copied or memory is resized/kept resident)"
+typ = "u16"
+
+[entries."0823:0092"]
+name = "heap_size_paragraphs"
+desc = "Size of the heap or conventional memory buffer in paragraphs (16-byte units)"
+typ = "u16"
+
+[entries."0823:009a"]
+name = "ems_page_count"
+desc = "Number of 16KB memory pages (blocks) calculated from available heap space, used for EMS page allocation and paging operations"
+typ = "u16"
+
+[entries."0823:009c"]
+name = "ems_page_frame_seg"
+desc = "EMS page frame segment address returned by INT 67h, AH=41h, used as the base segment for mapping and accessing expanded memory pages."
+typ = "u16"
+
+[entries."0823:009e"]
+name = "ems_handle"
+desc = "EMS handle returned by INT 67h, AH=43h representing the allocated expanded memory pages."
+typ = "u16"
+
+[entries."0823:01b2"]
+name = "cmdline_p_value"
+desc = "Parsed 16-bit value from command-line switch /P (typically an I/O port address or parameter), or 0 if not specified"
+typ = "u16"
+
+[entries."0823:01cb"]
+name = "ems_initialized"
+desc = "Boolean flag indicating whether Expanded Memory (EMS) is available and initialized"
+typ = "bool"
+
+[entries."0823:01d2"]
+name = "callback_offset"
+desc = "Offset of the callback routine (0AE2h) stored as the lower word of a far function pointer"
+typ = "u16"
+
+[entries."0823:01d4"]
+name = "callback_seg"
+desc = "Segment portion of far pointer (CS:01D2h) to callback or handler function (initialized to 0823h)"
 typ = "u16"

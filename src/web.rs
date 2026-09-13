@@ -144,6 +144,17 @@ async fn get_memory(State(db): State<AppState>) -> Response {
     Json(memory_entries(&db)).into_response()
 }
 
+async fn get_memory_address(
+    State(db): State<AppState>,
+    axum::extract::Path(addr): axum::extract::Path<String>,
+) -> Result<Response, StatusCode> {
+    let addr = addr.strip_suffix(".json").ok_or(StatusCode::BAD_REQUEST)?;
+    let addr = runtime::SegOfs::parse(addr).map_err(|_| StatusCode::BAD_REQUEST)?;
+    let db = db.read().await;
+    let detail = memory_address_detail(&db, addr).ok_or(StatusCode::NOT_FOUND)?;
+    Ok(Json(detail).into_response())
+}
+
 #[derive(serde::Serialize, ts_rs::TS)]
 #[ts(export, export_to = "../web/src/bindings/")]
 struct MemoryEntries<'a> {
@@ -173,6 +184,47 @@ fn memory_entries(db: &DB) -> MemoryEntries<'_> {
             })
             .collect(),
     }
+}
+
+#[derive(serde::Serialize, ts_rs::TS)]
+#[ts(export, export_to = "../web/src/bindings/")]
+struct MemoryAddressDetail<'a> {
+    addr: String,
+    name: &'a str,
+    desc: &'a str,
+    typ: &'a str,
+    callers: Vec<FunctionOverview<'a>>,
+}
+
+fn memory_address_detail(db: &DB, addr: runtime::SegOfs) -> Option<MemoryAddressDetail<'_>> {
+    let location = db.memory.entries.get(&addr)?;
+    let callers = db
+        .functions
+        .values()
+        .filter(|func| {
+            func.blocks.iter().any(|block| {
+                block.instrs.iter().any(|instr| {
+                    instr
+                        .memory
+                        .as_ref()
+                        .and_then(|memory| memory.as_ref().ok())
+                        .is_some_and(|memory| *memory == addr)
+                })
+            })
+        })
+        .map(|func| FunctionOverview {
+            ip: func.ip,
+            name: func.name.as_deref(),
+            desc: func.desc.as_deref(),
+        })
+        .collect();
+    Some(MemoryAddressDetail {
+        addr: addr.to_string(),
+        name: &location.name,
+        desc: &location.desc,
+        typ: &location.typ,
+        callers,
+    })
 }
 
 #[derive(serde::Serialize, ts_rs::TS)]
@@ -226,6 +278,7 @@ fn export_site(db: &DB, output: &Path) -> anyhow::Result<()> {
     // Require fresh API data so old functions cannot survive an export.
     std::fs::create_dir(&api)?;
     std::fs::create_dir_all(api.join("functions"))?;
+    std::fs::create_dir_all(api.join("memory"))?;
     std::fs::write(
         api.join("overview.json"),
         serde_json::to_vec(&overview(db))?,
@@ -238,6 +291,13 @@ fn export_site(db: &DB, output: &Path) -> anyhow::Result<()> {
         std::fs::write(
             api.join("functions").join(format!("{}.json", func.ip)),
             serde_json::to_vec(&function_detail(func))?,
+        )?;
+    }
+    for addr in db.memory.entries.keys() {
+        let detail = memory_address_detail(db, *addr).expect("memory address must exist");
+        std::fs::write(
+            api.join("memory").join(format!("{addr}.json")),
+            serde_json::to_vec(&detail)?,
         )?;
     }
     Ok(())
@@ -274,6 +334,7 @@ pub async fn run(db: DB, args: Args) -> anyhow::Result<()> {
     let app = app
         .route("/api/overview.json", get(get_overview))
         .route("/api/memory.json", get(get_memory))
+        .route("/api/memory/{addr}", get(get_memory_address))
         .route("/api/functions/{ip}", get(get_function))
         .with_state(db);
     let listener = tokio::net::TcpListener::bind("127.0.0.1:3000").await?;

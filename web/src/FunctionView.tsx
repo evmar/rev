@@ -67,13 +67,18 @@ export function FunctionView({ ip }: { ip: string }) {
                         {jumpTarget}
                       </a>;
                     }
-                    const memory = instr.memory && (
-                      'Address' in instr.memory ? instr.memory.Address : instr.memory.Note
-                    );
+                    let memory: preact.ComponentChild;
+                    if (instr.memory) {
+                      memory = 'Address' in instr.memory
+                        ? <a href={`#/memory/${encodeURIComponent(instr.memory.Address)}`}>
+                            {instr.memory.Address}
+                          </a>
+                        : instr.memory.Note;
+                    }
                     return <div key={instr.ip}>
                       {`${comment}${label}${instr.ip} ${instr.text}`}
                       {jump && <> ; {jump}</>}
-                      {memory && ` ; mem ${memory}`}
+                      {memory && <> ; mem {memory}</>}
                     </div>;
                   })}</code></pre>
                 )}

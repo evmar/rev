@@ -3,6 +3,7 @@ import { useEffect, useState } from 'preact/hooks';
 import './style.css';
 import { FunctionView } from './FunctionView';
 import { MemoryView } from './MemoryView';
+import { MemoryAddressView } from './MemoryAddressView';
 import { OverviewView } from './OverviewView';
 
 function App() {
@@ -24,6 +25,15 @@ function App() {
   }
   if (hash === '#/memory') {
     return <MemoryView />;
+  }
+  if (hash.startsWith('#/memory/')) {
+    let addr: string;
+    try {
+      addr = decodeURIComponent(hash.slice('#/memory/'.length));
+    } catch {
+      return <main><a href="#/memory">Memory map</a><p role="alert">Invalid memory address.</p></main>;
+    }
+    return <MemoryAddressView key={addr} addr={addr} />;
   }
   return <OverviewView />;
 }

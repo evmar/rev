@@ -22,8 +22,8 @@ export function MemoryView() {
             <tbody>
               {memory.entries.map(entry => (
                 <tr key={entry.addr}>
-                  <td><code>{entry.addr}</code></td>
-                  <td>{entry.name}</td>
+                  <td><a href={`#/memory/${encodeURIComponent(entry.addr)}`}><code>{entry.addr}</code></a></td>
+                  <td><a href={`#/memory/${encodeURIComponent(entry.addr)}`}>{entry.name}</a></td>
                   <td><code>{entry.typ}</code></td>
                   <td>{entry.desc}</td>
                 </tr>

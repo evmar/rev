@@ -6,7 +6,7 @@ use openrouter_rs::{
 use runtime::SegOfs;
 use schemars::schema_for;
 
-use crate::{db::DB, memory::MemoryLocation};
+use crate::{ai::read_memory::ReadMemoryParams, db::DB, memory::MemoryLocation};
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 struct GetFunctionParams {
@@ -20,7 +20,7 @@ impl TypedTool for GetFunctionParams {
     }
 
     fn description() -> &'static str {
-        "get a function's name, description, and code"
+        "get a function's name, description, and a dump of its assembly code"
     }
 }
 
@@ -85,8 +85,8 @@ async fn call(
     let prompt = format!(
         indoc::indoc! {"
             analyze usage of memory at address {addr} to figure out its name, description, and type.
+            use get_function to get the assembly for a given address, do not use read_memory and disassemble code.
             it is used by these functions: {functions}
-            once you have a good guess, you don't need to read every last function.
         "},
         addr = addr,
         functions = functions
@@ -146,7 +146,7 @@ struct AgentLoop<'client> {
 
 impl<'client> AgentLoop<'client> {
     async fn run(&mut self) -> anyhow::Result<String> {
-        for _ in 0..20 {
+        for _ in 0..50 {
             if let Some(content) = self.run_one().await? {
                 return Ok(content);
             }
@@ -158,6 +158,7 @@ impl<'client> AgentLoop<'client> {
         let request = ChatCompletionRequest::builder()
             .model("google/gemini-3.8-flash")
             .typed_tool::<GetFunctionParams>()
+            .typed_tool::<ReadMemoryParams>()
             .response_format(ResponseFormat::json_schema(
                 "label",
                 true,
@@ -181,16 +182,20 @@ impl<'client> AgentLoop<'client> {
             self.messages
                 .push(Message::assistant_with_tool_calls("", tool_calls.to_vec()));
             for call in tool_calls.iter() {
-                if call.is_tool::<GetFunctionParams>() {
+                let out = if call.is_tool::<GetFunctionParams>() {
                     let params = call.parse_params::<GetFunctionParams>()?;
-                    let out = match GetFunctionParams::call(self.db, &params) {
-                        Ok(out) => out,
-                        Err(err) => format!("error: {err}"),
-                    };
-                    self.messages.push(Message::tool_response(call.id(), out));
+                    GetFunctionParams::call(self.db, &params)
+                } else if call.is_tool::<ReadMemoryParams>() {
+                    let params = call.parse_params::<ReadMemoryParams>()?;
+                    ReadMemoryParams::call(self.db, params)
                 } else {
-                    panic!();
-                }
+                    panic!("unexpected call {call:?}");
+                };
+                let out = match out {
+                    Ok(out) => out,
+                    Err(err) => format!("error: {err}"),
+                };
+                self.messages.push(Message::tool_response(call.id(), out))
             }
         }
 

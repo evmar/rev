@@ -1,5 +1,6 @@
 mod annotate_function;
 mod label_memory;
+mod read_memory;
 
 pub use annotate_function::Var;
 use openrouter_rs::{OpenRouterClient, types::ResponseUsage};

@@ -69,9 +69,9 @@ desc = "Parsed 16-bit value from command-line switch /P (typically an I/O port a
 typ = "u16"
 
 [entries."0823:01b9"]
-name = "msg_suffix"
-desc = "DOS '$'-terminated string printed as a suffix or newline trailer after primary output messages"
-typ = "[u8; 3]"
+name = "driver_filename"
+desc = 'Default driver filename buffer initialized to "StandDac.drv\0", which can be overwritten by the filename specified with the /D command-line switch; also serves as the overlay filename string when loading the driver.'
+typ = "[u8; 13]"
 
 [entries."0823:01cb"]
 name = "ems_initialized"

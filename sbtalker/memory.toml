@@ -68,6 +68,11 @@ name = "cmdline_p_value"
 desc = "Parsed 16-bit value from command-line switch /P (typically an I/O port address or parameter), or 0 if not specified"
 typ = "u16"
 
+[entries."0823:01b9"]
+name = "msg_suffix"
+desc = "DOS '$'-terminated string printed as a suffix or newline trailer after primary output messages"
+typ = "[u8; 3]"
+
 [entries."0823:01cb"]
 name = "ems_initialized"
 desc = "Boolean flag indicating whether Expanded Memory (EMS) is available and initialized"

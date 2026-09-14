@@ -57,6 +57,8 @@ export function FunctionView({ ip }: { ip: string }) {
                 {block.instrs.length === 0 ? <p>No instructions in this block.</p> : (
                   <pre><code>{block.instrs.map((instr) => {
                     const label = instr.label !== null ? `${instr.label}:\n` : '';
+                    const assume = instr.assume
+                      ?.map(([key, val]) => `@assume ${key}=${val.toString(16)}\n`).join('') ?? '';
                     const comment = instr.comment
                       ? instr.comment.split('\n').map(line => `; ${line}\n`).join('')
                       : '';
@@ -80,7 +82,7 @@ export function FunctionView({ ip }: { ip: string }) {
                       }
                     }
                     return <div key={instr.ip}>
-                      {`${comment}${label}${instr.ip} ${instr.text}`}
+                      {`${comment}${assume}${label}${instr.ip} ${instr.text}`}
                       {jump && <> ; {jump}</>}
                       {memory && <> ; mem {memory}</>}
                     </div>;

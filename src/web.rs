@@ -46,6 +46,7 @@ struct InstructionDetail {
     ip: String,
     text: String,
     comment: Option<String>,
+    assume: Option<Vec<(String, u16)>>,
     label: Option<String>,
     jmp: Option<XRefDetail>,
     memory: Option<MemoryDetail>,
@@ -124,6 +125,7 @@ fn function_detail<'a>(db: &'a DB, func: &'a crate::function::Function) -> Funct
                         ip: block.ip.with_ofs(instr.iced.ip16()).to_string(),
                         text: instr.iced.to_string(),
                         comment: instr.comment.clone(),
+                        assume: instr.assume.clone(),
                         label: instr.label.clone(),
                         jmp: instr.jmp.as_ref().map(XRefDetail::from),
                         memory: instr.memory.as_ref().map(|memory| match memory {

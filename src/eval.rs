@@ -38,6 +38,11 @@ impl Eval {
 
     fn instr(&mut self, instr: &mut Instr) {
         println!("instr {}", instr.iced);
+        if let Some(assume) = &instr.assume {
+            for (reg, val) in assume.iter() {
+                self.regs.insert(ir::Name::new(reg), *val);
+            }
+        }
         let stmt = match ir::Stmt::try_from(&instr.iced) {
             Ok(stmt) => {
                 println!("{stmt}");

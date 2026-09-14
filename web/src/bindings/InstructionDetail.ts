@@ -2,4 +2,4 @@
 import type { MemoryDetail } from "./MemoryDetail";
 import type { XRefDetail } from "./XRefDetail";
 
-export type InstructionDetail = { ip: string, text: string, comment: string | null, label: string | null, jmp: XRefDetail | null, memory: MemoryDetail | null, };
+export type InstructionDetail = { ip: string, text: string, comment: string | null, assume: Array<[string, number]> | null, label: string | null, jmp: XRefDetail | null, memory: MemoryDetail | null, };

@@ -30,6 +30,11 @@ impl Function {
                 if let Some(comment) = &instr.comment {
                     writeln!(w, "; {comment}")?;
                 }
+                if let Some(assume) = &instr.assume {
+                    for (reg, val) in assume.iter() {
+                        writeln!(w, "@assume {reg}={val:x}")?;
+                    }
+                }
                 if let Some(label) = &instr.label {
                     writeln!(w, "@label {label}")?;
                 }
@@ -65,6 +70,7 @@ impl Function {
         let mut label = None;
         let mut jmp = None;
         let mut memory: Option<Result<SegOfs, String>> = None;
+        let mut assume = vec![];
         for (i, line) in body.lines().enumerate() {
             if line.is_empty() {
                 block = func.blocks.push_mut(Block {
@@ -90,6 +96,14 @@ impl Function {
             } else if let Some(l) = line.strip_prefix("@label ") {
                 label = Some(l.to_owned());
                 continue;
+            } else if let Some(a) = line.strip_prefix("@assume ") {
+                let Some((reg, val)) = a.split_once('=') else {
+                    anyhow::bail!("bad assume {a:?}");
+                };
+                let val = u16::from_str_radix(val, 16)
+                    .map_err(|_| anyhow::anyhow!("bad value {val:?}"))?;
+                assume.push((reg.to_owned(), val));
+                continue;
             }
 
             let Some((addr, _)) = line.split_once(' ') else {
@@ -113,6 +127,11 @@ impl Function {
                 label: std::mem::take(&mut label),
                 jmp: std::mem::take(&mut jmp),
                 memory: std::mem::take(&mut memory),
+                assume: if assume.is_empty() {
+                    None
+                } else {
+                    Some(std::mem::take(&mut assume))
+                },
                 iced: instr,
             });
         }
@@ -162,6 +181,7 @@ pub struct Instr {
     pub label: Option<String>,
     pub jmp: Option<XRef>,
     pub memory: Option<Result<SegOfs, String>>,
+    pub assume: Option<Vec<(String, u16)>>,
     pub iced: iced_x86::Instruction,
 }
 

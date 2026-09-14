@@ -1,4 +1,5 @@
 use std::{
+    collections::HashMap,
     path::{Path, PathBuf},
     sync::Arc,
 };
@@ -27,6 +28,8 @@ struct FunctionDetail<'a> {
     callees: Option<Vec<XRefDetail>>,
     params: &'a Option<Vec<crate::ai::Var>>,
     ret: &'a Option<crate::ai::Var>,
+    #[ts(type = "Record<string, string>")]
+    memory: HashMap<runtime::SegOfs, String>,
     blocks: Vec<BlockDetail>,
 }
 
@@ -80,7 +83,19 @@ fn function_ref(xref: &XRef) -> Option<XRefDetail> {
     }
 }
 
-fn function_detail(func: &crate::function::Function) -> FunctionDetail<'_> {
+fn function_detail<'a>(db: &'a DB, func: &'a crate::function::Function) -> FunctionDetail<'a> {
+    let memory = func
+        .blocks
+        .iter()
+        .flat_map(|block| &block.instrs)
+        .filter_map(|instr| instr.memory.as_ref()?.as_ref().ok())
+        .filter_map(|addr| {
+            db.memory
+                .entries
+                .get(addr)
+                .map(|location| (*addr, location.name.clone()))
+        })
+        .collect();
     FunctionDetail {
         ip: func.ip.to_string(),
         name: func.name.as_deref(),
@@ -96,6 +111,7 @@ fn function_detail(func: &crate::function::Function) -> FunctionDetail<'_> {
             .map(|refs| refs.iter().filter_map(function_ref).collect()),
         params: &func.params,
         ret: &func.ret,
+        memory,
         blocks: func
             .blocks
             .iter()
@@ -136,7 +152,7 @@ async fn get_function(
     let ip = runtime::SegOfs::parse(ip).map_err(|_| StatusCode::BAD_REQUEST)?;
     let db = db.read().await;
     let func = db.functions.get(&ip).ok_or(StatusCode::NOT_FOUND)?;
-    Ok(Json(function_detail(func)).into_response())
+    Ok(Json(function_detail(&db, func)).into_response())
 }
 
 async fn get_memory(State(db): State<AppState>) -> Response {
@@ -290,7 +306,7 @@ fn export_site(db: &DB, output: &Path) -> anyhow::Result<()> {
     for func in db.functions.values() {
         std::fs::write(
             api.join("functions").join(format!("{}.json", func.ip)),
-            serde_json::to_vec(&function_detail(func))?,
+            serde_json::to_vec(&function_detail(db, func))?,
         )?;
     }
     for addr in db.memory.entries.keys() {

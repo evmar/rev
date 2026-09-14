@@ -69,11 +69,15 @@ export function FunctionView({ ip }: { ip: string }) {
                     }
                     let memory: preact.ComponentChild;
                     if (instr.memory) {
-                      memory = 'Address' in instr.memory
-                        ? <a href={`#/memory/${encodeURIComponent(instr.memory.Address)}`}>
-                            {instr.memory.Address}
-                          </a>
-                        : instr.memory.Note;
+                      if ('Address' in instr.memory) {
+                        const address = instr.memory.Address;
+                        const name = func.memory[address];
+                        memory = <a href={`#/memory/${encodeURIComponent(address)}`}>
+                          {name ? `${name}@${address}` : address}
+                        </a>;
+                      } else {
+                        memory = instr.memory.Note;
+                      }
                     }
                     return <div key={instr.ip}>
                       {`${comment}${label}${instr.ip} ${instr.text}`}

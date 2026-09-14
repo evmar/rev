@@ -3,4 +3,4 @@ import type { Var } from "../../../../web/src/bindings/Var";
 import type { BlockDetail } from "./BlockDetail";
 import type { XRefDetail } from "./XRefDetail";
 
-export type FunctionDetail = { ip: string, name: string | null, desc: string | null, details: string | null, callers: Array<XRefDetail> | null, callees: Array<XRefDetail> | null, params: Array<Var> | null, ret: Var | null, blocks: Array<BlockDetail>, };
+export type FunctionDetail = { ip: string, name: string | null, desc: string | null, details: string | null, callers: Array<XRefDetail> | null, callees: Array<XRefDetail> | null, params: Array<Var> | null, ret: Var | null, memory: Record<string, string>, blocks: Array<BlockDetail>, };

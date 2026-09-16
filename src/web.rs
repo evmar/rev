@@ -12,6 +12,7 @@ use axum::{
     routing::get,
 };
 use axum_vite::ViteConfig;
+use runtime::SegOfs;
 use tokio::sync::RwLock;
 use tower_http::services::ServeDir;
 
@@ -36,14 +37,14 @@ struct FunctionDetail<'a> {
 #[derive(serde::Serialize, ts_rs::TS)]
 #[ts(export)]
 struct BlockDetail {
-    ip: String,
+    ip: SegOfs,
     instrs: Vec<InstructionDetail>,
 }
 
 #[derive(serde::Serialize, ts_rs::TS)]
 #[ts(export)]
 struct InstructionDetail {
-    ip: String,
+    ip: SegOfs,
     text: String,
     comment: Option<String>,
     assume: Option<Vec<(String, u16)>>,
@@ -62,17 +63,14 @@ enum MemoryDetail {
 /// Display name and target IP; an empty IP denotes a non-function reference.
 #[derive(serde::Serialize, ts_rs::TS)]
 #[ts(export)]
-struct XRefDetail(String, String);
+struct XRefDetail(String, SegOfs);
 
 impl From<&XRef> for XRefDetail {
     fn from(xref: &XRef) -> Self {
         match xref {
-            XRef::External(name, ip) => {
-                let ip = ip.to_string();
-                Self(name.clone().unwrap_or_else(|| ip.clone()), ip)
-            }
-            XRef::Block(Some(label), _) => Self(label.clone(), String::new()),
-            _ => Self(xref.to_string(), String::new()),
+            XRef::External(name, ip) => Self(name.clone().unwrap_or_else(|| ip.to_string()), *ip),
+            XRef::Block(Some(label), _) => Self(label.clone(), SegOfs::default()),
+            _ => Self(xref.to_string(), SegOfs::default()),
         }
     }
 }
@@ -117,12 +115,12 @@ fn function_detail<'a>(db: &'a DB, func: &'a crate::function::Function) -> Funct
             .blocks
             .iter()
             .map(|block| BlockDetail {
-                ip: block.ip.to_string(),
+                ip: block.ip,
                 instrs: block
                     .instrs
                     .iter()
                     .map(|instr| InstructionDetail {
-                        ip: block.ip.with_ofs(instr.iced.ip16()).to_string(),
+                        ip: block.ip.with_ofs(instr.iced.ip16()),
                         text: instr.iced.to_string(),
                         comment: instr.comment.clone(),
                         assume: instr.assume.clone(),

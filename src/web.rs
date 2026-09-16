@@ -18,7 +18,7 @@ use tower_http::services::ServeDir;
 use crate::{db::DB, load::EXE, xref::XRef};
 
 #[derive(serde::Serialize, ts_rs::TS)]
-#[ts(export, export_to = "../web/src/bindings/")]
+#[ts(export)]
 struct FunctionDetail<'a> {
     ip: String,
     name: Option<&'a str>,
@@ -34,14 +34,14 @@ struct FunctionDetail<'a> {
 }
 
 #[derive(serde::Serialize, ts_rs::TS)]
-#[ts(export_to = "../web/src/bindings/")]
+#[ts(export)]
 struct BlockDetail {
     ip: String,
     instrs: Vec<InstructionDetail>,
 }
 
 #[derive(serde::Serialize, ts_rs::TS)]
-#[ts(export_to = "../web/src/bindings/")]
+#[ts(export)]
 struct InstructionDetail {
     ip: String,
     text: String,
@@ -53,7 +53,7 @@ struct InstructionDetail {
 }
 
 #[derive(serde::Serialize, ts_rs::TS)]
-#[ts(export_to = "../web/src/bindings/")]
+#[ts(export)]
 enum MemoryDetail {
     Address(String),
     Note(String),
@@ -61,7 +61,7 @@ enum MemoryDetail {
 
 /// Display name and target IP; an empty IP denotes a non-function reference.
 #[derive(serde::Serialize, ts_rs::TS)]
-#[ts(export_to = "../web/src/bindings/")]
+#[ts(export)]
 struct XRefDetail(String, String);
 
 impl From<&XRef> for XRefDetail {
@@ -174,13 +174,13 @@ async fn get_memory_address(
 }
 
 #[derive(serde::Serialize, ts_rs::TS)]
-#[ts(export, export_to = "../web/src/bindings/")]
+#[ts(export)]
 struct MemoryEntries<'a> {
     entries: Vec<MemoryEntry<'a>>,
 }
 
 #[derive(serde::Serialize, ts_rs::TS)]
-#[ts(export_to = "../web/src/bindings/")]
+#[ts(export)]
 struct MemoryEntry<'a> {
     addr: String,
     name: &'a str,
@@ -205,7 +205,7 @@ fn memory_entries(db: &DB) -> MemoryEntries<'_> {
 }
 
 #[derive(serde::Serialize, ts_rs::TS)]
-#[ts(export, export_to = "../web/src/bindings/")]
+#[ts(export)]
 struct MemoryAddressDetail<'a> {
     addr: String,
     name: &'a str,
@@ -246,7 +246,7 @@ fn memory_address_detail(db: &DB, addr: runtime::SegOfs) -> Option<MemoryAddress
 }
 
 #[derive(serde::Serialize, ts_rs::TS)]
-#[ts(export, export_to = "../web/src/bindings/")]
+#[ts(export)]
 struct Overview<'a> {
     mem_size: usize,
     exe: &'a EXE,
@@ -254,7 +254,7 @@ struct Overview<'a> {
 }
 
 #[derive(serde::Serialize, ts_rs::TS)]
-#[ts(export_to = "../web/src/bindings/")]
+#[ts(export)]
 struct FunctionOverview<'a> {
     #[ts(type = "string")]
     ip: runtime::SegOfs,

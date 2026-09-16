@@ -43,7 +43,7 @@ impl Annotation {
 }
 
 #[derive(serde::Deserialize, serde::Serialize, Debug, ts_rs::TS, schemars::JsonSchema)]
-#[ts(export_to = "../../web/src/bindings/")]
+#[ts(export)]
 pub struct Var {
     /// an identifier name for the variable within the function
     pub name: String,

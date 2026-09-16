@@ -85,11 +85,12 @@ ip = "0823:0cec"
 0823:0d68 mov cs:[80h],bx
 0823:0d6d push cs
 0823:0d6e pop ds
+@assume ds=823
 0823:0d6f mov dx,898h
 0823:0d72 mov ax,252Fh
 0823:0d75 int 21h
 ; Prepare resident size and invoke DOS TSR (INT 21h, AH=31h)
-@mem ; [ds unknown]
+@mem 0823:00ab
 0823:0d77 lea dx,ds:[0ABh]
 @jmp print_string_with_suffix@0823:0c79
 0823:0d7b call 0C79h

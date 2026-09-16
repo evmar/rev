@@ -85,8 +85,9 @@ async fn call(
     let prompt = format!(
         indoc::indoc! {"
             analyze usage of memory at address {addr} to figure out its name, description, and type.
-            use get_function to get the assembly for a given address, do not use read_memory and disassemble code.
-            it is used by these functions: {functions}
+            use tool read_memory() only to read data memory, not program code.
+            to read program code, use get_function() to get the assembly.
+            to start with, the address is referenced by these functions: {functions}
         "},
         addr = addr,
         functions = functions

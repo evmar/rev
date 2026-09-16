@@ -49,7 +49,7 @@ pub struct Var {
     pub name: String,
     /// the parameter's storage, either a register like `cx` or an stack offset like `[sp+4]`
     pub value: String,
-    /// value type as expressed in Rust, e.g. `u32` or `CStr`
+    /// concrete type of value as expressed in Rust, e.g. `u32` or `[u8]`.  no higher-level types like fn, just numbers, arrays, or pointers.
     #[serde(rename = "type")]
     pub typ: String,
     /// human-readable description

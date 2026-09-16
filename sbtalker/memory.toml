@@ -58,6 +58,11 @@ name = "block_end_seg"
 desc = "Segment address marking the upper boundary/end of the program's allocated DOS memory block"
 typ = "u16"
 
+[entries."0823:00ab"]
+name = "INSTALL_BANNER_MSG"
+desc = "DOS '$'-terminated banner and installation message displayed upon successful TSR installation, showing program name ('SmoothTalker (R), Version 3.5, male voice'), copyright, patent information, and status"
+typ = "[u8; 222]"
+
 [entries."0823:01aa"]
 name = "driver_name_arg"
 desc = "Buffer storing the driver name specified via the '/D' command-line switch"

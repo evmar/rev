@@ -13,6 +13,26 @@ name = "heap_base_segment"
 desc = "Base segment address of the heap/buffer in conventional memory, located immediately following the program image"
 typ = "u16"
 
+[entries."0823:0012"]
+name = "saved_ss"
+desc = "Saved caller stack segment (SS) register across TSR switch to private stack"
+typ = "u16"
+
+[entries."0823:0014"]
+name = "saved_sp"
+desc = "Stores the caller's stack pointer (SP) register across execution of internal TSR routines, used to restore the original stack before returning."
+typ = "u16"
+
+[entries."0823:007a"]
+name = "saved_caller_far_return_addr"
+desc = "Saved 32-bit far return address (offset and segment) of the caller, popped upon entering the TSR entry point and jumped to upon exit"
+typ = "u32"
+
+[entries."0823:007c"]
+name = "saved_caller_cs"
+desc = "Saved segment of the caller's far return address, used with 0823:007A to return via far indirect jump `jmp dword ptr cs:[7Ah]`"
+typ = "u16"
+
 [entries."0823:007e"]
 name = "prev_int2f_seg"
 desc = "Saved segment of the previous INT 2Fh interrupt handler vector"

@@ -1,0 +1,81 @@
+name = "swap_memory_with_ems"
+desc = "Swaps a block of conventional memory with EMS expanded memory pages"
+details = "Checks whether EMS paging is active via the flag at cs:[1CBh]. If enabled, it saves the current EMS page map state, iterates through each EMS logical page, maps it into the page frame at cs:[9Ch], and exchanges the 16KB block word-by-word with conventional memory starting at segment cs:[9]. Afterwards, it restores the previous EMS page map state and returns."
+callers = ["tsr_entry_point@0823:0ae2", "tsr_entry_point@0823:0ae2"]
+ip = "0823:0a97"
+
+---
+@label do_ems_swap
+0823:0a2f push ax
+0823:0a30 push bx
+0823:0a31 push cx
+0823:0a32 push dx
+0823:0a33 push ds
+0823:0a34 push es
+0823:0a35 push si
+0823:0a36 push di
+; EMS fn 47h: Save EMS page map context for handle in DX
+0823:0a37 mov ah,47h
+0823:0a39 mov dx,cs:[9Eh]
+0823:0a3e int 67h
+0823:0a40 mov ah,44h
+0823:0a42 mov al,0
+0823:0a44 mov bx,0
+; DS = base segment of conventional memory buffer
+0823:0a47 push word ptr cs:[9]
+0823:0a4c pop ds
+; ES = EMS physical page 0 frame segment
+0823:0a4d push word ptr cs:[9Ch]
+0823:0a52 pop es
+
+@label page_loop
+0823:0a53 mov dx,cs:[9Eh]
+; EMS fn 44h: Map logical page BX into physical page 0
+0823:0a58 int 67h
+0823:0a5a mov cx,0
+0823:0a5d mov si,0
+0823:0a60 mov di,0
+
+; Swap 16-bit word between EMS page (ES:DI) and buffer (DS:SI)
+@label word_swap_loop
+0823:0a63 mov ax,es:[di]
+0823:0a66 xchg ax,[si]
+0823:0a68 xchg ax,es:[di]
+0823:0a6b add cx,2
+0823:0a6e mov di,cx
+0823:0a70 mov si,cx
+0823:0a72 cmp cx,4000h
+@jmp '2
+0823:0a76 jl short 0A63h
+
+; Advance DS by 16KB (400h paragraphs) for next page
+0823:0a78 mov ax,ds
+0823:0a7a add ax,400h
+0823:0a7d mov ds,ax
+0823:0a7f mov ax,4400h
+0823:0a82 inc bx
+; Check if all EMS pages (count at cs:[9Ah]) have been processed
+0823:0a83 cmp bx,cs:[9Ah]
+@jmp '1
+0823:0a88 jl short 0A53h
+
+; EMS fn 48h: Restore EMS page map context for handle in DX
+0823:0a8a mov ah,48h
+0823:0a8c int 67h
+0823:0a8e pop di
+0823:0a8f pop si
+0823:0a90 pop es
+0823:0a91 pop ds
+0823:0a92 pop dx
+0823:0a93 pop cx
+0823:0a94 pop bx
+0823:0a95 pop ax
+0823:0a96 ret
+
+; Check EMS enabled/active flag
+0823:0a97 cmp byte ptr cs:[1CBh],0
+@jmp '0
+0823:0a9d jne short 0A2Fh
+
+0823:0a9f ret
+

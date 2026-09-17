@@ -107,7 +107,13 @@ async fn call(
         usage: Default::default(),
     };
 
-    let content = agent_loop.run().await?;
+    let content = match agent_loop.run().await {
+        Ok(content) => content,
+        Err(err) => {
+            agent_loop.usage.print();
+            return Err(err);
+        }
+    };
     let response: Response = serde_json::from_str(&content)?;
     Ok(response)
 }
@@ -147,9 +153,12 @@ struct AgentLoop<'client> {
 
 impl<'client> AgentLoop<'client> {
     async fn run(&mut self) -> anyhow::Result<String> {
-        for _ in 0..50 {
+        for i in 1..100 {
             if let Some(content) = self.run_one().await? {
                 return Ok(content);
+            }
+            if i % 10 == 0 {
+                self.usage.print()
             }
         }
         anyhow::bail!("no response within turn limit")

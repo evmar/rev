@@ -52,7 +52,7 @@ export function OverviewView() {
       ) : (
         <>
           <OverviewDetails overview={overview} />
-          <p><a href="#/memory">View memory map</a></p>
+          <p><a href="#/memory">View memory map</a> · <a href="#/bytes">View raw memory</a></p>
           <FunctionList functions={overview.functions} />
         </>
       )}

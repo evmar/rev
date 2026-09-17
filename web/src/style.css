@@ -49,3 +49,22 @@ th, td {
   text-align: left;
   vertical-align: top;
 }
+
+.memory-bytes {
+  max-width: 65em;
+}
+
+.memory-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.hex-dump {
+  white-space: pre;
+  overflow-wrap: normal;
+  overflow-x: auto;
+  line-height: 1.5;
+}

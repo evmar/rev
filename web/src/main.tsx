@@ -2,6 +2,7 @@ import { render } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 import './style.css';
 import { FunctionView } from './FunctionView';
+import { MemoryBytesView } from './MemoryBytesView';
 import { MemoryView } from './MemoryView';
 import { MemoryAddressView } from './MemoryAddressView';
 import { OverviewView } from './OverviewView';
@@ -22,6 +23,19 @@ function App() {
       return <main><a href="#/">Project overview</a><p>Invalid function address.</p></main>;
     }
     return <FunctionView key={ip} ip={ip} />;
+  }
+  if (hash === '#/bytes' || hash.startsWith('#/bytes/')) {
+    let addr: string;
+    try {
+      addr = hash === '#/bytes' ? '0000' : decodeURIComponent(hash.slice('#/bytes/'.length));
+    } catch {
+      return <main><a href="#/bytes">Raw memory</a><p>Invalid memory address.</p></main>;
+    }
+    if (!/^[\da-f]{1,4}$/i.test(addr)) {
+      return <main><a href="#/bytes">Raw memory</a><p>Invalid memory segment.</p></main>;
+    }
+    const seg = parseInt(addr, 16);
+    return <MemoryBytesView key={seg} seg={seg} />;
   }
   if (hash === '#/memory') {
     return <MemoryView />;

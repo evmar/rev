@@ -9,6 +9,7 @@ export function MemoryAddressView({ addr }: { addr: string }) {
     <main>
       <a href="#/memory">← Memory map</a>
       <h1>{memory?.name ?? 'Memory'} <code>{addr}</code></h1>
+      <p><a href={`#/bytes/${addr.split(':')[0]}`}>View segment bytes</a></p>
       {error ? <p class="panel">{error}</p> : memory === null ? (
         <p class="panel">Loading memory address…</p>
       ) : (

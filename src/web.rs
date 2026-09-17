@@ -139,6 +139,24 @@ fn function_detail<'a>(db: &'a DB, func: &'a crate::function::Function) -> Funct
 
 type AppState = Arc<RwLock<DB>>;
 
+const MEMORY_PAGE_SIZE: usize = 4096;
+
+fn memory_bytes(db: &DB, addr: SegOfs) -> &[u8] {
+    let start = (addr.abs() as usize).min(db.mem.len());
+    &db.mem[start..(start + MEMORY_PAGE_SIZE).min(db.mem.len())]
+}
+
+async fn get_memory_bytes(
+    State(db): State<AppState>,
+    axum::extract::Path(addr): axum::extract::Path<String>,
+) -> Result<Response, StatusCode> {
+    let addr = addr.strip_suffix(".json").ok_or(StatusCode::BAD_REQUEST)?;
+    let addr = SegOfs::parse(addr).map_err(|_| StatusCode::BAD_REQUEST)?;
+    let db = db.read().await;
+    let bytes = memory_bytes(&db, addr);
+    Ok(Json(bytes).into_response())
+}
+
 async fn get_overview(State(db): State<AppState>) -> Response {
     let db = db.read().await;
     Json(overview(&db)).into_response()
@@ -351,6 +369,7 @@ pub async fn run(db: DB, args: Args) -> anyhow::Result<()> {
         .route("/api/overview.json", get(get_overview))
         .route("/api/memory.json", get(get_memory))
         .route("/api/memory/{addr}", get(get_memory_address))
+        .route("/api/bytes/{addr}", get(get_memory_bytes))
         .route("/api/functions/{ip}", get(get_function))
         .with_state(db);
     let listener = tokio::net::TcpListener::bind("127.0.0.1:3000").await?;

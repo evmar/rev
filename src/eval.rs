@@ -8,8 +8,11 @@ use crate::{
     ir,
 };
 
-pub fn eval_all(db: &mut DB) {
+pub fn eval_all(db: &mut DB, fns: Vec<SegOfs>) {
     for func in db.functions.values_mut() {
+        if !fns.is_empty() && !fns.contains(&func.ip) {
+            continue;
+        }
         println!("eval {:?}", func.name);
         for block in func.blocks.iter_mut() {
             eval_block(block);
@@ -37,17 +40,14 @@ impl Eval {
     }
 
     fn instr(&mut self, instr: &mut Instr) {
-        println!("instr {}", instr.iced);
+        println!("instr: {}", instr.iced);
         if let Some(assume) = &instr.assume {
             for (reg, val) in assume.iter() {
                 self.regs.insert(ir::Name::new(reg), *val);
             }
         }
         let stmt = match ir::Stmt::try_from(&instr.iced) {
-            Ok(stmt) => {
-                println!("{stmt}");
-                stmt
-            }
+            Ok(stmt) => stmt,
             Err(err) => {
                 println!("err: {err}");
                 return;
@@ -64,17 +64,17 @@ impl Eval {
 
     /// (attempt to) update self.regs based on instruction's effects
     fn eval_stmt(&mut self, stmt: &ir::Stmt) -> Result<(), String> {
-        println!("eval {stmt}");
+        println!("eval: {stmt}");
         match &stmt.kind {
             ir::StmtKind::Do(_) => {}
             ir::StmtKind::Set(dst, src) => match dst {
                 ir::Expr::Reg(dst) => {
                     match self.eval_expr(src) {
-                        Some(val) => {
+                        Ok(val) => {
                             self.regs.insert(dst.clone(), val);
                         }
-                        None => {
-                            println!("eval {src} failed");
+                        Err(err) => {
+                            println!("eval {src} failed: {err}");
                             self.regs.remove(dst);
                         }
                     };
@@ -102,20 +102,21 @@ impl Eval {
             if call.func != "segofs" {
                 return;
             }
+            println!("gather {}", call);
             let [seg, ofs] = &call.args.as_slice() else {
                 panic!();
             };
             let seg = match self.eval_expr(seg) {
-                Some(seg) => seg,
-                None => {
-                    mem = Some(Err(format!("{seg} unknown")));
+                Ok(seg) => seg,
+                Err(err) => {
+                    mem = Some(Err(err));
                     return;
                 }
             };
             let ofs = match self.eval_expr(ofs) {
-                Some(ofs) => ofs,
-                None => {
-                    mem = Some(Err(format!("{ofs} unknown")));
+                Ok(ofs) => ofs,
+                Err(err) => {
+                    mem = Some(Err(err));
                     return;
                 }
             };
@@ -124,12 +125,22 @@ impl Eval {
         mem
     }
 
-    fn eval_expr(&self, expr: &ir::Expr) -> Option<u16> {
-        Some(match expr {
-            ir::Expr::Val(v) => *v as u16,
-            ir::Expr::Reg(name) => self.get_reg(name)?,
-            _ => return None,
-        })
+    fn eval_expr(&self, expr: &ir::Expr) -> Result<u16, String> {
+        match expr {
+            ir::Expr::Val(v) => Ok(*v as u16),
+            ir::Expr::Reg(name) => self.get_reg(name).ok_or_else(|| format!("{name} unknown")),
+            ir::Expr::Call(call) => match call.func.as_str() {
+                "+" => {
+                    let mut sum = 0;
+                    for arg in call.args.iter() {
+                        sum += self.eval_expr(arg)?;
+                    }
+                    Ok(sum)
+                }
+                _ => Err(format!("unhandled call {call}")),
+            },
+            _ => Err(format!("unhandled {expr}")),
+        }
     }
 
     fn get_reg(&self, reg: &ir::Name) -> Option<u16> {

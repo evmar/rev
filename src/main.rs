@@ -1,5 +1,7 @@
 use std::path::PathBuf;
 
+use runtime::SegOfs;
+
 use crate::db::DB;
 
 mod ai;
@@ -40,7 +42,10 @@ struct Args {
 /// load and save db
 #[derive(argh::FromArgs)]
 #[argh(subcommand, name = "roundtrip")]
-struct RoundTrip {}
+struct RoundTrip {
+    #[argh(positional, from_str_fn(SegOfs::parse))]
+    fns: Vec<SegOfs>,
+}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -62,9 +67,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             ai::run(&mut db, args).await?;
             Ok(())
         }
-        Command::RoundTrip(_) => {
+        Command::RoundTrip(args) => {
             let mut db = DB::load(project)?;
-            eval::eval_all(&mut db);
+            eval::eval_all(&mut db, args.fns);
             db.write()?;
             Ok(())
         }

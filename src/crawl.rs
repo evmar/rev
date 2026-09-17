@@ -37,8 +37,9 @@ pub async fn run(db: &mut DB, _args: Args) -> anyhow::Result<()> {
             continue;
         };
         println!("visiting {ip}");
-        let func = dis_func(db, ip);
-        xref::update_callees(func, |ip| XRef::External(None, ip));
+        dis_func(db, ip);
+        let func = db.functions.get_mut(&ip).unwrap();
+        xref::update_callees(func, &db.mem, |ip| XRef::External(None, ip));
         db.write()?;
     }
 

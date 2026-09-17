@@ -2,7 +2,10 @@ use std::collections::{HashMap, HashSet};
 
 use runtime::SegOfs;
 
-use crate::{db::DB, function::Function};
+use crate::{
+    db::DB,
+    function::{Function, Instr},
+};
 
 pub fn update_all_xrefs(db: &mut DB) {
     let names = db
@@ -13,7 +16,7 @@ pub fn update_all_xrefs(db: &mut DB) {
     let mut callers = HashMap::<SegOfs, Vec<XRef>>::new();
     for func in db.functions.values_mut() {
         let xref = XRef::External(func.name.clone(), func.ip);
-        update_callees(func, |ip| {
+        update_callees(func, &db.mem, |ip| {
             callers.entry(ip).or_default().push(xref.clone());
             let name = names.get(&ip).cloned();
             XRef::External(name, ip)
@@ -24,7 +27,7 @@ pub fn update_all_xrefs(db: &mut DB) {
     }
 }
 
-pub fn update_callees(func: &mut Function, mut xref: impl FnMut(SegOfs) -> XRef) {
+pub fn update_callees(func: &mut Function, mem: &[u8], mut xref: impl FnMut(SegOfs) -> XRef) {
     let mut ip_to_block = HashMap::new();
     let mut block_to_label = Vec::new();
     for (i, block) in func.blocks.iter().enumerate() {
@@ -37,7 +40,7 @@ pub fn update_callees(func: &mut Function, mut xref: impl FnMut(SegOfs) -> XRef)
     for block in func.blocks.iter_mut() {
         let ip = block.ip;
         for instr in block.instrs.iter_mut() {
-            let Some(xref) = xref_from_instr(ip, &instr.iced, |ip| match ip_to_block.get(&ip) {
+            let Some(xref) = xref_from_instr(ip, &instr, mem, |ip| match ip_to_block.get(&ip) {
                 Some(idx) => XRef::Block(block_to_label[*idx].clone(), *idx),
                 None => xref(ip),
             }) else {
@@ -64,24 +67,39 @@ pub fn update_callees(func: &mut Function, mut xref: impl FnMut(SegOfs) -> XRef)
 
 fn xref_from_instr(
     ip: SegOfs,
-    instr: &iced_x86::Instruction,
+    instr: &Instr,
+    mem: &[u8],
     mut xref: impl FnMut(SegOfs) -> XRef,
 ) -> Option<XRef> {
     use iced_x86::FlowControl::*;
-    match instr.flow_control() {
+    let iced = &instr.iced;
+    match iced.flow_control() {
         Next | Return | Interrupt => None,
         Call | IndirectCall | IndirectBranch | UnconditionalBranch | ConditionalBranch => {
             use iced_x86::OpKind::*;
-            match instr.op0_kind() {
+            match iced.op0_kind() {
                 NearBranch16 | FarBranch16 => {
-                    let ip = match instr.op0_kind() {
-                        NearBranch16 => ip.with_ofs(instr.near_branch16()),
-                        FarBranch16 => (instr.far_branch_selector(), instr.far_branch16()).into(),
+                    let ip = match iced.op0_kind() {
+                        NearBranch16 => ip.with_ofs(iced.near_branch16()),
+                        FarBranch16 => (iced.far_branch_selector(), iced.far_branch16()).into(),
                         _ => unreachable!(),
                     };
                     Some(xref(ip))
                 }
-                Memory => Some(XRef::Unknown("mem".into())),
+                // XXX: what about far calls?
+                Memory => match instr.memory {
+                    Some(Ok(addr)) => {
+                        let mem = &mem[addr.abs() as usize..][..2];
+                        let ofs = u16::from_le_bytes([mem[0], mem[1]]);
+                        let ip = ip.with_ofs(ofs);
+                        if ofs != 0 {
+                            Some(xref(ip))
+                        } else {
+                            Some(XRef::Unknown(format!("mem[{ip}]=0")))
+                        }
+                    }
+                    _ => Some(XRef::Unknown("mem".into())),
+                },
                 Register => Some(XRef::Unknown("reg".into())),
                 d => todo!("unhandled jmp {d:?}"),
             }

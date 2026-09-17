@@ -20,7 +20,7 @@ pub fn run(db: &mut DB, args: Args) -> anyhow::Result<()> {
     Ok(())
 }
 
-pub fn dis_func<'db>(db: &'db mut DB, ip: SegOfs) -> &'db mut Function {
+pub fn dis_func<'db>(db: &'db mut DB, ip: SegOfs) {
     if !db.functions.contains_key(&ip) {
         let func = Function {
             ip,
@@ -31,7 +31,6 @@ pub fn dis_func<'db>(db: &'db mut DB, ip: SegOfs) -> &'db mut Function {
     let func = db.functions.get_mut(&ip).unwrap();
     func.blocks = gather(&db.mem, ip);
     check_coverage(func);
-    func
 }
 
 fn check_coverage(func: &Function) {

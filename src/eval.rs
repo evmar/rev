@@ -84,7 +84,7 @@ impl Eval {
             },
             ir::StmtKind::Let(_, _) => todo!(),
             ir::StmtKind::Jmp(_, _) => {}
-            ir::StmtKind::Raw(_) => todo!(),
+            ir::StmtKind::Raw(_) => {}
         }
         Ok(())
     }

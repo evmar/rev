@@ -66,6 +66,11 @@ impl Expr {
             Immediate32 => Expr::Val(instr.immediate32()),
             NearBranch16 => Expr::Val(instr.near_branch16() as u32),
             NearBranch32 => Expr::Val(instr.near_branch32()),
+            FarBranch16 => Expr::Todo(format!(
+                "far call {:04x}:{:04x}",
+                instr.far_branch_selector(),
+                instr.far_branch16()
+            )),
             Register => Expr::Reg(name_from_iced(instr, op)),
             Memory => Self::from_memory(instr),
             k => todo!("{k:?}"),

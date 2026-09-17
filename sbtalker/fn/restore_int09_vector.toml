@@ -15,10 +15,14 @@ ip = "0823:082e"
 ; Offset 0x24 corresponds to INT 09h vector (0x09 * 4)
 0823:0836 mov di,24h
 ; Restore INT 09h offset from cs:[0082h]
+@mem 0823:0082
 0823:0839 mov ax,cs:[82h]
+@mem ; [es unknown]
 0823:083d mov es:[di],ax
 ; Restore INT 09h segment from cs:[0084h]
+@mem 0823:0084
 0823:0840 mov ax,cs:[84h]
+@mem ; [es unknown]
 0823:0844 mov es:[di+2],ax
 0823:0848 pop ax
 0823:0849 pop di

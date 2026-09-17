@@ -14,14 +14,20 @@ ip = "0823:0804"
 0823:080a mov es,ax
 ; Vector for INT 09h (09h * 4 = 24h)
 0823:080c mov di,24h
+@mem ; [es unknown]
 0823:080f mov ax,es:[di]
 ; Save existing INT 09h offset
+@mem 0823:0082
 0823:0812 mov cs:[82h],ax
+@mem ; [es unknown]
 0823:0816 mov ax,es:[di+2]
 ; Save existing INT 09h segment
+@mem 0823:0084
 0823:081a mov cs:[84h],ax
 ; Set INT 09h vector to default BIOS keyboard ISR (F000:E987h)
+@mem ; [es unknown]
 0823:081e mov word ptr es:[di],0E987h
+@mem ; [es unknown]
 0823:0823 mov word ptr es:[di+2],0F000h
 0823:0829 pop ax
 0823:082a pop di

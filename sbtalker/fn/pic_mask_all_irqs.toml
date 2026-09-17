@@ -14,6 +14,7 @@ ip = "0823:0923"
 0823:0927 jmp short 0929h
 
 ; save previous PIC mask
+@mem 0823:01cd
 0823:0929 mov cs:[1CDh],al
 ; mask all IRQ lines (IRQ0-IRQ7)
 0823:092d mov al,0FFh

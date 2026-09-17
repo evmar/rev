@@ -26,6 +26,7 @@ ip = "0823:0a04"
 0823:0a18 cli
 
 @label swap_loop
+@mem ; [ds unknown]
 0823:0a19 mov ax,[si]
 ; Swap word between IVT and buffer
 0823:0a1b xchg ax,es:[di]

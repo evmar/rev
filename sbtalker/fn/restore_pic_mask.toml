@@ -9,6 +9,7 @@ ip = "0823:0936"
 0823:0936 cli
 0823:0937 push ax
 ; load cached interrupt mask
+@mem 0823:01cd
 0823:0938 mov al,cs:[1CDh]
 ; write to Master PIC IMR (port 21h)
 0823:093c out 21h,al

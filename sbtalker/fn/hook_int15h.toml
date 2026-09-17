@@ -15,15 +15,21 @@ ip = "0823:084d"
 ; Vector offset for INT 15h (21 * 4 = 54h)
 0823:0855 mov di,54h
 ; Save original INT 15h offset to CS:[0086h]
+@mem ; [es unknown]
 0823:0858 mov ax,es:[di]
+@mem 0823:0086
 0823:085b mov cs:[86h],ax
 ; Save original INT 15h segment to CS:[0088h]
+@mem ; [es unknown]
 0823:085f mov ax,es:[di+2]
+@mem 0823:0088
 0823:0863 mov cs:[88h],ax
 ; Install new INT 15h handler at 0823:07FCh
 0823:0867 mov ax,7FCh
+@mem ; [es unknown]
 0823:086a mov es:[di],ax
 0823:086d mov ax,823h
+@mem ; [es unknown]
 0823:0870 mov es:[di+2],ax
 0823:0874 pop ax
 0823:0875 pop di

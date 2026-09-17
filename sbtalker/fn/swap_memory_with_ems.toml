@@ -16,19 +16,23 @@ ip = "0823:0a97"
 0823:0a36 push di
 ; EMS fn 47h: Save EMS page map context for handle in DX
 0823:0a37 mov ah,47h
+@mem 0823:009e
 0823:0a39 mov dx,cs:[9Eh]
 0823:0a3e int 67h
 0823:0a40 mov ah,44h
 0823:0a42 mov al,0
 0823:0a44 mov bx,0
 ; DS = base segment of conventional memory buffer
+@mem 0823:0009
 0823:0a47 push word ptr cs:[9]
 0823:0a4c pop ds
 ; ES = EMS physical page 0 frame segment
+@mem 0823:009c
 0823:0a4d push word ptr cs:[9Ch]
 0823:0a52 pop es
 
 @label page_loop
+@mem 0823:009e
 0823:0a53 mov dx,cs:[9Eh]
 ; EMS fn 44h: Map logical page BX into physical page 0
 0823:0a58 int 67h
@@ -38,6 +42,7 @@ ip = "0823:0a97"
 
 ; Swap 16-bit word between EMS page (ES:DI) and buffer (DS:SI)
 @label word_swap_loop
+@mem ; [es unknown]
 0823:0a63 mov ax,es:[di]
 0823:0a66 xchg ax,[si]
 0823:0a68 xchg ax,es:[di]
@@ -45,7 +50,7 @@ ip = "0823:0a97"
 0823:0a6e mov di,cx
 0823:0a70 mov si,cx
 0823:0a72 cmp cx,4000h
-@jmp '2
+@jmp 'word_swap_loop@2
 0823:0a76 jl short 0A63h
 
 ; Advance DS by 16KB (400h paragraphs) for next page
@@ -55,8 +60,9 @@ ip = "0823:0a97"
 0823:0a7f mov ax,4400h
 0823:0a82 inc bx
 ; Check if all EMS pages (count at cs:[9Ah]) have been processed
+@mem 0823:009a
 0823:0a83 cmp bx,cs:[9Ah]
-@jmp '1
+@jmp 'page_loop@1
 0823:0a88 jl short 0A53h
 
 ; EMS fn 48h: Restore EMS page map context for handle in DX
@@ -73,8 +79,9 @@ ip = "0823:0a97"
 0823:0a96 ret
 
 ; Check EMS enabled/active flag
+@mem 0823:01cb
 0823:0a97 cmp byte ptr cs:[1CBh],0
-@jmp '0
+@jmp 'do_ems_swap@0
 0823:0a9d jne short 0A2Fh
 
 0823:0a9f ret

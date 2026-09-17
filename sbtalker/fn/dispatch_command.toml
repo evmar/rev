@@ -83,4 +83,3 @@ desc = "Command or function number"
 @mem 0823:0e63
 0823:111d push word ptr cs:[0E63h]
 0823:1122 retf
-

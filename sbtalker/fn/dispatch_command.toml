@@ -2,7 +2,7 @@ name = "dispatch_command"
 desc = "Dispatches driver/subsystem API commands based on a function index in AL"
 details = "Saves caller context and stack pointers, then routes execution based on the function code passed in AL. Functions 0Ch and 0Dh are handled as parameter-unstacking routines that retrieve far pointers into internal storage before returning; all other commands index into an indirect far jump table."
 callers = ["tsr_entry_point@0823:0ae2", "entry_point@0823:0cec"]
-callees = ["0823:0fdc"]
+callees = ["exec_and_restore_context@0823:0fdc"]
 ip = "0823:0f5b"
 
 [[params]]
@@ -49,7 +49,7 @@ desc = "Command or function number"
 0823:0f89 add ax,ax
 0823:0f8b mov bx,ax
 @assume bx=0
-@jmp 0823:0fdc
+@jmp exec_and_restore_context@0823:0fdc
 @mem 0823:0d8e
 0823:0f8d jmp word ptr cs:[bx+0D8Eh]
 

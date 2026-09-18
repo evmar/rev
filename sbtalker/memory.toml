@@ -43,6 +43,26 @@ name = "prev_int2f_offset"
 desc = "Offset of the original/previous INT 2Fh interrupt handler vector saved before hooking"
 typ = "u16"
 
+[entries."0823:0082"]
+name = "saved_int09_vector"
+desc = "Saved original INT 09h (keyboard ISR) interrupt vector (offset and segment)"
+typ = "u32"
+
+[entries."0823:0084"]
+name = "saved_int09_seg"
+desc = "Saved segment of the original INT 09h (keyboard ISR) interrupt vector"
+typ = "u16"
+
+[entries."0823:0086"]
+name = "orig_int15_handler"
+desc = "Original INT 15h (BIOS System Services) interrupt vector saved before hooking, containing offset and segment to be chained or restored"
+typ = "far_fn"
+
+[entries."0823:0088"]
+name = "orig_int15_seg"
+desc = "Saved segment of the original INT 15h interrupt handler (used with offset at 0823:0086 to store the far pointer)"
+typ = "u16"
+
 [entries."0823:008e"]
 name = "psp_segment"
 desc = "Segment address of the program's Program Segment Prefix (PSP)"
@@ -103,6 +123,11 @@ name = "ems_initialized"
 desc = "Boolean flag indicating whether Expanded Memory (EMS) is available and initialized"
 typ = "bool"
 
+[entries."0823:01cd"]
+name = "saved_pic_imr"
+desc = "Saved master 8259 PIC Interrupt Mask Register (IMR, I/O port 21h) value, used to preserve and restore hardware interrupt masks across critical sections"
+typ = "u8"
+
 [entries."0823:01d2"]
 name = "callback_offset"
 desc = "Offset of the callback routine (0AE2h) stored as the lower word of a far function pointer"
@@ -117,6 +142,16 @@ typ = "u16"
 name = "io_port_param"
 desc = "Copy of the 16-bit I/O port address or hexadecimal parameter parsed from the command-line '/P' option (initially stored at cs:[01B2h])"
 typ = "u16"
+
+[entries."0823:03f8"]
+name = "driver_func_arg"
+desc = "Initial or default command/function ID passed as an argument to the external overlay driver routine (0935h:3D66h) during command dispatch"
+typ = "u16"
+
+[entries."0823:0d8e"]
+name = "command_jump_table"
+desc = "Jump table of code offsets for driver API command handlers (commands 0 through 9), indexed by the command ID in dispatch_command"
+typ = "[u16; 10]"
 
 [entries."0823:0dbb"]
 name = "mem_alloc_hook"
@@ -151,6 +186,16 @@ typ = "u16"
 [entries."0823:0e55"]
 name = "saved_ss"
 desc = "Saved caller stack segment (SS) register"
+typ = "u16"
+
+[entries."0823:0e57"]
+name = "saved_caller_sp"
+desc = "Saved caller stack pointer (SP) preserved before switching to the internal driver stack"
+typ = "u16"
+
+[entries."0823:0e59"]
+name = "internal_stack_sp"
+desc = "Initial stack pointer (SP offset) for the internal driver stack"
 typ = "u16"
 
 [entries."0823:0e5f"]

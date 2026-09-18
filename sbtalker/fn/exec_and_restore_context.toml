@@ -1,0 +1,36 @@
+name = "exec_and_restore_context"
+desc = "Executes an external processing routine and restores a saved execution context"
+details = "Invokes a local helper, then makes a far call to 0935h:3D66h passing two buffer pointers derived from cs:[0DC3h] along with a word parameter from cs:[03F8h]. Upon completion, it switches SS:SP and DS back to the previously saved stack and data segments, then performs a near return to the saved instruction pointer."
+callers = ["dispatch_command@0823:0f5b"]
+callees = ["process_transaction_loop@0935:3d66", "switch_to_internal_stack@0823:0da2"]
+ip = "0823:0fdc"
+
+---
+@jmp switch_to_internal_stack@0823:0da2
+0823:0fdc call 0DA2h
+; Load buffer far pointer from cs:[0DC3h]
+0823:0fdf les di,cs:[0DC3h]
+0823:0fe4 push es
+0823:0fe5 push di
+0823:0fe6 push es
+; Push pointer to buffer offset by +100h bytes
+0823:0fe7 add di,100h
+0823:0feb push di
+@mem 0823:03f8
+0823:0fec push word ptr cs:[3F8h]
+; Call external function
+@jmp process_transaction_loop@0935:3d66
+0823:0ff1 call far ptr 0935h:3D66h
+; Restore saved stack segment and stack pointer
+@mem 0823:0e55
+0823:0ff6 mov ss,cs:[0E55h]
+@mem 0823:0e57
+0823:0ffb mov sp,cs:[0E57h]
+; Restore saved data segment
+@mem 0823:0e53
+0823:1000 mov ds,cs:[0E53h]
+; Push saved IP and jump via near return
+@mem 0823:0e51
+0823:1005 push word ptr cs:[0E51h]
+0823:100a ret
+

@@ -1,0 +1,83 @@
+name = "dispatch_action_by_state"
+desc = "Dispatches an action or command handler based on a state code"
+details = "Initializes flags at ds:[50h] and ds:[4Ch], then checks the action code at ds:[164h]. If the action code falls within the range 0x22 to 0x5E, it performs an indirect jump via a jump table at CS:3C40h. Otherwise, it executes the default fallback handler, which copies data from DS:1BC2h to the stack, invokes a sub-handler (109Fh), and finally calls a cleanup function (11A0h) passing a field from the parameter."
+callers = ["dispatch_command_input@0935:3cc9"]
+callees = ["0d72:538c", "get_next_char@0935:11a0", "path_append_component@0935:109f", "unknown:mem"]
+ip = "0935:30a1"
+
+[[params]]
+name = "context_ptr"
+value = "[bp+4]"
+type = "*mut u8"
+desc = "Pointer to entity or context structure whose field at offset +4 is used as an argument to subroutines"
+
+---
+0935:30a1 push bp
+0935:30a2 mov bp,sp
+0935:30a4 sub sp,2Ch
+; Set status/state flags
+0935:30a8 mov byte ptr ds:[50h],1
+0935:30ad mov byte ptr ds:[4Ch],2
+; Load action/opcode identifier from DS:0164h
+0935:30b2 mov al,ds:[164h]
+0935:30b5 xor ah,ah
+0935:30b7 xchg bx,ax
+@jmp 'check_action_range@2
+0935:30b8 jmp near ptr 3C2Fh
+
+; Default handler: set up local buffer
+@label default_action
+0935:3bf7 lea di,[bp-2]
+0935:3bfa push ss
+0935:3bfb pop es
+0935:3bfc mov si,20AEh
+0935:3bff mov cx,2
+0935:3c02 mov ax,ds
+@jmp 0d72:538c
+0935:3c04 call far ptr 0D72h:538Ch
+; Store current action code into local variable
+0935:3c09 mov al,ds:[164h]
+0935:3c0c mov [bp-1],al
+0935:3c0f mov si,1BC2h
+0935:3c12 mov cx,7Fh
+; Allocate 254 bytes on stack and copy default parameter buffer from ds:[1BC2h]
+0935:3c15 sub sp,0FEh
+0935:3c19 mov di,sp
+0935:3c1b cld
+0935:3c1c push ss
+0935:3c1d pop es
+0935:3c1e rep movsw
+0935:3c20 push word ptr [bp-2]
+0935:3c23 mov bx,[bp+4]
+0935:3c26 push word ptr [bx+4]
+; Invoke fallback action handler
+@jmp path_append_component@0935:109f
+0935:3c29 call 109Fh
+@jmp 'finish_and_cleanup@5
+0935:3c2c jmp near ptr 3CBAh
+
+; Bounds check action code for range [0x22, 0x5E]
+@label check_action_range
+0935:3c2f cmp bx,5Eh
+@jmp 'default_action@1
+0935:3c32 ja short 3BF7h
+
+0935:3c34 sub bx,22h
+@jmp 'default_action@1
+0935:3c37 jb short 3BF7h
+
+0935:3c39 shl bx,1
+; Dispatch via jump table
+@jmp unknown:mem
+0935:3c3b jmp word ptr cs:[bx+3C40h]
+
+@label finish_and_cleanup
+0935:3cba mov bx,[bp+4]
+0935:3cbd push word ptr [bx+4]
+; Post-action cleanup/callback
+@jmp get_next_char@0935:11a0
+0935:3cc0 call 11A0h
+0935:3cc3 mov sp,bp
+0935:3cc5 pop bp
+0935:3cc6 ret 2
+

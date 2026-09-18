@@ -1,0 +1,118 @@
+name = "parse_trailing_int"
+desc = "Parses a trailing integer from a Pascal string right-to-left"
+details = "Iterates backwards from the end of a Pascal-style string, converting decimal digit characters into an integer using a decimal multiplier. The loop validates characters against predefined character sets via a runtime helper. If the prefix or stopping character is invalid according to a final character set check, the parsed result is reset to zero."
+callers = ["parse_argument_switches@0935:23ed"]
+callees = ["0d72:5452"]
+ip = "0935:1db1"
+
+[[params]]
+name = "out_val"
+value = "[bp+6]"
+type = "*mut i16"
+desc = "Near pointer to the output 16-bit integer"
+
+[[params]]
+name = "str"
+value = "[bp+8]"
+type = "[u8; 256]"
+desc = "Pascal-style string passed by value (byte length followed by characters)"
+
+---
+0935:1db1 push bp
+0935:1db2 mov bp,sp
+0935:1db4 sub sp,6
+; Initialize decimal multiplier to 1 (1s place)
+0935:1db8 mov word ptr [bp-4],1
+0935:1dbd mov di,[bp+6]
+; Initialize output value to 0
+0935:1dc0 mov word ptr [di],0
+; Read string length byte (Pascal string)
+0935:1dc4 mov al,[bp+8]
+0935:1dc7 xor ah,ah
+0935:1dc9 inc ax
+; Set index = len + 1
+0935:1dca mov [bp-2],ax
+
+; index -= 1
+@label parse_digit_loop
+0935:1dcd dec word ptr [bp-2]
+0935:1dd0 mov di,[bp-2]
+; Fetch character str[index]
+0935:1dd3 mov al,[bp+di+8]
+0935:1dd6 xor ah,ah
+0935:1dd8 push ax
+0935:1dd9 mov cx,7
+0935:1ddc push cx
+0935:1ddd mov cx,1DA6h
+0935:1de0 push ds
+0935:1de1 push cx
+0935:1de2 mov [bp-6],ax
+; Test if char is in digit set (ds:1DA6h)
+@jmp 0d72:5452
+0935:1de5 call far ptr 0D72h:5452h
+0935:1dea shr ax,1
+; Skip digit accumulation if not in set
+@jmp '3
+0935:1dec jae short 1E05h
+
+0935:1dee mov ax,[bp-6]
+; Convert ASCII digit to numeric value (subtract '0' / 0x30)
+0935:1df1 add ax,0FFD0h
+0935:1df4 imul word ptr [bp-4]
+0935:1df7 mov di,[bp+6]
+; Accumulate into output integer: *out += digit * multiplier
+0935:1dfa add [di],ax
+0935:1dfc mov ax,0Ah
+; multiplier *= 10
+0935:1dff imul word ptr [bp-4]
+0935:1e02 mov [bp-4],ax
+
+; If first character reached (index == 1), validate prefix
+@label check_continue
+0935:1e05 cmp word ptr [bp-2],1
+@jmp '5
+0935:1e09 je short 1E26h
+
+0935:1e0b mov di,[bp-2]
+0935:1e0e mov al,[bp+di+8]
+0935:1e11 xor ah,ah
+0935:1e13 push ax
+0935:1e14 mov ax,7
+0935:1e17 push ax
+0935:1e18 mov ax,1DAEh
+0935:1e1b push ds
+0935:1e1c push ax
+; Test if char is in allowed body set (ds:1DAEh)
+@jmp 0d72:5452
+0935:1e1d call far ptr 0D72h:5452h
+0935:1e22 shr ax,1
+; Continue backwards iteration if valid
+@jmp '1
+0935:1e24 jb short 1DCDh
+
+@label validate_prefix
+0935:1e26 mov di,[bp-2]
+0935:1e29 mov al,[bp+di+8]
+0935:1e2c xor ah,ah
+0935:1e2e push ax
+0935:1e2f mov ax,7
+0935:1e32 push ax
+0935:1e33 mov ax,1DB6h
+0935:1e36 push ds
+0935:1e37 push ax
+; Test if stopping char is in valid prefix set (ds:1DB6h)
+@jmp 0d72:5452
+0935:1e38 call far ptr 0D72h:5452h
+0935:1e3d shr ax,1
+@jmp '7
+0935:1e3f jb short 1E48h
+
+0935:1e41 mov di,[bp+6]
+; Invalid prefix: reset output to 0
+0935:1e44 mov word ptr [di],0
+
+@label done
+0935:1e48 mov sp,bp
+0935:1e4a pop bp
+0935:1e4b ret 104h
+

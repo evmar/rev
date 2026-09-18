@@ -1,0 +1,137 @@
+name = "bst_find_value"
+desc = "Searches a binary search tree for a given string key and returns the associated far pointer value."
+details = "Traverses a binary search tree rooted at ds:[0044h] comparing each node's string key against the input key. If a match is found, returns the 32-bit far pointer stored in the node (+04h); otherwise returns NULL."
+callers = ["parse_and_emit_token@0935:12fc"]
+callees = ["0d72:538c", "0d72:5570", "0d72:5615"]
+ip = "0935:0080"
+
+[[params]]
+name = "key"
+value = "[bp+4]"
+type = "*const u8"
+desc = "Near pointer to key string to find"
+
+[ret]
+name = "result"
+value = "dx:ax"
+type = "*const u8"
+desc = "Far pointer to value stored in node, or NULL if not found"
+
+---
+0935:0080 push bp
+0935:0081 mov bp,sp
+0935:0083 sub sp,2Eh
+; initialize return value to NULL
+0935:0087 mov word ptr [bp-4],0
+; load root pointer of binary search tree from ds:[0044h]
+0935:008c mov ax,ds:[44h]
+0935:008f mov dx,ds:[46h]
+0935:0093 mov [bp-8],ax
+0935:0096 mov [bp-6],dx
+0935:0099 mov di,[bp+4]
+; check that key string length is less than 33 bytes
+0935:009c mov al,[di]
+0935:009e xor ah,ah
+0935:00a0 cmp ax,21h
+0935:00a3 mov cx,0
+@jmp '2
+0935:00a6 jge short 00A9h
+
+0935:00a8 inc cx
+
+; validate against tree lookup enable flag in ds:[0042h]
+@label check_flag
+0935:00a9 and cl,ds:[42h]
+0935:00ad shr cx,1
+@jmp '4
+0935:00af jb short 00B4h
+
+@jmp '12
+0935:00b1 jmp near ptr 013Bh
+
+; check if current node pointer is NULL
+@label traverse_loop
+0935:00b4 cmp word ptr [bp-8],0
+@jmp '6
+0935:00b8 jne short 00BDh
+
+@jmp '12
+0935:00ba jmp near ptr 013Bh
+
+@label inspect_node
+0935:00bd les si,[bp-8]
+; load pointer to node's key string
+0935:00c0 les si,es:[si]
+0935:00c3 mov [bp-2Eh],si
+0935:00c6 mov [bp-2Ch],es
+0935:00c9 mov ax,es
+0935:00cb lea di,[bp-2Ah]
+0935:00ce push ss
+0935:00cf pop es
+0935:00d0 mov cx,21h
+; copy node key to stack buffer
+@jmp 0d72:538c
+0935:00d3 call far ptr 0D72h:538Ch
+0935:00d8 lea ax,[bp-2Ah]
+0935:00db push ds
+0935:00dc push ax
+0935:00dd push ds
+0935:00de push word ptr [bp+4]
+; test if keys match
+@jmp 0d72:5570
+0935:00e1 call far ptr 0D72h:5570h
+0935:00e6 shr ax,1
+@jmp '8
+0935:00e8 jae short 0102h
+
+; match found: retrieve node value from offset +04h
+0935:00ea les di,[bp-8]
+0935:00ed mov ax,es:[di+4]
+0935:00f1 mov dx,es:[di+6]
+0935:00f5 mov [bp-4],ax
+0935:00f8 mov [bp-2],dx
+0935:00fb mov word ptr [bp-8],0
+@jmp '11
+0935:0100 jmp short 0138h
+
+@label compare_key
+0935:0102 lea ax,[bp-2Ah]
+0935:0105 push ds
+0935:0106 push ax
+0935:0107 push ds
+0935:0108 push word ptr [bp+4]
+; compare search key against node key to determine branch
+@jmp 0d72:5615
+0935:010b call far ptr 0D72h:5615h
+0935:0110 shr ax,1
+@jmp '10
+0935:0112 jae short 0127h
+
+; traverse to right/greater child at offset +0Ch
+0935:0114 les di,[bp-8]
+0935:0117 mov ax,es:[di+0Ch]
+0935:011b mov dx,es:[di+0Eh]
+0935:011f mov [bp-8],ax
+0935:0122 mov [bp-6],dx
+@jmp '11
+0935:0125 jmp short 0138h
+
+; traverse to left/lesser child at offset +08h
+@label traverse_left
+0935:0127 les di,[bp-8]
+0935:012a mov ax,es:[di+8]
+0935:012e mov dx,es:[di+0Ah]
+0935:0132 mov [bp-8],ax
+0935:0135 mov [bp-6],dx
+
+@label next_node
+@jmp '4
+0935:0138 jmp near ptr 00B4h
+
+@label exit
+0935:013b mov ax,[bp-4]
+0935:013e mov dx,[bp-2]
+0935:0141 mov sp,bp
+0935:0143 pop bp
+0935:0144 ret 2
+

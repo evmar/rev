@@ -1,0 +1,32 @@
+callers = ["0935:0080", "path_append_component@0935:109f", "parse_and_emit_token@0935:12fc", "0935:1742", "0935:1742", "0935:21f1", "dispatch_action_by_state@0935:30a1", "process_transaction_loop@0935:3d66"]
+ip = "0d72:538c"
+
+---
+0d72:538c push bp
+0d72:538d mov bp,sp
+0d72:538f push ds
+0d72:5390 mov ds,ax
+@mem ; [ds unknown]
+0d72:5392 mov al,[si]
+0d72:5394 xor ah,ah
+0d72:5396 dec cx
+0d72:5397 cmp ax,cx
+@jmp '2
+0d72:5399 jae short 539Dh
+
+0d72:539b mov cx,ax
+
+@mem ; [es unknown]
+0d72:539d mov es:[di],cl
+0d72:53a0 inc si
+0d72:53a1 inc di
+0d72:53a2 shr cx,1
+0d72:53a4 cld
+0d72:53a5 rep movsw
+0d72:53a7 adc cx,cx
+0d72:53a9 rep movsb
+0d72:53ab pop ds
+0d72:53ac mov sp,bp
+0d72:53ae pop bp
+0d72:53af retf
+

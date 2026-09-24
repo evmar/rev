@@ -5,12 +5,17 @@ ip = "0d72:507e"
 0d72:507e push bp
 0d72:507f mov bp,sp
 0d72:5081 push ds
+@mem ; [ss unknown]
 0d72:5082 mov ax,[bp+0Eh]
 0d72:5085 mov ds,ax
+@mem ; [ss unknown]
 0d72:5087 mov si,[bp+0Ch]
+@mem ; [ss unknown]
 0d72:508a mov ax,[bp+0Ah]
 0d72:508d mov es,ax
+@mem ; [ss unknown]
 0d72:508f mov di,[bp+8]
+@mem ; [ss unknown]
 0d72:5092 mov cx,[bp+6]
 0d72:5095 cld
 0d72:5096 shr cx,1

@@ -28,13 +28,17 @@ desc = "Pointer to UI/input state structure"
 0935:1262 mov bp,sp
 0935:1264 sub sp,22h
 ; Initialize target string buffer length to 0
+@mem ; [ss unknown]
 0935:1268 mov di,[bp+26h]
+@mem ; [ds unknown]
 0935:126b mov byte ptr [di],0
 ; Character counter = 0
+@mem ; [ss unknown]
 0935:126e mov word ptr [bp-2],0
 
 ; Increment read character count
 @label read_loop
+@mem ; [ss unknown]
 0935:1273 inc word ptr [bp-2]
 0935:1276 mov ax,1
 0935:1279 push ax
@@ -44,16 +48,23 @@ desc = "Pointer to UI/input state structure"
 0935:127f mov ax,0FFh
 0935:1282 push ax
 0935:1283 push ds
+@mem ; [ss unknown]
 0935:1284 push word ptr [bp+26h]
+@mem ; [ss unknown]
 0935:1287 push word ptr [bp-2]
 ; Read next input character
 @jmp 0d72:5909
 0935:128a call far ptr 0D72h:5909h
+@mem ; [ss unknown]
 0935:128f mov di,[bp-2]
+@mem ; [ss unknown]
 0935:1292 add di,[bp+26h]
+@mem ; [ds unknown]
 0935:1295 mov al,ds:[164h]
 ; Append read character into buffer
+@mem ; [ds unknown]
 0935:1298 mov [di],al
+@mem ; [ds unknown]
 0935:129a mov al,ds:[164h]
 0935:129d xor ah,ah
 0935:129f push ax
@@ -68,6 +79,7 @@ desc = "Pointer to UI/input state structure"
 0935:12ae mov ax,1CEEh
 0935:12b1 push ds
 0935:12b2 push ax
+@mem ; [ss unknown]
 0935:12b3 lea ax,[bp-22h]
 0935:12b6 push ax
 ; Perform set operation into local temporary set [bp-22h]
@@ -79,23 +91,28 @@ desc = "Pointer to UI/input state structure"
 @jmp 0d72:5452
 0935:12be call far ptr 0D72h:5452h
 0935:12c3 shr ax,1
-@jmp '3
+@jmp 'check_valid_set@3
 0935:12c5 jae short 12CCh
 
 ; Flag ds:[0054h] = 1 if character matched secondary set
+@mem ; [ds unknown]
 0935:12c7 mov byte ptr ds:[54h],1
 
 @label check_valid_set
+@mem ; [ss unknown]
 0935:12cc mov bx,[bp+4]
 ; Call display/cursor update routine
+@mem ; [ds unknown]
 0935:12cf push word ptr [bx+4]
 @jmp get_next_char@0935:11a0
 0935:12d2 call 11A0h
+@mem ; [ds unknown]
 0935:12d5 mov al,ds:[164h]
 0935:12d8 xor ah,ah
 0935:12da push ax
 0935:12db mov ax,1Fh
 0935:12de push ax
+@mem ; [ss unknown]
 0935:12df lea ax,[bp+6]
 0935:12e2 push ds
 0935:12e3 push ax
@@ -104,15 +121,16 @@ desc = "Pointer to UI/input state structure"
 0935:12e4 call far ptr 0D72h:5452h
 0935:12e9 shr ax,1
 ; Stop reading if character is not in valid_chars
-@jmp '6
+@jmp 'exit@6
 0935:12eb jae short 12F6h
 
 ; Stop reading if counter reaches limit of 120 characters
+@mem ; [ss unknown]
 0935:12ed cmp word ptr [bp-2],78h
-@jmp '6
+@jmp 'exit@6
 0935:12f1 je short 12F6h
 
-@jmp '1
+@jmp 'read_loop@1
 0935:12f3 jmp near ptr 1273h
 
 @label exit

@@ -13,9 +13,12 @@ ip = "0d72:582a"
 @jmp 0d72:4fcc
 0d72:5836 call far ptr 0D72h:4FCCh
 0d72:583b les di,[bp+0Ch]
+@mem ; [es unknown]
 0d72:583e mov al,es:[di]
 0d72:5841 xor ah,ah
+@mem ; [ss unknown]
 0d72:5843 add ax,[bp+0Ah]
+@mem ; [ss unknown]
 0d72:5846 cmp ax,[bp+10h]
 @jmp '2
 0d72:5849 jle short 5850h
@@ -27,23 +30,30 @@ ip = "0d72:582a"
 0d72:5853 push es
 0d72:5854 push di
 0d72:5855 les di,[bp+0Ch]
+@mem ; [es unknown]
 0d72:5858 mov al,es:[di]
 0d72:585b xor ah,ah
 0d72:585d xchg si,ax
 0d72:585e inc si
 0d72:585f add di,si
+@mem ; [ss unknown]
 0d72:5861 mov [bp-4],di
+@mem ; [ss unknown]
 0d72:5864 mov [bp-2],es
 0d72:5867 push es
 0d72:5868 push di
+@mem ; [ss unknown]
 0d72:5869 push word ptr [bp+0Ah]
 @jmp 0d72:507e
 0d72:586c call far ptr 0D72h:507Eh
 0d72:5871 les di,[bp+0Ch]
+@mem ; [es unknown]
 0d72:5874 mov al,es:[di]
 0d72:5877 xor ah,ah
+@mem ; [ss unknown]
 0d72:5879 add ax,[bp+0Ah]
 0d72:587c xor ah,ah
+@mem ; [es unknown]
 0d72:587e mov es:[di],al
 @jmp 0d72:5004
 0d72:5881 call far ptr 0D72h:5004h

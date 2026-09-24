@@ -1,7 +1,7 @@
 name = "tts_pronounce_number"
 desc = "Converts a numeric digit string into speech tokens (cardinal, ordinal, or digit-by-digit)"
 details = "Processes a Pascal-style string of ASCII digits and synthesizes speech by decomposing numbers into magnitude groups (thousands, hundreds, tens, and units). Supports individual digit spelling (mode 0), cardinal pronunciation (mode 1), ordinal forms (mode 2, with phonetic adjustments such as changing 'v' to 'f' for 'twelfth'), and 4-digit year/grouped pronunciations (mode 3). Generated speech frame packets are queued via call 109Fh."
-callers = ["0935:21f1", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed"]
+callers = ["parse_date_or_time@0935:21f1", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed"]
 callees = ["0935:019f", "0935:16ff", "0d72:538c", "path_append_component@0935:109f"]
 ip = "0935:1742"
 
@@ -28,18 +28,24 @@ desc = "Pronunciation mode: 0 = digits, 1 = cardinal, 2 = ordinal, 3 = year/auto
 0935:1743 mov bp,sp
 0935:1745 sub sp,10Ah
 ; Check mode == 0 (spell each digit individually)
+@mem ; [ss unknown]
 0935:1749 cmp byte ptr [bp+8],0
-@jmp '5
+@jmp 'check_mode_3@5
 0935:174d jne short 17B2h
 
+@mem ; [ss unknown]
 0935:174f mov di,[bp+6]
+@mem ; [ds unknown]
 0935:1752 mov al,[di]
 0935:1754 xor ah,ah
+@mem ; [ss unknown]
 0935:1756 mov [bp-106h],ax
+@mem ; [ss unknown]
 0935:175a cmp word ptr [bp-106h],1
 @jmp '4
 0935:175f jl short 17AFh
 
+@mem ; [ss unknown]
 0935:1761 mov word ptr [bp-2],1
 
 @label spell_digit_loop
@@ -51,8 +57,11 @@ desc = "Pronunciation mode: 0 = digits, 1 = cardinal, 2 = ordinal, 3 = year/auto
 0935:1773 push ss
 0935:1774 pop es
 0935:1775 rep movsw
+@mem ; [ss unknown]
 0935:1777 mov di,[bp-2]
+@mem ; [ss unknown]
 0935:177a add di,[bp+6]
+@mem ; [ds unknown]
 0935:177d mov al,[di]
 0935:177f xor ah,ah
 ; Index into digit phoneme table: digit * 10 + 0x128
@@ -67,40 +76,51 @@ desc = "Pronunciation mode: 0 = digits, 1 = cardinal, 2 = ordinal, 3 = year/auto
 0935:1794 push ss
 0935:1795 pop es
 0935:1796 rep movsw
+@mem ; [ss unknown]
 0935:1798 mov bx,[bp+4]
+@mem ; [ds unknown]
 0935:179b push word ptr [bx+4]
 ; Dispatch speech token to audio engine
 @jmp path_append_component@0935:109f
 0935:179e call 109Fh
+@mem ; [ss unknown]
 0935:17a1 mov ax,[bp-2]
 0935:17a4 inc ax
+@mem ; [ss unknown]
 0935:17a5 mov [bp-2],ax
 0935:17a8 dec ax
+@mem ; [ss unknown]
 0935:17a9 cmp ax,[bp-106h]
-@jmp '3
+@jmp 'spell_digit_loop@3
 0935:17ad jne short 1766h
 
-@jmp '87
+@jmp 'epilogue_exit@87
 0935:17af jmp near ptr 1DABh
 
 ; Check mode == 3 (compound number / year formatting)
 @label check_mode_3
+@mem ; [ss unknown]
 0935:17b2 cmp byte ptr [bp+8],3
-@jmp '10
+@jmp 'check_length_overflow@10
 0935:17b6 jne short 1808h
 
+@mem ; [ss unknown]
 0935:17b8 push word ptr [bp+6]
+@mem ; [ss unknown]
 0935:17bb lea ax,[bp-104h]
 0935:17bf push ax
 0935:17c0 mov ax,2
 0935:17c3 push ax
+@mem ; [ss unknown]
 0935:17c4 mov di,[bp+6]
+@mem ; [ds unknown]
 0935:17c7 mov al,[di]
 0935:17c9 xor ah,ah
 0935:17cb dec ax
 0935:17cc push ax
 @jmp 0935:019f
 0935:17cd call 019Fh
+@mem ; [ss unknown]
 0935:17d0 lea si,[bp-104h]
 0935:17d4 mov cx,80h
 0935:17d7 sub sp,100h
@@ -118,7 +138,9 @@ desc = "Pronunciation mode: 0 = digits, 1 = cardinal, 2 = ordinal, 3 = year/auto
 
 0935:17ea mov ax,1
 0935:17ed push ax
+@mem ; [ss unknown]
 0935:17ee push word ptr [bp+6]
+@mem ; [ss unknown]
 0935:17f1 push word ptr [bp+4]
 @jmp '0
 0935:17f4 call 1742h
@@ -127,73 +149,87 @@ desc = "Pronunciation mode: 0 = digits, 1 = cardinal, 2 = ordinal, 3 = year/auto
 
 0935:17f9 xor ax,ax
 0935:17fb push ax
+@mem ; [ss unknown]
 0935:17fc push word ptr [bp+6]
+@mem ; [ss unknown]
 0935:17ff push word ptr [bp+4]
 @jmp '0
 0935:1802 call 1742h
 
-@jmp '87
+@jmp 'epilogue_exit@87
 0935:1805 jmp near ptr 1DABh
 
 @label check_length_overflow
+@mem ; [ss unknown]
 0935:1808 mov di,[bp+6]
+@mem ; [ds unknown]
 0935:180b mov al,[di]
 0935:180d xor ah,ah
 ; If number length > 36 digits, fallback to spelling individually
 0935:180f cmp ax,24h
-@jmp '12
+@jmp 'handle_cardinal_or_ordinal@12
 0935:1812 jle short 1821h
 
 0935:1814 xor ax,ax
 0935:1816 push ax
 0935:1817 push di
+@mem ; [ss unknown]
 0935:1818 push word ptr [bp+4]
 @jmp '0
 0935:181b call 1742h
-@jmp '87
+@jmp 'epilogue_exit@87
 0935:181e jmp near ptr 1DABh
 
 @label handle_cardinal_or_ordinal
+@mem ; [ss unknown]
 0935:1821 mov di,[bp+6]
+@mem ; [ds unknown]
 0935:1824 mov al,[di]
 0935:1826 xor ah,ah
+@mem ; [ss unknown]
 0935:1828 mov [bp-2],ax
+@mem ; [ss unknown]
 0935:182b cmp word ptr [bp-2],3
 @jmp '14
 0935:182f jg short 1834h
 
-@jmp '48
+@jmp 'handle_hundreds_place@48
 0935:1831 jmp near ptr 1A56h
 
+@mem ; [ds unknown]
 0935:1834 test byte ptr ds:[56h],1
 @jmp '16
 0935:1839 je short 183Eh
 
-@jmp '38
+@jmp 'decompose_thousands_group@38
 0935:183b jmp near ptr 1923h
 
+@mem ; [ds unknown]
 0935:183e test byte ptr ds:[58h],1
 @jmp '18
 0935:1843 je short 1848h
 
-@jmp '38
+@jmp 'decompose_thousands_group@38
 0935:1845 jmp near ptr 1923h
 
 ; Check if 4-digit number should be pronounced as a year (e.g. 19xx)
+@mem ; [ss unknown]
 0935:1848 cmp word ptr [bp-2],4
 @jmp '20
 0935:184c je short 1851h
 
-@jmp '38
+@jmp 'decompose_thousands_group@38
 0935:184e jmp near ptr 1923h
 
+@mem ; [ds unknown]
 0935:1851 cmp byte ptr ds:[164h],2Eh
 @jmp '22
 0935:1856 jne short 185Bh
 
-@jmp '38
+@jmp 'decompose_thousands_group@38
 0935:1858 jmp near ptr 1923h
 
+@mem ; [ds unknown]
 0935:185b cmp byte ptr [di+2],30h
 0935:185f mov ax,0
 @jmp '24
@@ -201,6 +237,7 @@ desc = "Pronunciation mode: 0 = digits, 1 = cardinal, 2 = ordinal, 3 = year/auto
 
 0935:1864 inc ax
 
+@mem ; [ds unknown]
 0935:1865 cmp byte ptr [di+3],30h
 0935:1869 mov cx,0
 @jmp '26
@@ -210,13 +247,14 @@ desc = "Pronunciation mode: 0 = digits, 1 = cardinal, 2 = ordinal, 3 = year/auto
 
 0935:186f or al,cl
 0935:1871 shr ax,1
-@jmp '28
+@jmp 'pronounce_year_pair@28
 0935:1873 jb short 1878h
 
-@jmp '38
+@jmp 'decompose_thousands_group@38
 0935:1875 jmp near ptr 1923h
 
 @label pronounce_year_pair
+@mem ; [ss unknown]
 0935:1878 lea di,[bp-104h]
 0935:187c push ss
 0935:187d pop es
@@ -225,19 +263,28 @@ desc = "Pronunciation mode: 0 = digits, 1 = cardinal, 2 = ordinal, 3 = year/auto
 0935:1884 mov ax,ds
 @jmp 0d72:538c
 0935:1886 call far ptr 0D72h:538Ch
+@mem ; [ss unknown]
 0935:188b mov di,[bp+6]
+@mem ; [ds unknown]
 0935:188e mov al,[di+1]
+@mem ; [ss unknown]
 0935:1891 mov [bp-103h],al
+@mem ; [ds unknown]
 0935:1895 mov al,[di+2]
+@mem ; [ss unknown]
 0935:1898 mov [bp-102h],al
 0935:189c mov ax,1
 0935:189f push ax
+@mem ; [ss unknown]
 0935:18a0 lea ax,[bp-104h]
 0935:18a4 push ax
+@mem ; [ss unknown]
 0935:18a5 push word ptr [bp+4]
 @jmp '0
 0935:18a8 call 1742h
+@mem ; [ss unknown]
 0935:18ab mov di,[bp+6]
+@mem ; [ds unknown]
 0935:18ae cmp byte ptr [di+3],30h
 0935:18b2 mov ax,0
 @jmp '30
@@ -245,6 +292,7 @@ desc = "Pronunciation mode: 0 = digits, 1 = cardinal, 2 = ordinal, 3 = year/auto
 
 0935:18b7 inc ax
 
+@mem ; [ds unknown]
 0935:18b8 cmp byte ptr [di+4],30h
 0935:18bc mov cx,0
 @jmp '32
@@ -253,6 +301,7 @@ desc = "Pronunciation mode: 0 = digits, 1 = cardinal, 2 = ordinal, 3 = year/auto
 0935:18c1 inc cx
 
 0935:18c2 and al,cl
+@mem ; [ds unknown]
 0935:18c4 cmp byte ptr [di+1],30h
 0935:18c8 mov cx,0
 @jmp '34
@@ -281,35 +330,47 @@ desc = "Pronunciation mode: 0 = digits, 1 = cardinal, 2 = ordinal, 3 = year/auto
 0935:18f1 push ss
 0935:18f2 pop es
 0935:18f3 rep movsw
+@mem ; [ss unknown]
 0935:18f5 mov bx,[bp+4]
+@mem ; [ds unknown]
 0935:18f8 push word ptr [bx+4]
 @jmp path_append_component@0935:109f
 0935:18fb call 109Fh
 @jmp '37
 0935:18fe jmp short 1920h
 
+@mem ; [ss unknown]
 0935:1900 mov di,[bp+6]
+@mem ; [ds unknown]
 0935:1903 mov al,[di+3]
+@mem ; [ss unknown]
 0935:1906 mov [bp-103h],al
+@mem ; [ds unknown]
 0935:190a mov al,[di+4]
+@mem ; [ss unknown]
 0935:190d mov [bp-102h],al
 0935:1911 mov ax,1
 0935:1914 push ax
+@mem ; [ss unknown]
 0935:1915 lea ax,[bp-104h]
 0935:1919 push ax
+@mem ; [ss unknown]
 0935:191a push word ptr [bp+4]
 @jmp '0
 0935:191d call 1742h
 
-@jmp '87
+@jmp 'epilogue_exit@87
 0935:1920 jmp near ptr 1DABh
 
 @label decompose_thousands_group
+@mem ; [ss unknown]
 0935:1923 push word ptr [bp+6]
+@mem ; [ss unknown]
 0935:1926 lea ax,[bp-104h]
 0935:192a push ax
 0935:192b mov ax,1
 0935:192e push ax
+@mem ; [ss unknown]
 0935:192f mov cx,[bp-2]
 0935:1932 inc cx
 0935:1933 inc cx
@@ -324,9 +385,12 @@ desc = "Pronunciation mode: 0 = digits, 1 = cardinal, 2 = ordinal, 3 = year/auto
 0935:193d call 019Fh
 
 @label next_magnitude_group
+@mem ; [ss unknown]
 0935:1940 mov al,[bp-104h]
 0935:1944 xor ah,ah
+@mem ; [ss unknown]
 0935:1946 sub [bp-2],ax
+@mem ; [ss unknown]
 0935:1949 lea si,[bp-104h]
 0935:194d mov cx,80h
 0935:1950 sub sp,100h
@@ -347,11 +411,14 @@ desc = "Pronunciation mode: 0 = digits, 1 = cardinal, 2 = ordinal, 3 = year/auto
 
 0935:1966 mov ax,1
 0935:1969 push ax
+@mem ; [ss unknown]
 0935:196a lea ax,[bp-104h]
 0935:196e push ax
+@mem ; [ss unknown]
 0935:196f push word ptr [bp+4]
 @jmp '0
 0935:1972 call 1742h
+@mem ; [ss unknown]
 0935:1975 cmp word ptr [bp-2],3
 @jmp '43
 0935:1979 jne short 19A7h
@@ -372,7 +439,9 @@ desc = "Pronunciation mode: 0 = digits, 1 = cardinal, 2 = ordinal, 3 = year/auto
 0935:1998 push ss
 0935:1999 pop es
 0935:199a rep movsw
+@mem ; [ss unknown]
 0935:199c mov bx,[bp+4]
+@mem ; [ds unknown]
 0935:199f push word ptr [bx+4]
 @jmp path_append_component@0935:109f
 0935:19a2 call 109Fh
@@ -388,6 +457,7 @@ desc = "Pronunciation mode: 0 = digits, 1 = cardinal, 2 = ordinal, 3 = year/auto
 0935:19b5 pop es
 0935:19b6 rep movsw
 0935:19b8 mov cx,3
+@mem ; [ss unknown]
 0935:19bb mov ax,[bp-2]
 0935:19be cwd
 0935:19bf idiv cx
@@ -405,7 +475,9 @@ desc = "Pronunciation mode: 0 = digits, 1 = cardinal, 2 = ordinal, 3 = year/auto
 0935:19d5 movsw
 0935:19d6 movsw
 0935:19d7 movsw
+@mem ; [ss unknown]
 0935:19d8 mov bx,[bp+4]
+@mem ; [ds unknown]
 0935:19db push word ptr [bx+4]
 @jmp path_append_component@0935:109f
 0935:19de call 109Fh
@@ -425,11 +497,14 @@ desc = "Pronunciation mode: 0 = digits, 1 = cardinal, 2 = ordinal, 3 = year/auto
 0935:19fe push ss
 0935:19ff pop es
 0935:1a00 rep movsw
+@mem ; [ss unknown]
 0935:1a02 mov bx,[bp+4]
+@mem ; [ds unknown]
 0935:1a05 push word ptr [bx+4]
 @jmp path_append_component@0935:109f
 0935:1a08 call 109Fh
 
+@mem ; [ss unknown]
 0935:1a0b lea di,[bp-104h]
 0935:1a0f push ss
 0935:1a10 pop es
@@ -438,52 +513,69 @@ desc = "Pronunciation mode: 0 = digits, 1 = cardinal, 2 = ordinal, 3 = year/auto
 0935:1a17 mov ax,ds
 @jmp 0d72:538c
 0935:1a19 call far ptr 0D72h:538Ch
+@mem ; [ss unknown]
 0935:1a1e mov di,[bp+6]
+@mem ; [ds unknown]
 0935:1a21 mov al,[di]
 0935:1a23 xor ah,ah
+@mem ; [ss unknown]
 0935:1a25 sub ax,[bp-2]
 0935:1a28 xchg si,ax
 0935:1a29 add di,si
+@mem ; [ds unknown]
 0935:1a2b mov al,[di+1]
+@mem ; [ss unknown]
 0935:1a2e mov [bp-103h],al
+@mem ; [ds unknown]
 0935:1a32 mov al,[di+2]
+@mem ; [ss unknown]
 0935:1a35 mov [bp-102h],al
+@mem ; [ds unknown]
 0935:1a39 mov al,[di+3]
+@mem ; [ss unknown]
 0935:1a3c mov [bp-101h],al
+@mem ; [ds unknown]
 0935:1a40 mov al,ds:[60h]
 0935:1a43 xor ah,ah
 0935:1a45 cmp ax,96h
 @jmp '46
 0935:1a48 jle short 1A4Dh
 
-@jmp '87
+@jmp 'epilogue_exit@87
 0935:1a4a jmp near ptr 1DABh
 
+@mem ; [ss unknown]
 0935:1a4d cmp word ptr [bp-2],3
-@jmp '48
+@jmp 'handle_hundreds_place@48
 0935:1a51 je short 1A56h
 
-@jmp '39
+@jmp 'next_magnitude_group@39
 0935:1a53 jmp near ptr 1940h
 
 @label handle_hundreds_place
+@mem ; [ss unknown]
 0935:1a56 cmp word ptr [bp-2],3
 @jmp '50
 0935:1a5a je short 1A5Fh
 
-@jmp '53
+@jmp 'handle_tens_place@53
 0935:1a5c jmp near ptr 1ADBh
 
+@mem ; [ss unknown]
 0935:1a5f mov di,[bp+6]
+@mem ; [ds unknown]
 0935:1a62 mov al,[di]
 0935:1a64 xor ah,ah
 0935:1a66 xchg si,ax
 0935:1a67 add di,si
+@mem ; [ds unknown]
 0935:1a69 mov al,[di-2]
 0935:1a6c xor ah,ah
 ; Convert ASCII hundreds digit to integer
 0935:1a6e add ax,0FFD0h
+@mem ; [ss unknown]
 0935:1a71 mov [bp-4],ax
+@mem ; [ss unknown]
 0935:1a74 cmp word ptr [bp-4],0
 @jmp '52
 0935:1a78 je short 1AD6h
@@ -508,7 +600,9 @@ desc = "Pronunciation mode: 0 = digits, 1 = cardinal, 2 = ordinal, 3 = year/auto
 0935:1a9f push ss
 0935:1aa0 pop es
 0935:1aa1 rep movsw
+@mem ; [ss unknown]
 0935:1aa3 mov bx,[bp+4]
+@mem ; [ds unknown]
 0935:1aa6 push word ptr [bx+4]
 @jmp path_append_component@0935:109f
 0935:1aa9 call 109Fh
@@ -528,37 +622,47 @@ desc = "Pronunciation mode: 0 = digits, 1 = cardinal, 2 = ordinal, 3 = year/auto
 0935:1ac9 push ss
 0935:1aca pop es
 0935:1acb rep movsw
+@mem ; [ss unknown]
 0935:1acd mov bx,[bp+4]
+@mem ; [ds unknown]
 0935:1ad0 push word ptr [bx+4]
 @jmp path_append_component@0935:109f
 0935:1ad3 call 109Fh
 
+@mem ; [ss unknown]
 0935:1ad6 mov word ptr [bp-2],2
 
 @label handle_tens_place
+@mem ; [ss unknown]
 0935:1adb cmp word ptr [bp-2],2
 @jmp '55
 0935:1adf je short 1AE4h
 
-@jmp '68
+@jmp 'handle_ones_place@68
 0935:1ae1 jmp near ptr 1C47h
 
+@mem ; [ss unknown]
 0935:1ae4 mov di,[bp+6]
+@mem ; [ds unknown]
 0935:1ae7 mov al,[di]
 0935:1ae9 xor ah,ah
 0935:1aeb xchg si,ax
 0935:1aec add di,si
+@mem ; [ds unknown]
 0935:1aee mov al,[di-1]
 0935:1af1 xor ah,ah
 0935:1af3 mov cx,0Ah
 0935:1af6 imul cx
 0935:1af8 mov dx,ax
+@mem ; [ds unknown]
 0935:1afa mov al,[di]
 0935:1afc xor ah,ah
 0935:1afe add dx,ax
 ; Compute 2-digit value (tens * 10 + ones)
 0935:1b00 add dx,0FDF0h
+@mem ; [ss unknown]
 0935:1b04 mov [bp-4],dx
+@mem ; [ss unknown]
 0935:1b07 cmp word ptr [bp-4],14h
 @jmp '57
 0935:1b0b jl short 1B4Fh
@@ -572,6 +676,7 @@ desc = "Pronunciation mode: 0 = digits, 1 = cardinal, 2 = ordinal, 3 = year/auto
 0935:1b1b pop es
 0935:1b1c rep movsw
 0935:1b1e mov cx,0Ah
+@mem ; [ss unknown]
 0935:1b21 mov ax,[bp-4]
 0935:1b24 cwd
 0935:1b25 idiv cx
@@ -587,14 +692,18 @@ desc = "Pronunciation mode: 0 = digits, 1 = cardinal, 2 = ordinal, 3 = year/auto
 0935:1b3a push ss
 0935:1b3b pop es
 0935:1b3c rep movsw
+@mem ; [ss unknown]
 0935:1b3e mov bx,[bp+4]
+@mem ; [ds unknown]
 0935:1b41 push word ptr [bx+4]
 @jmp path_append_component@0935:109f
 0935:1b44 call 109Fh
+@mem ; [ss unknown]
 0935:1b47 mov word ptr [bp-2],1
-@jmp '68
+@jmp 'handle_ones_place@68
 0935:1b4c jmp near ptr 1C47h
 
+@mem ; [ss unknown]
 0935:1b4f cmp word ptr [bp-4],0Ah
 @jmp '59
 0935:1b53 jge short 1B58h
@@ -602,8 +711,9 @@ desc = "Pronunciation mode: 0 = digits, 1 = cardinal, 2 = ordinal, 3 = year/auto
 @jmp '67
 0935:1b55 jmp near ptr 1C42h
 
+@mem ; [ss unknown]
 0935:1b58 cmp word ptr [bp-4],10h
-@jmp '61
+@jmp 'pronounce_teen_value@61
 0935:1b5c jl short 1BBAh
 
 0935:1b5e mov si,1BC2h
@@ -625,7 +735,9 @@ desc = "Pronunciation mode: 0 = digits, 1 = cardinal, 2 = ordinal, 3 = year/auto
 0935:1b83 push ss
 0935:1b84 pop es
 0935:1b85 rep movsw
+@mem ; [ss unknown]
 0935:1b87 mov bx,[bp+4]
+@mem ; [ds unknown]
 0935:1b8a push word ptr [bx+4]
 @jmp path_append_component@0935:109f
 0935:1b8d call 109Fh
@@ -646,7 +758,9 @@ desc = "Pronunciation mode: 0 = digits, 1 = cardinal, 2 = ordinal, 3 = year/auto
 0935:1bac movsw
 0935:1bad movsw
 0935:1bae movsw
+@mem ; [ss unknown]
 0935:1baf mov bx,[bp+4]
+@mem ; [ds unknown]
 0935:1bb2 push word ptr [bx+4]
 @jmp path_append_component@0935:109f
 0935:1bb5 call 109Fh
@@ -673,31 +787,41 @@ desc = "Pronunciation mode: 0 = digits, 1 = cardinal, 2 = ordinal, 3 = year/auto
 0935:1bdf push ss
 0935:1be0 pop es
 0935:1be1 rep movsw
+@mem ; [ss unknown]
 0935:1be3 mov bx,[bp+4]
+@mem ; [ds unknown]
 0935:1be6 push word ptr [bx+4]
 @jmp path_append_component@0935:109f
 0935:1be9 call 109Fh
 
+@mem ; [ss unknown]
 0935:1bec cmp byte ptr [bp+8],2
 @jmp '66
 0935:1bf0 jne short 1C3Bh
 
+@mem ; [ss unknown]
 0935:1bf2 mov di,[bp+4]
+@mem ; [ds unknown]
 0935:1bf5 mov di,[di+4]
 0935:1bf8 mov dx,di
 0935:1bfa les di,[di+8]
+@mem ; [es unknown]
 0935:1bfd mov al,es:[di]
 0935:1c00 xor ah,ah
 0935:1c02 xchg si,ax
 0935:1c03 mov bx,si
 ; Ordinal adjustment: replace trailing 'v' with 'f' (e.g., five/twelve -> fifth/twelfth)
+@mem ; [es unknown]
 0935:1c05 cmp byte ptr es:[bx+di],76h
 @jmp '65
 0935:1c09 jne short 1C19h
 
 0935:1c0b add di,bx
+@mem ; [ss unknown]
 0935:1c0d mov [bp-10Ah],di
+@mem ; [ss unknown]
 0935:1c11 mov [bp-108h],es
+@mem ; [es unknown]
 0935:1c15 mov byte ptr es:[di],66h
 
 0935:1c19 mov si,1BC2h
@@ -708,37 +832,49 @@ desc = "Pronunciation mode: 0 = digits, 1 = cardinal, 2 = ordinal, 3 = year/auto
 0935:1c26 push ss
 0935:1c27 pop es
 0935:1c28 rep movsw
+@mem ; [ds unknown]
 0935:1c2a push word ptr ds:[1D98h]
+@mem ; [ds unknown]
 0935:1c2e push word ptr ds:[1D96h]
+@mem ; [ss unknown]
 0935:1c32 mov bx,[bp+4]
+@mem ; [ds unknown]
 0935:1c35 push word ptr [bx+4]
 @jmp path_append_component@0935:109f
 0935:1c38 call 109Fh
 
+@mem ; [ss unknown]
 0935:1c3b mov word ptr [bp-2],0
-@jmp '68
+@jmp 'handle_ones_place@68
 0935:1c40 jmp short 1C47h
 
+@mem ; [ss unknown]
 0935:1c42 mov word ptr [bp-2],1
 
 @label handle_ones_place
+@mem ; [ss unknown]
 0935:1c47 cmp word ptr [bp-2],1
 @jmp '70
 0935:1c4b je short 1C50h
 
-@jmp '87
+@jmp 'epilogue_exit@87
 0935:1c4d jmp near ptr 1DABh
 
+@mem ; [ss unknown]
 0935:1c50 mov di,[bp+6]
+@mem ; [ds unknown]
 0935:1c53 mov al,[di]
 0935:1c55 xor ah,ah
 0935:1c57 xchg si,ax
 0935:1c58 add di,si
+@mem ; [ds unknown]
 0935:1c5a mov al,[di]
 0935:1c5c xor ah,ah
 ; Convert ASCII ones digit to integer
 0935:1c5e add ax,0FFD0h
+@mem ; [ss unknown]
 0935:1c61 mov [bp-4],ax
+@mem ; [ss unknown]
 0935:1c64 cmp word ptr [bp-4],0
 0935:1c68 mov ax,0
 @jmp '72
@@ -754,6 +890,7 @@ desc = "Pronunciation mode: 0 = digits, 1 = cardinal, 2 = ordinal, 3 = year/auto
 0935:1c76 inc cx
 
 0935:1c77 or al,cl
+@mem ; [ss unknown]
 0935:1c79 mov si,[bp+6]
 0935:1c7c mov cx,80h
 0935:1c7f sub sp,100h
@@ -762,25 +899,28 @@ desc = "Pronunciation mode: 0 = digits, 1 = cardinal, 2 = ordinal, 3 = year/auto
 0935:1c86 push ss
 0935:1c87 pop es
 0935:1c88 rep movsw
+@mem ; [ss unknown]
 0935:1c8a mov [bp-108h],ax
 0935:1c8e push bp
 @jmp 0935:16ff
 0935:1c8f call 16FFh
 0935:1c92 or al,[bp-108h]
 0935:1c96 shr ax,1
-@jmp '76
+@jmp 'emit_ones_ordinal@76
 0935:1c98 jb short 1C9Dh
 
-@jmp '82
+@jmp 'append_ordinal_suffix@82
 0935:1c9a jmp near ptr 1D39h
 
 @label emit_ones_ordinal
+@mem ; [ss unknown]
 0935:1c9d cmp byte ptr [bp+8],2
-@jmp '79
+@jmp 'emit_ones_cardinal@79
 0935:1ca1 jne short 1CDDh
 
+@mem ; [ss unknown]
 0935:1ca3 cmp word ptr [bp-4],5
-@jmp '79
+@jmp 'emit_ones_cardinal@79
 0935:1ca7 jg short 1CDDh
 
 0935:1ca9 mov si,1BC2h
@@ -802,7 +942,9 @@ desc = "Pronunciation mode: 0 = digits, 1 = cardinal, 2 = ordinal, 3 = year/auto
 0935:1cce push ss
 0935:1ccf pop es
 0935:1cd0 rep movsw
+@mem ; [ss unknown]
 0935:1cd2 mov bx,[bp+4]
+@mem ; [ds unknown]
 0935:1cd5 push word ptr [bx+4]
 @jmp path_append_component@0935:109f
 0935:1cd8 call 109Fh
@@ -829,10 +971,13 @@ desc = "Pronunciation mode: 0 = digits, 1 = cardinal, 2 = ordinal, 3 = year/auto
 0935:1d02 push ss
 0935:1d03 pop es
 0935:1d04 rep movsw
+@mem ; [ss unknown]
 0935:1d06 mov bx,[bp+4]
+@mem ; [ds unknown]
 0935:1d09 push word ptr [bx+4]
 @jmp path_append_component@0935:109f
 0935:1d0c call 109Fh
+@mem ; [ss unknown]
 0935:1d0f cmp byte ptr [bp+8],2
 @jmp '81
 0935:1d13 jne short 1D37h
@@ -845,25 +990,33 @@ desc = "Pronunciation mode: 0 = digits, 1 = cardinal, 2 = ordinal, 3 = year/auto
 0935:1d22 push ss
 0935:1d23 pop es
 0935:1d24 rep movsw
+@mem ; [ds unknown]
 0935:1d26 push word ptr ds:[1D9Ch]
+@mem ; [ds unknown]
 0935:1d2a push word ptr ds:[1D9Ah]
+@mem ; [ss unknown]
 0935:1d2e mov bx,[bp+4]
+@mem ; [ds unknown]
 0935:1d31 push word ptr [bx+4]
 @jmp path_append_component@0935:109f
 0935:1d34 call 109Fh
 
-@jmp '87
+@jmp 'epilogue_exit@87
 0935:1d37 jmp short 1DABh
 
 @label append_ordinal_suffix
+@mem ; [ss unknown]
 0935:1d39 cmp byte ptr [bp+8],2
-@jmp '87
+@jmp 'epilogue_exit@87
 0935:1d3d jne short 1DABh
 
+@mem ; [ss unknown]
 0935:1d3f mov di,[bp+4]
+@mem ; [ds unknown]
 0935:1d42 mov di,[di+4]
 0935:1d45 mov dx,di
 0935:1d47 les di,[di+8]
+@mem ; [es unknown]
 0935:1d4a mov al,es:[di]
 0935:1d4d xor ah,ah
 0935:1d4f xchg si,ax
@@ -871,11 +1024,13 @@ desc = "Pronunciation mode: 0 = digits, 1 = cardinal, 2 = ordinal, 3 = year/auto
 0935:1d52 dec si
 0935:1d53 mov bx,si
 ; Check for -ty endings to append appropriate ordinal suffix (-tieth vs -th)
+@mem ; [es unknown]
 0935:1d55 cmp byte ptr es:[bx+di],49h
 @jmp '86
 0935:1d59 jne short 1D89h
 
 0935:1d5b mov bx,cx
+@mem ; [es unknown]
 0935:1d5d cmp byte ptr es:[bx+di],59h
 @jmp '86
 0935:1d61 jne short 1D89h
@@ -888,10 +1043,15 @@ desc = "Pronunciation mode: 0 = digits, 1 = cardinal, 2 = ordinal, 3 = year/auto
 0935:1d70 push ss
 0935:1d71 pop es
 0935:1d72 rep movsw
+@mem ; [ds unknown]
 0935:1d74 push word ptr ds:[1DA0h]
+@mem ; [ds unknown]
 0935:1d78 push word ptr ds:[1D9Eh]
+@mem ; [ss unknown]
 0935:1d7c mov [bp-108h],dx
+@mem ; [ss unknown]
 0935:1d80 mov bx,[bp+4]
+@mem ; [ds unknown]
 0935:1d83 push word ptr [bx+4]
 @jmp path_append_component@0935:109f
 0935:1d86 call 109Fh
@@ -904,9 +1064,13 @@ desc = "Pronunciation mode: 0 = digits, 1 = cardinal, 2 = ordinal, 3 = year/auto
 0935:1d96 push ss
 0935:1d97 pop es
 0935:1d98 rep movsw
+@mem ; [ds unknown]
 0935:1d9a push word ptr ds:[1DA4h]
+@mem ; [ds unknown]
 0935:1d9e push word ptr ds:[1DA2h]
+@mem ; [ss unknown]
 0935:1da2 mov bx,[bp+4]
+@mem ; [ds unknown]
 0935:1da5 push word ptr [bx+4]
 @jmp path_append_component@0935:109f
 0935:1da8 call 109Fh

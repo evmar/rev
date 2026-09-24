@@ -1,4 +1,4 @@
-callers = ["0935:0080", "path_append_component@0935:109f", "path_append_component@0935:109f", "parse_and_emit_token@0935:12fc", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "0d72:55e0"]
+callers = ["bst_find_value@0935:0080", "path_append_component@0935:109f", "path_append_component@0935:109f", "parse_and_emit_token@0935:12fc", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "0d72:55e0"]
 callees = ["0d72:4fcc", "0d72:5004", "0d72:5c2a"]
 ip = "0d72:5570"
 
@@ -13,8 +13,10 @@ ip = "0d72:5570"
 @jmp 0d72:4fcc
 0d72:557c call far ptr 0D72h:4FCCh
 0d72:5581 les di,[bp+0Ah]
+@mem ; [es unknown]
 0d72:5584 mov al,es:[di]
 0d72:5587 les di,[bp+6]
+@mem ; [es unknown]
 0d72:558a cmp al,es:[di]
 0d72:558d mov cx,0
 @jmp '2
@@ -22,41 +24,54 @@ ip = "0d72:5570"
 
 0d72:5592 inc cx
 
+@mem ; [ss unknown]
 0d72:5593 mov [bp-2],cl
+@mem ; [ss unknown]
 0d72:5596 test byte ptr [bp-2],1
 @jmp '8
 0d72:559a je short 55D0h
 
 0d72:559c xor ah,ah
+@mem ; [ss unknown]
 0d72:559e mov [bp-6],ax
+@mem ; [ss unknown]
 0d72:55a1 cmp word ptr [bp-6],1
 @jmp '8
 0d72:55a5 jb short 55D0h
 
+@mem ; [ss unknown]
 0d72:55a7 mov word ptr [bp-4],1
 
+@mem ; [ss unknown]
 0d72:55ac mov di,[bp-4]
 0d72:55af les bx,[bp+0Ah]
+@mem ; [es unknown]
 0d72:55b2 mov al,es:[bx+di]
 0d72:55b5 les bx,[bp+6]
+@mem ; [es unknown]
 0d72:55b8 cmp al,es:[bx+di]
 @jmp '7
 0d72:55bb je short 55C3h
 
+@mem ; [ss unknown]
 0d72:55bd mov byte ptr [bp-2],0
 @jmp '8
 0d72:55c1 jmp short 55D0h
 
+@mem ; [ss unknown]
 0d72:55c3 mov ax,[bp-4]
 0d72:55c6 inc ax
+@mem ; [ss unknown]
 0d72:55c7 mov [bp-4],ax
 0d72:55ca dec ax
+@mem ; [ss unknown]
 0d72:55cb cmp ax,[bp-6]
 @jmp '5
 0d72:55ce jne short 55ACh
 
 @jmp 0d72:5004
 0d72:55d0 call far ptr 0D72h:5004h
+@mem ; [ss unknown]
 0d72:55d5 mov ax,[bp-2]
 0d72:55d8 pop si
 0d72:55d9 pop di

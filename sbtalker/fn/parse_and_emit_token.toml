@@ -2,7 +2,7 @@ name = "parse_and_emit_token"
 desc = "Parses and processes a token or identifier from the input context"
 details = "Extracts a Pascal string token using a helper, strips any trailing matched characters, and queries a symbol table. If defined, it emits a formatted representation of the symbol; otherwise, it handles prefixes, special characters (such as periods, quotes, or table-driven character classes), and dispatches token records to an emitter routine."
 callers = ["dispatch_command_input@0935:3cc9"]
-callees = ["0935:0080", "0935:1261", "0d72:0010", "0d72:538c", "0d72:53b0", "0d72:5452", "0d72:5570", "0d72:588e", "0d72:5909", "ascii_to_glyph_index@0935:0063", "path_append_component@0935:109f"]
+callees = ["0d72:0010", "0d72:538c", "0d72:53b0", "0d72:5452", "0d72:5570", "0d72:588e", "0d72:5909", "ascii_to_glyph_index@0935:0063", "bst_find_value@0935:0080", "path_append_component@0935:109f", "read_filtered_token@0935:1261"]
 ip = "0935:12fc"
 
 [[params]]
@@ -15,10 +15,14 @@ desc = "Pointer to parser/context state structure containing string buffers and 
 0935:12fc push bp
 0935:12fd mov bp,sp
 0935:12ff sub sp,114h
+@mem ; [ds unknown]
 0935:1303 mov byte ptr ds:[4Ch],0
+@mem ; [ds unknown]
 0935:1308 mov byte ptr ds:[54h],0
+@mem ; [ss unknown]
 0935:130d mov di,[bp+4]
 ; Allocate/point to 256-byte Pascal string buffer at di - 100h
+@mem ; [ds unknown]
 0935:1310 lea ax,[di-100h]
 0935:1314 push ax
 0935:1315 xor ax,ax
@@ -41,23 +45,31 @@ desc = "Pointer to parser/context state structure containing string buffers and 
 0935:132f push ss
 0935:1330 pop es
 0935:1331 rep movsw
+@mem ; [ss unknown]
 0935:1333 mov [bp-110h],dx
+@mem ; [ss unknown]
 0935:1337 push word ptr [bp+4]
 ; Extract or read token into string buffer
-@jmp 0935:1261
+@jmp read_filtered_token@0935:1261
 0935:133a call 1261h
+@mem ; [ss unknown]
 0935:133d mov di,[bp+4]
 ; Read string length byte into bp-4
+@mem ; [ds unknown]
 0935:1340 mov al,[di-100h]
 0935:1344 xor ah,ah
+@mem ; [ss unknown]
 0935:1346 mov [bp-4],ax
+@mem ; [ss unknown]
 0935:1349 mov di,[bp+4]
+@mem ; [ds unknown]
 0935:134c lea ax,[di-100h]
 0935:1350 push ds
 0935:1351 push ax
 0935:1352 mov ax,1D06h
 0935:1355 push ds
 0935:1356 push ax
+@mem ; [ss unknown]
 0935:1357 mov [bp-112h],di
 @jmp 0d72:5570
 0935:135b call far ptr 0D72h:5570h
@@ -65,15 +77,20 @@ desc = "Pointer to parser/context state structure containing string buffers and 
 @jmp 'trim_trailing_loop@2
 0935:1362 jae short 1369h
 
+@mem ; [ds unknown]
 0935:1364 mov byte ptr ds:[54h],0
 
 ; Trim trailing characters matching character set at 1D08h
 @label trim_trailing_loop
+@mem ; [ss unknown]
 0935:1369 mov di,[bp+4]
+@mem ; [ss unknown]
 0935:136c mov si,[bp-4]
+@mem ; [ds unknown]
 0935:136f lea ax,[di-100h]
 0935:1373 add si,ax
 0935:1375 mov dx,ax
+@mem ; [ds unknown]
 0935:1377 mov al,[si]
 0935:1379 mov cx,ax
 0935:137b xor ah,ah
@@ -83,8 +100,11 @@ desc = "Pointer to parser/context state structure containing string buffers and 
 0935:1382 mov ax,1D08h
 0935:1385 push ds
 0935:1386 push ax
+@mem ; [ss unknown]
 0935:1387 mov [bp-110h],di
+@mem ; [ss unknown]
 0935:138b mov [bp-112h],dx
+@mem ; [ss unknown]
 0935:138f mov [bp-114h],cx
 ; Test set membership (in set 1D08h)
 @jmp 0d72:5452
@@ -93,35 +113,48 @@ desc = "Pointer to parser/context state structure containing string buffers and 
 @jmp 'symbol_lookup@4
 0935:139a jae short 13C1h
 
+@mem ; [ss unknown]
 0935:139c mov ax,[bp-114h]
+@mem ; [ds unknown]
 0935:13a0 mov ds:[164h],al
 0935:13a3 mov ax,0FFh
 0935:13a6 push ax
 0935:13a7 push ds
+@mem ; [ss unknown]
 0935:13a8 push word ptr [bp-112h]
+@mem ; [ss unknown]
 0935:13ac push word ptr [bp-4]
 0935:13af mov ax,1
 0935:13b2 push ax
 ; Delete trailing character from Pascal string
 @jmp 0d72:588e
 0935:13b3 call far ptr 0D72h:588Eh
+@mem ; [ss unknown]
 0935:13b8 dec word ptr [bp-4]
+@mem ; [ds unknown]
 0935:13bb dec word ptr ds:[160h]
 @jmp 'trim_trailing_loop@2
 0935:13bf jmp short 1369h
 
 @label symbol_lookup
+@mem ; [ds unknown]
 0935:13c1 mov byte ptr ds:[56h],0
+@mem ; [ss unknown]
 0935:13c6 mov di,[bp+4]
+@mem ; [ds unknown]
 0935:13c9 lea ax,[di-100h]
 0935:13cd push ax
+@mem ; [ss unknown]
 0935:13ce mov [bp-110h],di
 ; Look up symbol in dictionary/symbol table
-@jmp 0935:0080
+@jmp bst_find_value@0935:0080
 0935:13d2 call 0080h
+@mem ; [ss unknown]
 0935:13d5 mov [bp-8],ax
+@mem ; [ss unknown]
 0935:13d8 mov [bp-6],dx
 ; Check if symbol found (pointer != NULL)
+@mem ; [ss unknown]
 0935:13db cmp word ptr [bp-8],0
 @jmp 'symbol_not_found@6
 0935:13df je short 1409h
@@ -138,7 +171,9 @@ desc = "Pointer to parser/context state structure containing string buffers and 
 0935:13f5 mov cx,11h
 @jmp 0d72:53b0
 0935:13f8 call far ptr 0D72h:53B0h
+@mem ; [ss unknown]
 0935:13fd mov bx,[bp+4]
+@mem ; [ds unknown]
 0935:1400 push word ptr [bx+4]
 ; Emit found symbol using emitter routine
 @jmp path_append_component@0935:109f
@@ -147,18 +182,22 @@ desc = "Pointer to parser/context state structure containing string buffers and 
 0935:1406 jmp near ptr 16F9h
 
 @label symbol_not_found
+@mem ; [ss unknown]
 0935:1409 cmp word ptr [bp-4],1
 @jmp '8
 0935:140d je short 1416h
 
+@mem ; [ds unknown]
 0935:140f test byte ptr ds:[52h],1
 @jmp '9
 0935:1414 jne short 141Dh
 
+@mem ; [ds unknown]
 0935:1416 test byte ptr ds:[54h],1
 @jmp 'format_and_emit_token@13
 0935:141b jne short 1430h
 
+@mem ; [ss unknown]
 0935:141d cmp word ptr [bp-4],1
 @jmp '11
 0935:1421 jg short 1426h
@@ -166,6 +205,7 @@ desc = "Pointer to parser/context state structure containing string buffers and 
 @jmp 'scan_token_chars@22
 0935:1423 jmp near ptr 153Ch
 
+@mem ; [ds unknown]
 0935:1426 test byte ptr ds:[50h],1
 @jmp 'format_and_emit_token@13
 0935:142b je short 1430h
@@ -174,7 +214,9 @@ desc = "Pointer to parser/context state structure containing string buffers and 
 0935:142d jmp near ptr 153Ch
 
 @label format_and_emit_token
+@mem ; [ss unknown]
 0935:1430 mov byte ptr [bp-10Ah],0
+@mem ; [ss unknown]
 0935:1435 mov byte ptr [bp-10Ch],0
 0935:143a mov ax,5
 0935:143d push ax
@@ -183,30 +225,42 @@ desc = "Pointer to parser/context state structure containing string buffers and 
 0935:1442 push ax
 0935:1443 mov ax,0FFh
 0935:1446 push ax
+@mem ; [ss unknown]
 0935:1447 mov di,[bp+4]
+@mem ; [ds unknown]
 0935:144a lea ax,[di-100h]
 0935:144e push ds
 0935:144f push ax
+@mem ; [ss unknown]
 0935:1450 mov ax,[bp-4]
 0935:1453 inc ax
 0935:1454 push ax
+@mem ; [ss unknown]
 0935:1455 mov [bp-110h],di
 ; Insert character into string
 @jmp 0d72:5909
 0935:1459 call far ptr 0D72h:5909h
+@mem ; [ss unknown]
 0935:145e mov di,[bp+4]
+@mem ; [ds unknown]
 0935:1461 mov di,[di+4]
 0935:1464 mov dx,di
 0935:1466 les di,[di+0Ch]
+@mem ; [es unknown]
 0935:1469 mov al,es:[di]
 0935:146c xor ah,ah
+@mem ; [ds unknown]
 0935:146e cmp ax,ds:[160h]
 @jmp '17
 0935:1472 jl short 14BCh
 
+@mem ; [ds unknown]
 0935:1474 mov bx,ds:[160h]
+@mem ; [es unknown]
 0935:1478 mov al,es:[bx+di]
+@mem ; [ds unknown]
 0935:147b mov ds:[162h],al
+@mem ; [ds unknown]
 0935:147e mov al,ds:[162h]
 0935:1481 xor ah,ah
 0935:1483 push ax
@@ -215,6 +269,7 @@ desc = "Pointer to parser/context state structure containing string buffers and 
 0935:1488 mov ax,1D14h
 0935:148b push ds
 0935:148c push ax
+@mem ; [ss unknown]
 0935:148d mov [bp-112h],dx
 @jmp 0d72:5452
 0935:1491 call far ptr 0D72h:5452h
@@ -222,33 +277,46 @@ desc = "Pointer to parser/context state structure containing string buffers and 
 @jmp 'store_converted_char@16
 0935:1498 jae short 14A4h
 
+@mem ; [ds unknown]
 0935:149a push word ptr ds:[162h]
 ; Convert character case
 @jmp ascii_to_glyph_index@0935:0063
 0935:149e call 0063h
+@mem ; [ds unknown]
 0935:14a1 mov ds:[162h],al
 
 @label store_converted_char
+@mem ; [ss unknown]
 0935:14a4 mov di,[bp+4]
+@mem ; [ss unknown]
 0935:14a7 mov si,[bp+4]
+@mem ; [ds unknown]
 0935:14aa mov al,[si-100h]
 0935:14ae xor ah,ah
 0935:14b0 xchg si,ax
+@mem ; [ds unknown]
 0935:14b1 lea ax,[di-103h]
 0935:14b5 add si,ax
+@mem ; [ds unknown]
 0935:14b7 mov al,ds:[162h]
+@mem ; [ds unknown]
 0935:14ba mov [si],al
 
+@mem ; [ss unknown]
 0935:14bc mov di,[bp+4]
+@mem ; [ds unknown]
 0935:14bf lea ax,[di-100h]
 0935:14c3 push ds
 0935:14c4 push ax
+@mem ; [ss unknown]
 0935:14c5 lea ax,[bp-108h]
 0935:14c9 push ds
 0935:14ca push ax
+@mem ; [ss unknown]
 0935:14cb mov [bp-110h],di
 @jmp 0d72:0010
 0935:14cf call far ptr 0D72h:0010h
+@mem ; [ss unknown]
 0935:14d4 lea si,[bp-108h]
 0935:14d8 mov cx,80h
 0935:14db sub sp,100h
@@ -257,11 +325,14 @@ desc = "Pointer to parser/context state structure containing string buffers and 
 0935:14e2 push ss
 0935:14e3 pop es
 0935:14e4 rep movsw
+@mem ; [ss unknown]
 0935:14e6 mov bx,[bp+4]
+@mem ; [ds unknown]
 0935:14e9 push word ptr [bx+4]
 ; Emit processed token string
 @jmp path_append_component@0935:109f
 0935:14ec call 109Fh
+@mem ; [ss unknown]
 0935:14ef test byte ptr [bp-10Ah],1
 @jmp '19
 0935:14f4 je short 1514h
@@ -274,12 +345,16 @@ desc = "Pointer to parser/context state structure containing string buffers and 
 0935:1503 push ss
 0935:1504 pop es
 0935:1505 rep movsw
+@mem ; [ds unknown]
 0935:1507 push word ptr ds:[1D24h]
+@mem ; [ss unknown]
 0935:150b mov bx,[bp+4]
+@mem ; [ds unknown]
 0935:150e push word ptr [bx+4]
 @jmp path_append_component@0935:109f
 0935:1511 call 109Fh
 
+@mem ; [ss unknown]
 0935:1514 test byte ptr [bp-10Ch],1
 @jmp '21
 0935:1519 je short 1539h
@@ -292,8 +367,11 @@ desc = "Pointer to parser/context state structure containing string buffers and 
 0935:1528 push ss
 0935:1529 pop es
 0935:152a rep movsw
+@mem ; [ds unknown]
 0935:152c push word ptr ds:[1D26h]
+@mem ; [ss unknown]
 0935:1530 mov bx,[bp+4]
+@mem ; [ds unknown]
 0935:1533 push word ptr [bx+4]
 @jmp path_append_component@0935:109f
 0935:1536 call 109Fh
@@ -302,8 +380,11 @@ desc = "Pointer to parser/context state structure containing string buffers and 
 0935:1539 jmp near ptr 16F9h
 
 @label scan_token_chars
+@mem ; [ss unknown]
 0935:153c mov ax,[bp-4]
+@mem ; [ss unknown]
 0935:153f mov [bp-10Eh],ax
+@mem ; [ss unknown]
 0935:1543 cmp word ptr [bp-10Eh],1
 @jmp 'init_char_loop@24
 0935:1548 jge short 154Dh
@@ -312,15 +393,20 @@ desc = "Pointer to parser/context state structure containing string buffers and 
 0935:154a jmp near ptr 16F9h
 
 @label init_char_loop
+@mem ; [ss unknown]
 0935:154d mov word ptr [bp-2],1
 
 ; Iterate each character in token string
 @label char_loop_body
+@mem ; [ss unknown]
 0935:1552 mov di,[bp+4]
+@mem ; [ss unknown]
 0935:1555 mov si,[bp-2]
+@mem ; [ds unknown]
 0935:1558 lea ax,[di-100h]
 0935:155c add si,ax
 ; Check for 'W' (0x57)
+@mem ; [ds unknown]
 0935:155e cmp byte ptr [si],57h
 @jmp 'check_dot_char@27
 0935:1561 jne short 1590h
@@ -341,7 +427,9 @@ desc = "Pointer to parser/context state structure containing string buffers and 
 0935:1580 push ss
 0935:1581 pop es
 0935:1582 rep movsw
+@mem ; [ss unknown]
 0935:1584 mov bx,[bp+4]
+@mem ; [ds unknown]
 0935:1587 push word ptr [bx+4]
 @jmp path_append_component@0935:109f
 0935:158a call 109Fh
@@ -349,11 +437,15 @@ desc = "Pointer to parser/context state structure containing string buffers and 
 0935:158d jmp near ptr 16E8h
 
 @label check_dot_char
+@mem ; [ss unknown]
 0935:1590 mov di,[bp+4]
+@mem ; [ss unknown]
 0935:1593 mov si,[bp-2]
+@mem ; [ds unknown]
 0935:1596 lea ax,[di-100h]
 0935:159a add si,ax
 ; Check for '.' (0x2E)
+@mem ; [ds unknown]
 0935:159c cmp byte ptr [si],2Eh
 @jmp 'check_quote_char@29
 0935:159f jne short 15C2h
@@ -366,8 +458,11 @@ desc = "Pointer to parser/context state structure containing string buffers and 
 0935:15ae push ss
 0935:15af pop es
 0935:15b0 rep movsw
+@mem ; [ds unknown]
 0935:15b2 push word ptr ds:[1D34h]
+@mem ; [ss unknown]
 0935:15b6 mov bx,[bp+4]
+@mem ; [ds unknown]
 0935:15b9 push word ptr [bx+4]
 @jmp path_append_component@0935:109f
 0935:15bc call 109Fh
@@ -375,11 +470,15 @@ desc = "Pointer to parser/context state structure containing string buffers and 
 0935:15bf jmp near ptr 16E8h
 
 @label check_quote_char
+@mem ; [ss unknown]
 0935:15c2 mov di,[bp+4]
+@mem ; [ss unknown]
 0935:15c5 mov si,[bp-2]
+@mem ; [ds unknown]
 0935:15c8 lea ax,[di-100h]
 0935:15cc add si,ax
 ; Check for quote '\'' (0x27)
+@mem ; [ds unknown]
 0935:15ce cmp byte ptr [si],27h
 @jmp '31
 0935:15d1 je short 15D6h
@@ -387,8 +486,10 @@ desc = "Pointer to parser/context state structure containing string buffers and 
 @jmp 'handle_table_char@39
 0935:15d3 jmp near ptr 16A9h
 
+@mem ; [ss unknown]
 0935:15d6 mov ax,[bp-2]
 0935:15d9 inc ax
+@mem ; [ss unknown]
 0935:15da cmp ax,[bp-4]
 @jmp '33
 0935:15dd je short 15E2h
@@ -396,10 +497,14 @@ desc = "Pointer to parser/context state structure containing string buffers and 
 @jmp '38
 0935:15df jmp near ptr 16A7h
 
+@mem ; [ss unknown]
 0935:15e2 mov di,[bp+4]
+@mem ; [ss unknown]
 0935:15e5 mov si,[bp-2]
+@mem ; [ds unknown]
 0935:15e8 lea ax,[di-0FFh]
 0935:15ec add si,ax
+@mem ; [ds unknown]
 0935:15ee mov al,[si]
 0935:15f0 xor ah,ah
 0935:15f2 push ax
@@ -418,10 +523,14 @@ desc = "Pointer to parser/context state structure containing string buffers and 
 0935:1605 jmp near ptr 16A7h
 
 @label handle_quoted_token
+@mem ; [ss unknown]
 0935:1608 mov di,[bp+4]
+@mem ; [ss unknown]
 0935:160b mov si,[bp-2]
+@mem ; [ds unknown]
 0935:160e lea ax,[di-101h]
 0935:1612 add si,ax
+@mem ; [ds unknown]
 0935:1614 mov al,[si]
 0935:1616 xor ah,ah
 0935:1618 mov si,6
@@ -429,23 +538,31 @@ desc = "Pointer to parser/context state structure containing string buffers and 
 0935:161b mul si
 0935:161d xchg si,ax
 0935:161e add si,0AAh
+@mem ; [ss unknown]
 0935:1622 mov di,[bp+4]
 0935:1625 mov dx,di
+@mem ; [ds unknown]
 0935:1627 lea di,[di-200h]
 0935:162b push ss
 0935:162c pop es
 0935:162d mov cx,5
 0935:1630 mov ax,ds
+@mem ; [ss unknown]
 0935:1632 mov [bp-110h],dx
 @jmp 0d72:538c
 0935:1636 call far ptr 0D72h:538Ch
+@mem ; [ss unknown]
 0935:163b mov di,[bp+4]
+@mem ; [ss unknown]
 0935:163e mov si,[bp+4]
+@mem ; [ds unknown]
 0935:1641 mov al,[si-200h]
 0935:1645 xor ah,ah
 0935:1647 xchg si,ax
+@mem ; [ds unknown]
 0935:1648 lea ax,[di-200h]
 0935:164c add si,ax
+@mem ; [ds unknown]
 0935:164e mov al,[si]
 0935:1650 xor ah,ah
 0935:1652 push ax
@@ -468,9 +585,13 @@ desc = "Pointer to parser/context state structure containing string buffers and 
 0935:1672 push ss
 0935:1673 pop es
 0935:1674 rep movsw
+@mem ; [ds unknown]
 0935:1676 push word ptr ds:[1D58h]
+@mem ; [ds unknown]
 0935:167a push word ptr ds:[1D56h]
+@mem ; [ss unknown]
 0935:167e mov bx,[bp+4]
+@mem ; [ds unknown]
 0935:1681 push word ptr [bx+4]
 @jmp path_append_component@0935:109f
 0935:1684 call 109Fh
@@ -484,8 +605,11 @@ desc = "Pointer to parser/context state structure containing string buffers and 
 0935:1694 push ss
 0935:1695 pop es
 0935:1696 rep movsw
+@mem ; [ds unknown]
 0935:1698 push word ptr ds:[1D5Ah]
+@mem ; [ss unknown]
 0935:169c mov bx,[bp+4]
+@mem ; [ds unknown]
 0935:169f push word ptr [bx+4]
 @jmp path_append_component@0935:109f
 0935:16a2 call 109Fh
@@ -504,10 +628,14 @@ desc = "Pointer to parser/context state structure containing string buffers and 
 0935:16b6 push ss
 0935:16b7 pop es
 0935:16b8 rep movsw
+@mem ; [ss unknown]
 0935:16ba mov di,[bp+4]
+@mem ; [ss unknown]
 0935:16bd mov si,[bp-2]
+@mem ; [ds unknown]
 0935:16c0 lea ax,[di-100h]
 0935:16c4 add si,ax
+@mem ; [ds unknown]
 0935:16c6 mov al,[si]
 0935:16c8 xor ah,ah
 0935:16ca mov si,6
@@ -524,16 +652,21 @@ desc = "Pointer to parser/context state structure containing string buffers and 
 0935:16dc movsw
 0935:16dd movsw
 0935:16de movsw
+@mem ; [ss unknown]
 0935:16df mov bx,[bp+4]
+@mem ; [ds unknown]
 0935:16e2 push word ptr [bx+4]
 @jmp path_append_component@0935:109f
 0935:16e5 call 109Fh
 
 @label advance_char_loop
+@mem ; [ss unknown]
 0935:16e8 mov ax,[bp-2]
 0935:16eb inc ax
+@mem ; [ss unknown]
 0935:16ec mov [bp-2],ax
 0935:16ef dec ax
+@mem ; [ss unknown]
 0935:16f0 cmp ax,[bp-10Eh]
 @jmp 'epilogue@42
 0935:16f4 je short 16F9h

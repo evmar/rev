@@ -2,7 +2,7 @@ name = "parse_date_or_time"
 desc = "Parses a formatted date (MM/DD/YY) or time (HH:MM[:SS]) string."
 details = "Attempts to parse a date or time from the input scanner stream. If the delimiter following the first integer is '/' or '-', it parses day and year values (normalizing years >= 1900) and checks their ranges. If the delimiter is ':', it parses minutes and optional seconds. On failure, it rolls back the stream state and returns 0."
 callers = ["parse_argument_switches@0935:23ed"]
-callees = ["0935:1742", "0935:1e4e", "0935:1ec7", "0935:1f63", "0d72:538c", "get_next_char@0935:11a0", "path_append_component@0935:109f"]
+callees = ["0935:1e4e", "0935:1ec7", "0935:1f63", "0d72:538c", "get_next_char@0935:11a0", "path_append_component@0935:109f", "tts_pronounce_number@0935:1742"]
 ip = "0935:21f1"
 
 [[params]]
@@ -21,38 +21,51 @@ desc = "1 if date or time was successfully parsed, 0 on failure"
 0935:21f1 push bp
 0935:21f2 mov bp,sp
 0935:21f4 sub sp,10Eh
+@mem ; [ss unknown]
 0935:21f8 mov byte ptr [bp-2],0
 ; Default date delimiter '/'
+@mem ; [ss unknown]
 0935:21fc mov byte ptr [bp-4],2Fh
+@mem ; [ds unknown]
 0935:2200 mov ax,ds:[160h]
 ; Save scanner stream state for rollback
+@mem ; [ss unknown]
 0935:2203 mov [bp-108h],ax
+@mem ; [ds unknown]
 0935:2207 mov al,ds:[164h]
+@mem ; [ss unknown]
 0935:220a mov [bp-6],al
 0935:220d push bp
 ; Parse first integer (month or hour)
 @jmp 0935:1ec7
 0935:220e call 1EC7h
+@mem ; [ss unknown]
 0935:2211 mov [bp-10Ah],ax
+@mem ; [ss unknown]
 0935:2215 cmp word ptr [bp-10Ah],0
-@jmp '2
+@jmp 'check_date_delim@2
 0935:221a jge short 221Fh
 
-@jmp '35
+@jmp 'parse_error@35
 0935:221c jmp near ptr 23D7h
 
 @label check_date_delim
+@mem ; [ds unknown]
 0935:221f mov al,ds:[164h]
+@mem ; [ss unknown]
 0935:2222 cmp al,[bp-4]
-@jmp '4
+@jmp 'parse_date_day@4
 0935:2225 je short 222Ah
 
-@jmp '18
+@jmp 'check_dash_delim@18
 0935:2227 jmp near ptr 22DEh
 
 @label parse_date_day
+@mem ; [ss unknown]
 0935:222a mov bx,[bp+4]
+@mem ; [ds unknown]
 0935:222d mov bx,[bx+4]
+@mem ; [ds unknown]
 0935:2230 push word ptr [bx+4]
 @jmp get_next_char@0935:11a0
 0935:2233 call 11A0h
@@ -60,25 +73,32 @@ desc = "1 if date or time was successfully parsed, 0 on failure"
 ; Parse day of month
 @jmp 0935:1ec7
 0935:2237 call 1EC7h
+@mem ; [ss unknown]
 0935:223a mov [bp-10Ch],ax
+@mem ; [ss unknown]
 0935:223e cmp word ptr [bp-10Ch],0
 @jmp '6
 0935:2243 jge short 2248h
 
-@jmp '35
+@jmp 'parse_error@35
 0935:2245 jmp near ptr 23D7h
 
+@mem ; [ds unknown]
 0935:2248 mov al,ds:[164h]
+@mem ; [ss unknown]
 0935:224b cmp al,[bp-4]
-@jmp '8
+@jmp 'parse_date_year@8
 0935:224e je short 2253h
 
-@jmp '35
+@jmp 'parse_error@35
 0935:2250 jmp near ptr 23D7h
 
 @label parse_date_year
+@mem ; [ss unknown]
 0935:2253 mov bx,[bp+4]
+@mem ; [ds unknown]
 0935:2256 mov bx,[bx+4]
+@mem ; [ds unknown]
 0935:2259 push word ptr [bx+4]
 @jmp get_next_char@0935:11a0
 0935:225c call 11A0h
@@ -86,52 +106,63 @@ desc = "1 if date or time was successfully parsed, 0 on failure"
 ; Parse year
 @jmp 0935:1ec7
 0935:2260 call 1EC7h
+@mem ; [ss unknown]
 0935:2263 mov [bp-10Eh],ax
+@mem ; [ss unknown]
 0935:2267 cmp word ptr [bp-10Eh],0
-@jmp '10
+@jmp 'validate_year@10
 0935:226c jge short 2271h
 
-@jmp '35
+@jmp 'parse_error@35
 0935:226e jmp near ptr 23D7h
 
 @label validate_year
+@mem ; [ss unknown]
 0935:2271 cmp word ptr [bp-10Eh],76Ch
-@jmp '12
+@jmp 'validate_date_ranges@12
 0935:2277 jl short 227Fh
 
 ; Convert year >= 1900 to 2-digit year
+@mem ; [ss unknown]
 0935:2279 sub word ptr [bp-10Eh],76Ch
 
 @label validate_date_ranges
+@mem ; [ss unknown]
 0935:227f cmp word ptr [bp-10Ah],0
 @jmp '16
 0935:2284 je short 229Bh
 
 ; Validate month (1-12), day (<= 31), and year (<= 99)
+@mem ; [ss unknown]
 0935:2286 cmp word ptr [bp-10Ah],0Ch
 @jmp '16
 0935:228b jg short 229Bh
 
+@mem ; [ss unknown]
 0935:228d cmp word ptr [bp-10Ch],1Fh
 @jmp '16
 0935:2292 jg short 229Bh
 
+@mem ; [ss unknown]
 0935:2294 cmp word ptr [bp-10Eh],63h
-@jmp '17
+@jmp 'date_success@17
 0935:2299 jle short 229Eh
 
-@jmp '35
+@jmp 'parse_error@35
 0935:229b jmp near ptr 23D7h
 
 @label date_success
+@mem ; [ss unknown]
 0935:229e push word ptr [bp-10Ah]
 0935:22a2 push bp
 @jmp 0935:1f63
 0935:22a3 call 1F63h
+@mem ; [ss unknown]
 0935:22a6 push word ptr [bp-10Ch]
 0935:22aa push bp
 @jmp 0935:1e4e
 0935:22ab call 1E4Eh
+@mem ; [ss unknown]
 0935:22ae lea di,[bp-106h]
 0935:22b2 push ss
 0935:22b3 pop es
@@ -142,41 +173,52 @@ desc = "1 if date or time was successfully parsed, 0 on failure"
 0935:22bc call far ptr 0D72h:538Ch
 0935:22c1 mov ax,1
 0935:22c4 push ax
+@mem ; [ss unknown]
 0935:22c5 lea ax,[bp-106h]
 0935:22c9 push ax
+@mem ; [ss unknown]
 0935:22ca mov bx,[bp+4]
+@mem ; [ds unknown]
 0935:22cd push word ptr [bx+4]
-@jmp 0935:1742
+@jmp tts_pronounce_number@0935:1742
 0935:22d0 call 1742h
+@mem ; [ss unknown]
 0935:22d3 push word ptr [bp-10Eh]
 0935:22d7 push bp
 @jmp 0935:1e4e
 0935:22d8 call 1E4Eh
-@jmp '34
+@jmp 'success@34
 0935:22db jmp near ptr 23D1h
 
 @label check_dash_delim
+@mem ; [ds unknown]
 0935:22de cmp byte ptr ds:[164h],2Dh
-@jmp '20
+@jmp 'check_time_delim@20
 0935:22e3 jne short 22F1h
 
 ; Set delimiter to '-' and parse date
+@mem ; [ds unknown]
 0935:22e5 mov al,ds:[164h]
+@mem ; [ss unknown]
 0935:22e8 mov [bp-4],al
-@jmp '4
+@jmp 'parse_date_day@4
 0935:22eb jmp near ptr 222Ah
 
 @label check_time_delim
+@mem ; [ds unknown]
 0935:22f1 cmp byte ptr ds:[164h],3Ah
-@jmp '22
+@jmp 'parse_time_minute@22
 0935:22f6 je short 22FBh
 
 @jmp '33
 0935:22f8 jmp near ptr 23CEh
 
 @label parse_time_minute
+@mem ; [ss unknown]
 0935:22fb mov bx,[bp+4]
+@mem ; [ds unknown]
 0935:22fe mov bx,[bx+4]
+@mem ; [ds unknown]
 0935:2301 push word ptr [bx+4]
 @jmp get_next_char@0935:11a0
 0935:2304 call 11A0h
@@ -184,35 +226,44 @@ desc = "1 if date or time was successfully parsed, 0 on failure"
 ; Parse minute
 @jmp 0935:1ec7
 0935:2308 call 1EC7h
+@mem ; [ss unknown]
 0935:230b mov [bp-10Ch],ax
+@mem ; [ss unknown]
 0935:230f cmp word ptr [bp-10Ch],0
-@jmp '24
+@jmp 'validate_time_ranges@24
 0935:2314 jge short 2319h
 
-@jmp '35
+@jmp 'parse_error@35
 0935:2316 jmp near ptr 23D7h
 
 ; Validate hour (<= 24) and minute (<= 59)
 @label validate_time_ranges
+@mem ; [ss unknown]
 0935:2319 cmp word ptr [bp-10Ah],18h
 @jmp '26
 0935:231e jg short 2327h
 
+@mem ; [ss unknown]
 0935:2320 cmp word ptr [bp-10Ch],3Bh
-@jmp '27
+@jmp 'parse_time_second@27
 0935:2325 jle short 232Ah
 
-@jmp '35
+@jmp 'parse_error@35
 0935:2327 jmp near ptr 23D7h
 
 @label parse_time_second
+@mem ; [ss unknown]
 0935:232a mov word ptr [bp-10Eh],0
+@mem ; [ds unknown]
 0935:2330 cmp byte ptr ds:[164h],3Ah
-@jmp '30
+@jmp 'time_success@30
 0935:2335 jne short 2355h
 
+@mem ; [ss unknown]
 0935:2337 mov bx,[bp+4]
+@mem ; [ds unknown]
 0935:233a mov bx,[bx+4]
+@mem ; [ds unknown]
 0935:233d push word ptr [bx+4]
 @jmp get_next_char@0935:11a0
 0935:2340 call 11A0h
@@ -220,23 +271,28 @@ desc = "1 if date or time was successfully parsed, 0 on failure"
 ; Parse optional seconds
 @jmp 0935:1ec7
 0935:2344 call 1EC7h
+@mem ; [ss unknown]
 0935:2347 mov [bp-10Eh],ax
+@mem ; [ss unknown]
 0935:234b cmp word ptr [bp-10Eh],0
-@jmp '30
+@jmp 'time_success@30
 0935:2350 jge short 2355h
 
-@jmp '35
+@jmp 'parse_error@35
 0935:2352 jmp near ptr 23D7h
 
 @label time_success
+@mem ; [ss unknown]
 0935:2355 push word ptr [bp-10Ah]
 0935:2359 push bp
 @jmp 0935:1e4e
 0935:235a call 1E4Eh
+@mem ; [ss unknown]
 0935:235d push word ptr [bp-10Ch]
 0935:2361 push bp
 @jmp 0935:1e4e
 0935:2362 call 1E4Eh
+@mem ; [ss unknown]
 0935:2365 cmp word ptr [bp-10Eh],0
 @jmp '32
 0935:236a je short 23CCh
@@ -258,11 +314,15 @@ desc = "1 if date or time was successfully parsed, 0 on failure"
 0935:2388 movsw
 0935:2389 movsw
 0935:238a movsw
+@mem ; [ss unknown]
 0935:238b mov bx,[bp+4]
+@mem ; [ds unknown]
 0935:238e mov bx,[bx+4]
+@mem ; [ds unknown]
 0935:2391 push word ptr [bx+4]
 @jmp path_append_component@0935:109f
 0935:2394 call 109Fh
+@mem ; [ss unknown]
 0935:2397 push word ptr [bp-10Eh]
 0935:239b push bp
 @jmp 0935:1e4e
@@ -283,31 +343,40 @@ desc = "1 if date or time was successfully parsed, 0 on failure"
 0935:23bc push ss
 0935:23bd pop es
 0935:23be rep movsw
+@mem ; [ss unknown]
 0935:23c0 mov bx,[bp+4]
+@mem ; [ds unknown]
 0935:23c3 mov bx,[bx+4]
+@mem ; [ds unknown]
 0935:23c6 push word ptr [bx+4]
 @jmp path_append_component@0935:109f
 0935:23c9 call 109Fh
 
-@jmp '34
+@jmp 'success@34
 0935:23cc jmp short 23D1h
 
-@jmp '35
+@jmp 'parse_error@35
 0935:23ce jmp near ptr 23D7h
 
 @label success
+@mem ; [ss unknown]
 0935:23d1 mov byte ptr [bp-2],1
-@jmp '36
+@jmp 'exit@36
 0935:23d5 jmp short 23E4h
 
 ; Restore scanner position on parse failure
 @label parse_error
+@mem ; [ss unknown]
 0935:23d7 mov ax,[bp-108h]
+@mem ; [ds unknown]
 0935:23db mov ds:[160h],ax
+@mem ; [ss unknown]
 0935:23de mov al,[bp-6]
+@mem ; [ds unknown]
 0935:23e1 mov ds:[164h],al
 
 @label exit
+@mem ; [ss unknown]
 0935:23e4 mov ax,[bp-2]
 0935:23e7 mov sp,bp
 0935:23e9 pop bp

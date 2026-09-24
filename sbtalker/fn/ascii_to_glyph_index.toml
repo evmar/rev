@@ -21,13 +21,16 @@ desc = "Zero-based glyph/character index (c - 32)"
 0935:0064 mov bp,sp
 0935:0066 sub sp,2
 ; Load input character
+@mem ; [ss unknown]
 0935:006a mov al,[bp+4]
 0935:006d xor ah,ah
 ; Subtract 32 (ASCII space offset)
 0935:006f add ax,0FFE0h
 ; Clear high byte (zero-extend 8-bit result)
 0935:0072 xor ah,ah
+@mem ; [ss unknown]
 0935:0074 mov [bp-2],al
+@mem ; [ss unknown]
 0935:0077 mov ax,[bp-2]
 0935:007a mov sp,bp
 0935:007c pop bp

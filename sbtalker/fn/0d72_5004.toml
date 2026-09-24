@@ -4,13 +4,17 @@ ip = "0d72:5004"
 ---
 0d72:5004 push bp
 0d72:5005 mov bp,sp
+@mem ; [ss unknown]
 0d72:5007 mov bx,[bp]
 0d72:500a and bx,0FFFEh
+@mem ; [ds unknown]
 0d72:500d lea ax,[bx+2]
+@mem ; [ds unknown]
 0d72:5010 cmp ax,ds:[602h]
 @jmp '2
 0d72:5014 jb short 501Ch
 
+@mem ; [ds unknown]
 0d72:5016 mov word ptr ds:[602h],0
 
 0d72:501c mov sp,bp

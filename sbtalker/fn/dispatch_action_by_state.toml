@@ -16,9 +16,12 @@ desc = "Pointer to entity or context structure whose field at offset +4 is used 
 0935:30a2 mov bp,sp
 0935:30a4 sub sp,2Ch
 ; Set status/state flags
+@mem ; [ds unknown]
 0935:30a8 mov byte ptr ds:[50h],1
+@mem ; [ds unknown]
 0935:30ad mov byte ptr ds:[4Ch],2
 ; Load action/opcode identifier from DS:0164h
+@mem ; [ds unknown]
 0935:30b2 mov al,ds:[164h]
 0935:30b5 xor ah,ah
 0935:30b7 xchg bx,ax
@@ -27,6 +30,7 @@ desc = "Pointer to entity or context structure whose field at offset +4 is used 
 
 ; Default handler: set up local buffer
 @label default_action
+@mem ; [ss unknown]
 0935:3bf7 lea di,[bp-2]
 0935:3bfa push ss
 0935:3bfb pop es
@@ -36,7 +40,9 @@ desc = "Pointer to entity or context structure whose field at offset +4 is used 
 @jmp 0d72:538c
 0935:3c04 call far ptr 0D72h:538Ch
 ; Store current action code into local variable
+@mem ; [ds unknown]
 0935:3c09 mov al,ds:[164h]
+@mem ; [ss unknown]
 0935:3c0c mov [bp-1],al
 0935:3c0f mov si,1BC2h
 0935:3c12 mov cx,7Fh
@@ -47,8 +53,11 @@ desc = "Pointer to entity or context structure whose field at offset +4 is used 
 0935:3c1c push ss
 0935:3c1d pop es
 0935:3c1e rep movsw
+@mem ; [ss unknown]
 0935:3c20 push word ptr [bp-2]
+@mem ; [ss unknown]
 0935:3c23 mov bx,[bp+4]
+@mem ; [ds unknown]
 0935:3c26 push word ptr [bx+4]
 ; Invoke fallback action handler
 @jmp path_append_component@0935:109f
@@ -69,10 +78,13 @@ desc = "Pointer to entity or context structure whose field at offset +4 is used 
 0935:3c39 shl bx,1
 ; Dispatch via jump table
 @jmp unknown:mem
+@mem ; [bx unknown]
 0935:3c3b jmp word ptr cs:[bx+3C40h]
 
 @label finish_and_cleanup
+@mem ; [ss unknown]
 0935:3cba mov bx,[bp+4]
+@mem ; [ds unknown]
 0935:3cbd push word ptr [bx+4]
 ; Post-action cleanup/callback
 @jmp get_next_char@0935:11a0

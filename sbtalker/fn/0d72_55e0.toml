@@ -21,9 +21,11 @@ ip = "0d72:55e0"
 @jmp 0d72:5570
 0d72:55fb call far ptr 0D72h:5570h
 0d72:5600 xor al,1
+@mem ; [ss unknown]
 0d72:5602 mov [bp-2],al
 @jmp 0d72:5004
 0d72:5605 call far ptr 0D72h:5004h
+@mem ; [ss unknown]
 0d72:560a mov ax,[bp-2]
 0d72:560d pop si
 0d72:560e pop di

@@ -22,7 +22,7 @@ pub fn load_exe(db: &mut DB) {
     let buf = std::fs::read(path).unwrap();
     let dos = exe::DOS::parse(&buf).unwrap();
     {
-        let data = &buf[dos.image_offset()..];
+        let data = dos.image(&buf);
         mem.resize(load_addr.abs() as usize + data.len(), 0);
         mem[load_addr.abs() as usize..].copy_from_slice(data);
     }

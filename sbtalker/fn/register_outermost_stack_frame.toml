@@ -1,0 +1,42 @@
+name = "register_outermost_stack_frame"
+desc = "Registers the outermost active runtime stack frame and snapshots its recovery context."
+details = "If no frame is currently registered at ds:0602, this records a marker within the present call frame, then uses the caller BP and the supplied frame span to locate and save three words from the caller's stack at ds:0604..0608. Nested calls leave the existing record unchanged; the paired routine at 0d72:5004 clears ds:0602 as the registered frame is unwound."
+callers = ["0d72:5570", "0d72:55e0", "0d72:582a", "0d72:588e", "0d72:5909", "0d72:5ca6"]
+ip = "0d72:4fcc"
+
+[[params]]
+name = "frame_span"
+value = "[sp+4]"
+type = "u16"
+desc = "Byte distance from the caller's BP to its lowest saved-context word; callers pass their local-storage size plus saved-register space."
+
+---
+0d72:4fcc push bp
+0d72:4fcd mov bp,sp
+; Keep the first (outermost) registered frame; nested entries do not overwrite it.
+0d72:4fcf cmp word ptr ds:[602h],0
+@jmp '2
+0d72:4fd4 jne short 4FFEh
+
+; Compute caller_bp - frame_span, with the caller BP rounded down to an even offset.
+0d72:4fd6 mov bx,[bp+6]
+0d72:4fd9 neg bx
+0d72:4fdb mov dx,[bp]
+0d72:4fde and dx,0FFFEh
+0d72:4fe1 add bx,dx
+; Record a stack marker pointing at this call's return-address area.
+0d72:4fe3 lea ax,[bp+2]
+0d72:4fe6 mov ds:[602h],ax
+; Snapshot the three caller-stack context words at base-2, base, and base+2.
+0d72:4fe9 mov ax,ss:[bx-2]
+0d72:4fed mov ds:[604h],ax
+0d72:4ff0 mov ax,ss:[bx]
+0d72:4ff3 mov bx,ss:[bx+2]
+0d72:4ff7 mov ds:[606h],ax
+0d72:4ffa mov ds:[608h],bx
+
+@label return_without_update
+0d72:4ffe mov sp,bp
+0d72:5000 pop bp
+0d72:5001 retf 2
+

@@ -3,7 +3,6 @@ mod label_memory;
 mod read_memory;
 
 use crate::db::DB;
-pub use annotate_function::Var;
 use openrouter_rs::{OpenRouterClient, types::ResponseUsage};
 
 /// ai

@@ -27,8 +27,8 @@ struct FunctionDetail<'a> {
     details: Option<&'a str>,
     callers: Option<Vec<XRefDetail>>,
     callees: Option<Vec<XRefDetail>>,
-    params: &'a Option<Vec<crate::ai::Var>>,
-    ret: &'a Option<crate::ai::Var>,
+    params: &'a Option<Vec<crate::api::Var>>,
+    ret: &'a Option<crate::api::Var>,
     #[ts(type = "Record<string, string>")]
     memory: HashMap<runtime::SegOfs, String>,
     blocks: Vec<BlockDetail>,

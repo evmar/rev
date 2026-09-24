@@ -5,6 +5,7 @@ use runtime::SegOfs;
 use crate::db::DB;
 
 mod ai;
+mod api;
 mod crawl;
 mod db;
 mod dis;

@@ -1,6 +1,6 @@
 use runtime::SegOfs;
 
-use crate::{ai::Var, xref::XRef};
+use crate::{api::Var, xref::XRef};
 
 #[derive(serde::Serialize, serde::Deserialize, Default)]
 pub struct Function {

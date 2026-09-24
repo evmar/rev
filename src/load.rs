@@ -18,7 +18,6 @@ pub fn load_exe(db: &mut DB) {
     let load_addr = SegOfs::new(psp_segment + 0x10, 0);
 
     let path = db.project_path(&db.exe.filename);
-    println!("loading {}", path.display());
     let buf = std::fs::read(path).unwrap();
     let dos = exe::DOS::parse(&buf).unwrap();
     {

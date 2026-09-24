@@ -26,6 +26,7 @@ enum Command {
     Crawl(crawl::Args),
     RoundTrip(RoundTrip),
     Web(web::Args),
+    DB(db::Args),
 }
 
 /// wip
@@ -76,6 +77,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Command::Crawl(args) => {
             let mut db = DB::load(project)?;
             crawl::run(&mut db, args).await?;
+            Ok(())
+        }
+        Command::DB(args) => {
+            let mut db = DB::load(project)?;
+            db::run(&mut db, args)?;
             Ok(())
         }
     }

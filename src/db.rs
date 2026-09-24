@@ -108,3 +108,43 @@ fn write_if_changed(path: &Path, contents: &[u8]) -> std::io::Result<()> {
     println!("wrote {}", path.display());
     Ok(())
 }
+
+/// database interaction
+#[derive(argh::FromArgs)]
+#[argh(subcommand, name = "db")]
+pub struct Args {
+    #[argh(subcommand)]
+    cmd: Command,
+}
+
+#[derive(argh::FromArgs)]
+#[argh(subcommand)]
+enum Command {
+    Func(FuncArgs),
+}
+
+pub fn run(db: &mut DB, args: Args) -> anyhow::Result<()> {
+    match args.cmd {
+        Command::Func(args) => run_func(db, args),
+    }
+}
+
+/// database interaction
+#[derive(argh::FromArgs)]
+#[argh(subcommand, name = "func")]
+pub struct FuncArgs {
+    #[argh(positional)]
+    addr: String,
+}
+
+pub fn run_func(db: &mut DB, FuncArgs { addr }: FuncArgs) -> anyhow::Result<()> {
+    let addr = SegOfs::parse(&addr).map_err(|_| anyhow::anyhow!("bad address {:?}", addr))?;
+    let func = db
+        .functions
+        .get(&addr)
+        .ok_or_else(|| anyhow::anyhow!("unknown function {addr}"))?;
+    let mut buf = String::new();
+    func.serialize(&mut buf)?;
+    print!("{}", buf);
+    Ok(())
+}

@@ -1,13 +1,11 @@
 use std::{
     collections::{BTreeMap, HashSet},
-    io::Read,
     path::{Path, PathBuf},
 };
 
 use runtime::SegOfs;
 
 use crate::{
-    api,
     function::Function,
     load::{EXE, load_exe},
     memory::Memory,
@@ -119,98 +117,5 @@ fn write_if_changed(path: &Path, contents: &[u8]) -> std::io::Result<()> {
     }
     std::fs::write(path, contents)?;
     println!("wrote {}", path.display());
-    Ok(())
-}
-
-/// database interaction
-#[derive(argh::FromArgs)]
-#[argh(subcommand, name = "db")]
-pub struct Args {
-    #[argh(subcommand)]
-    cmd: Command,
-}
-
-#[derive(argh::FromArgs)]
-#[argh(subcommand)]
-enum Command {
-    Func(FuncArgs),
-}
-
-pub fn run(db: &mut DB, args: Args) -> anyhow::Result<()> {
-    match args.cmd {
-        Command::Func(args) => run_func(db, args),
-    }
-}
-
-/// functions
-#[derive(argh::FromArgs)]
-#[argh(subcommand, name = "func")]
-pub struct FuncArgs {
-    #[argh(subcommand)]
-    cmd: FuncCmd,
-}
-
-#[derive(argh::FromArgs)]
-#[argh(subcommand)]
-enum FuncCmd {
-    Read(FuncReadArgs),
-    Write(FuncWriteArgs),
-}
-
-pub fn run_func(db: &mut DB, FuncArgs { cmd }: FuncArgs) -> anyhow::Result<()> {
-    match cmd {
-        FuncCmd::Read(args) => run_func_read(db, args),
-        FuncCmd::Write(args) => run_func_write(db, args),
-    }
-}
-
-/// read function
-#[derive(argh::FromArgs)]
-#[argh(subcommand, name = "read")]
-pub struct FuncReadArgs {
-    #[argh(positional)]
-    addr_or_name: String,
-}
-
-pub fn run_func_read(
-    db: &mut DB,
-    FuncReadArgs { addr_or_name }: FuncReadArgs,
-) -> anyhow::Result<()> {
-    let Some(func) = db.get_function(&addr_or_name) else {
-        anyhow::bail!("unknown function {addr_or_name:?}")
-    };
-    let mut buf = String::new();
-    func.serialize(&mut buf)?;
-    print!("{}", buf);
-    Ok(())
-}
-
-/// write function
-#[derive(argh::FromArgs)]
-#[argh(subcommand, name = "write")]
-pub struct FuncWriteArgs {
-    #[argh(positional)]
-    addr: String,
-}
-
-pub fn run_func_write(db: &mut DB, FuncWriteArgs { addr }: FuncWriteArgs) -> anyhow::Result<()> {
-    if addr == "schema" {
-        let schema = api::FunctionUpdate::schema();
-        println!("{}", serde_json::to_string(&schema).unwrap());
-        return Ok(());
-    }
-
-    let addr = SegOfs::parse(&addr).map_err(|_| anyhow::anyhow!("bad address {:?}", addr))?;
-    let func = db
-        .functions
-        .get_mut(&addr)
-        .ok_or_else(|| anyhow::anyhow!("unknown function {addr}"))?;
-
-    let mut buf = String::new();
-    std::io::stdin().lock().read_to_string(&mut buf)?;
-    let update: api::FunctionUpdate = serde_json::from_str(&buf)?;
-    update.merge_into(func)?;
-    db.write()?;
-
     Ok(())
 }

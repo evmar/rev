@@ -2,10 +2,11 @@ use std::path::PathBuf;
 
 use runtime::SegOfs;
 
-use crate::db::DB;
+use crate::{cmd::func, db::DB};
 
 mod ai;
 mod api;
+mod cmd;
 mod crawl;
 mod db;
 mod dis;
@@ -23,12 +24,11 @@ mod xref;
 #[argh(subcommand)]
 enum Command {
     Init(init::Args),
-    Dis(dis::Args),
+    Func(func::Args),
     AI(ai::Args),
     Crawl(crawl::Args),
     RoundTrip(RoundTrip),
     Web(web::Args),
-    DB(db::Args),
     Queue(queue::Args),
 }
 
@@ -61,9 +61,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             Ok(())
         }
         Command::Init(args) => init::init(project, args),
-        Command::Dis(args) => {
+        Command::Func(args) => {
             let mut db = DB::load(project)?;
-            dis::run(&mut db, args)?;
+            func::run(&mut db, args)?;
             Ok(())
         }
         Command::AI(args) => {
@@ -80,11 +80,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Command::Crawl(args) => {
             let mut db = DB::load(project)?;
             crawl::run(&mut db, args).await?;
-            Ok(())
-        }
-        Command::DB(args) => {
-            let mut db = DB::load(project)?;
-            db::run(&mut db, args)?;
             Ok(())
         }
         Command::Queue(args) => {

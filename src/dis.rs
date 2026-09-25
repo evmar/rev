@@ -5,21 +5,6 @@ use crate::{
 use runtime::SegOfs;
 use std::collections::{BTreeMap, VecDeque};
 
-/// given an address, disassemble its code and create a new function entry for it
-#[derive(argh::FromArgs)]
-#[argh(subcommand, name = "dis")]
-pub struct Args {
-    #[argh(positional, from_str_fn(SegOfs::parse))]
-    addr: SegOfs,
-}
-
-pub fn run(db: &mut DB, args: Args) -> anyhow::Result<()> {
-    let ip = args.addr;
-    dis_func(db, ip);
-    db.write()?;
-    Ok(())
-}
-
 pub fn dis_func<'db>(db: &'db mut DB, ip: SegOfs) {
     if !db.functions.contains_key(&ip) {
         let func = Function {

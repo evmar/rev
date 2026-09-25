@@ -53,6 +53,7 @@ desc = "Matcher-state slot receiving DI when another class-bit-0 character follo
 
 ---
 ; Test the current character's bit-0 class flag.
+@mem ; [bx unknown]
 0d72:01ef mov al,cs:[bx+4A9Ch]
 0d72:01f4 and al,1
 @jmp 'try_backward_qu@4
@@ -60,16 +61,20 @@ desc = "Matcher-state slot receiving DI when another class-bit-0 character follo
 
 ; Record one matched context atom and advance the scan cursor.
 @label consume_match
+@mem ; [ss unknown]
 0d72:01f8 inc byte ptr [bp+3]
+@mem ; [ss unknown]
 0d72:01fb add si,[bp+0Ch]
 ; Classify the adjacent character after the cursor advance.
 0d72:01fe mov bl,ch
+@mem ; [bx unknown]
 0d72:0200 mov al,cs:[bx+4A9Ch]
 0d72:0205 and al,1
 @jmp 'done@3
 0d72:0207 je short 020Ch
 
 ; Save the caller's continuation/backtracking position when the same class continues.
+@mem ; [ss unknown]
 0d72:0209 mov [bp+0Eh],di
 
 @label done
@@ -77,6 +82,7 @@ desc = "Matcher-state slot receiving DI when another class-bit-0 character follo
 
 ; Only the reverse scan has the Q/U digraph exception.
 @label try_backward_qu
+@mem ; [ss unknown]
 0d72:020d cmp word ptr [bp+0Ch],1
 @jmp 'done@3
 0d72:0211 je short 020Ch
@@ -91,6 +97,7 @@ desc = "Matcher-state slot receiving DI when another class-bit-0 character follo
 0d72:021b jne short 020Ch
 
 ; Pre-consume the extra digraph character, then use the normal match path for the other one.
+@mem ; [ss unknown]
 0d72:021d add si,[bp+0Ch]
 @jmp 'consume_match@1
 0d72:0220 jmp short 01F8h

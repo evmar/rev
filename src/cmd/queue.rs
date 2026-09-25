@@ -21,6 +21,10 @@ pub enum Task {
 
 pub fn next_task(db: &DB) -> Option<Task> {
     for func in db.functions.values() {
+        if func.callers.is_none() && func.callees.is_none() {
+            continue;
+        }
+
         if func.desc.is_none() {
             return Some(Task::DescribeFunction(func.ip));
         }

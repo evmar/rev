@@ -35,6 +35,7 @@ desc = "Signed input scan direction, normally -1 for left context or +1 for righ
 
 ---
 ; Accept the current byte directly when its character-property entry has bit 0x01 set.
+@mem ; [bx unknown]
 0d72:0184 mov al,cs:[bx+4A9Ch]
 0d72:0189 and al,1
 @jmp 'try_reverse_qu@3
@@ -42,7 +43,9 @@ desc = "Signed input scan direction, normally -1 for left context or +1 for righ
 
 ; Count one logical context match and advance the input cursor by one scan step.
 @label record_logical_match
+@mem ; [ss unknown]
 0d72:018d inc byte ptr [bp+3]
+@mem ; [ss unknown]
 0d72:0190 add si,[bp+0Ch]
 
 @label return_to_rule_matcher
@@ -50,6 +53,7 @@ desc = "Signed input scan direction, normally -1 for left context or +1 for righ
 
 ; The QU exception applies only to reverse scans (scan_stride != +1).
 @label try_reverse_qu
+@mem ; [ss unknown]
 0d72:0194 cmp word ptr [bp+0Ch],1
 @jmp 'return_to_rule_matcher@2
 0d72:0198 je short 0193h
@@ -64,6 +68,7 @@ desc = "Signed input scan direction, normally -1 for left context or +1 for righ
 0d72:01a2 jne short 0193h
 
 ; Skip the Q first, then use the common match path to skip U and increment the count once.
+@mem ; [ss unknown]
 0d72:01a4 add si,[bp+0Ch]
 @jmp 'record_logical_match@1
 0d72:01a7 jmp short 018Dh

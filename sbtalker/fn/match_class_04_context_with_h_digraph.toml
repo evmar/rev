@@ -55,11 +55,13 @@ desc = "Shared caller-frame context-match count, incremented on success."
 ; Consume the two-byte CH/SH/TH unit and record one successful context match.
 @label match_h_digraph
 0d72:01da sub si,2
+@mem ; [ss unknown]
 0d72:01dd inc byte ptr [bp+3]
 0d72:01e0 ret
 
 ; Otherwise test character-property bit 0x04 for the current byte.
 @label test_class_bit
+@mem ; [bx unknown]
 0d72:01e1 mov al,cs:[bx+4A9Ch]
 0d72:01e6 and al,4
 @jmp 'return_to_context_matcher@7
@@ -67,6 +69,7 @@ desc = "Shared caller-frame context-match count, incremented on success."
 
 ; Consume one matching byte and record the successful context match.
 0d72:01ea dec si
+@mem ; [ss unknown]
 0d72:01eb inc byte ptr [bp+3]
 
 @label return_to_context_matcher

@@ -40,6 +40,7 @@ desc = "Incoming zero flag from CMP AL, 0x43; set when adjacent_char is ASCII C.
 0d72:01d8 jne short 01EEh
 
 0d72:01da sub si,2
+@mem ; [ss unknown]
 0d72:01dd inc byte ptr [bp+3]
 0d72:01e0 ret
 

@@ -47,23 +47,28 @@ desc = "Shared caller-frame rule offset updated to DI when the operator can cons
 
 ---
 ; Mark this context token successful even if it consumes zero class members.
+@mem ; [ss unknown]
 0d72:01a9 inc byte ptr [bp+3]
 ; Test whether the current input byte has character-property bit 0x01.
+@mem ; [bx unknown]
 0d72:01ac mov al,cs:[bx+4A9Ch]
 0d72:01b1 and al,1
 @jmp 'return@3
 0d72:01b3 je short 01C6h
 
 ; Consume the current class member by advancing one signed scan step.
+@mem ; [ss unknown]
 0d72:01b5 add si,[bp+0Ch]
 ; Test the adjacent input byte for another class-0x01 member.
 0d72:01b8 mov bl,ch
+@mem ; [bx unknown]
 0d72:01ba mov al,cs:[bx+4A9Ch]
 0d72:01bf and al,1
 @jmp 'return@3
 0d72:01c1 je short 01C6h
 
 ; Save this rule position so the caller can repeat the same context operator.
+@mem ; [ss unknown]
 0d72:01c3 mov [bp+0Eh],di
 
 @label return

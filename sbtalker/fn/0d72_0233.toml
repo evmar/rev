@@ -15,6 +15,7 @@ ip = "0d72:0233"
 @jmp '5
 0d72:0242 jne short 024Ch
 
+@mem ; [ds unknown]
 0d72:0244 cmp byte ptr [si+2],53h
 @jmp '10
 0d72:0248 jne short 025Ch
@@ -30,6 +31,7 @@ ip = "0d72:0233"
 @jmp '11
 0d72:0252 jne short 025Dh
 
+@mem ; [ds unknown]
 0d72:0254 cmp byte ptr [si+2],59h
 @jmp '9
 0d72:0258 je short 025Bh
@@ -41,10 +43,12 @@ ip = "0d72:0233"
 0d72:025c inc bx
 
 0d72:025d inc bx
+@mem ; [ds unknown]
 0d72:025e cmp byte ptr [bx+si],41h
 @jmp '18
 0d72:0261 jae short 0285h
 
+@mem ; [ss unknown]
 0d72:0263 inc byte ptr [bp+3]
 0d72:0266 add si,bx
 0d72:0268 ret
@@ -57,14 +61,17 @@ ip = "0d72:0233"
 @jmp '18
 0d72:0271 jne short 0285h
 
+@mem ; [ds unknown]
 0d72:0273 cmp byte ptr [si+2],47h
 @jmp '17
 0d72:0277 je short 027Fh
 
+@mem ; [ds unknown]
 0d72:0279 cmp byte ptr [si+2],27h
 @jmp '18
 0d72:027d jne short 0285h
 
+@mem ; [ss unknown]
 0d72:027f inc byte ptr [bp+3]
 0d72:0282 add si,3
 

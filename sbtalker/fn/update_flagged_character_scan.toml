@@ -35,6 +35,7 @@ desc = "Value saved to SS:[BP+0x0E] when the second table lookup has bit 0 set."
 
 ---
 ; Initial lookup uses DS (no segment override); test classification bit 0.
+@mem ; [ds unknown]
 0d72:01f0 mov al,[bx+4A9Ch]
 0d72:01f4 and al,1
 @jmp 'check_qu_fallback@4
@@ -42,17 +43,21 @@ desc = "Value saved to SS:[BP+0x0E] when the second table lookup has bit 0 set."
 
 ; Increment the byte counter modulo 256 and advance SI by the configured word step.
 @label count_and_advance
+@mem ; [ss unknown]
 0d72:01f8 inc byte ptr [bp+3]
+@mem ; [ss unknown]
 0d72:01fb add si,[bp+0Ch]
 ; Use CH as the low byte of the next table index; BH remains unchanged.
 0d72:01fe mov bl,ch
 ; Second lookup explicitly uses CS, unlike the initial DS lookup.
+@mem ; [bx unknown]
 0d72:0200 mov al,cs:[bx+4A9Ch]
 0d72:0205 and al,1
 @jmp 'done@3
 0d72:0207 je short 020Ch
 
 ; Save DI only if the CH-indexed table entry has bit 0 set.
+@mem ; [ss unknown]
 0d72:0209 mov [bp+0Eh],di
 
 @label done
@@ -60,6 +65,7 @@ desc = "Value saved to SS:[BP+0x0E] when the second table lookup has bit 0 set."
 
 ; An initially unflagged character can be accepted only if the step differs from 1 and CH:CL is 'Q':'U'.
 @label check_qu_fallback
+@mem ; [ss unknown]
 0d72:020d cmp word ptr [bp+0Ch],1
 @jmp 'done@3
 0d72:0211 je short 020Ch
@@ -73,6 +79,7 @@ desc = "Value saved to SS:[BP+0x0E] when the second table lookup has bit 0 set."
 0d72:021b jne short 020Ch
 
 ; Extra advance for the QU fallback; jumping to count_and_advance adds the step again, but increments the counter only once.
+@mem ; [ss unknown]
 0d72:021d add si,[bp+0Ch]
 @jmp 'count_and_advance@1
 0d72:0220 jmp short 01F8h

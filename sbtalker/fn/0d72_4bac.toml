@@ -1,6 +1,6 @@
 ip = "0d72:4bac"
 callers = ["0d72:5ca6"]
-callees = ["0d72:4b0c", "0d72:4b25", "0d72:5004", "0d72:656d", "0d72:673a", "register_outermost_stack_frame@0d72:4fcc"]
+callees = ["0d72:4b25", "0d72:5004", "0d72:656d", "0d72:673a", "register_outermost_stack_frame@0d72:4fcc", "write_stdout_near_buffer@0d72:4b0c"]
 
 ---
 0d72:4bac push bp
@@ -19,7 +19,7 @@ callees = ["0d72:4b0c", "0d72:4b25", "0d72:5004", "0d72:656d", "0d72:673a", "reg
 0d72:4bc7 mov ax,20D3h
 0d72:4bca push ax
 0d72:4bcb push bp
-@jmp 0d72:4b0c
+@jmp write_stdout_near_buffer@0d72:4b0c
 0d72:4bcc call 4B0Ch
 @mem ; [ss unknown]
 0d72:4bcf mov di,[bp+0Ah]
@@ -31,7 +31,7 @@ callees = ["0d72:4b0c", "0d72:4b25", "0d72:5004", "0d72:656d", "0d72:673a", "reg
 0d72:4bd7 lea ax,[di+1]
 0d72:4bda push ax
 0d72:4bdb push bp
-@jmp 0d72:4b0c
+@jmp write_stdout_near_buffer@0d72:4b0c
 0d72:4bdc call 4B0Ch
 @jmp 0d72:673a
 0d72:4bdf call far ptr 0D72h:673Ah
@@ -40,7 +40,7 @@ callees = ["0d72:4b0c", "0d72:4b25", "0d72:5004", "0d72:656d", "0d72:673a", "reg
 0d72:4be8 mov ax,20DDh
 0d72:4beb push ax
 0d72:4bec push bp
-@jmp 0d72:4b0c
+@jmp write_stdout_near_buffer@0d72:4b0c
 0d72:4bed call 4B0Ch
 @mem ; [ds unknown]
 0d72:4bf0 mov word ptr ds:[4EAh],0Ah
@@ -59,7 +59,7 @@ callees = ["0d72:4b0c", "0d72:4b25", "0d72:5004", "0d72:656d", "0d72:673a", "reg
 0d72:4c07 mov ax,20EBh
 0d72:4c0a push ax
 0d72:4c0b push bp
-@jmp 0d72:4b0c
+@jmp write_stdout_near_buffer@0d72:4b0c
 0d72:4c0c call 4B0Ch
 @mem ; [ds unknown]
 0d72:4c0f mov word ptr ds:[4EAh],10h
@@ -86,7 +86,7 @@ callees = ["0d72:4b0c", "0d72:4b25", "0d72:5004", "0d72:656d", "0d72:673a", "reg
 0d72:4c33 mov ax,20F5h
 0d72:4c36 push ax
 0d72:4c37 push bp
-@jmp 0d72:4b0c
+@jmp write_stdout_near_buffer@0d72:4b0c
 0d72:4c38 call 4B0Ch
 @mem ; [ds unknown]
 0d72:4c3b mov word ptr ds:[4EAh],0Ah
@@ -101,7 +101,7 @@ callees = ["0d72:4b0c", "0d72:4b25", "0d72:5004", "0d72:656d", "0d72:673a", "reg
 0d72:4c4d mov ax,20FDh
 0d72:4c50 push ax
 0d72:4c51 push bp
-@jmp 0d72:4b0c
+@jmp write_stdout_near_buffer@0d72:4b0c
 0d72:4c52 call 4B0Ch
 @mem ; [ds unknown]
 0d72:4c55 mov di,ds:[5F8h]
@@ -121,14 +121,14 @@ callees = ["0d72:4b0c", "0d72:4b25", "0d72:5004", "0d72:656d", "0d72:673a", "reg
 @mem ; [ss unknown]
 0d72:4c6d mov [bp-2],di
 0d72:4c70 push bp
-@jmp 0d72:4b0c
+@jmp write_stdout_near_buffer@0d72:4b0c
 0d72:4c71 call 4B0Ch
 0d72:4c74 mov ax,4
 0d72:4c77 push ax
 0d72:4c78 mov ax,2103h
 0d72:4c7b push ax
 0d72:4c7c push bp
-@jmp 0d72:4b0c
+@jmp write_stdout_near_buffer@0d72:4b0c
 0d72:4c7d call 4B0Ch
 @mem ; [ds unknown]
 0d72:4c80 mov di,ds:[5F8h]
@@ -148,7 +148,7 @@ callees = ["0d72:4b0c", "0d72:4b25", "0d72:5004", "0d72:656d", "0d72:673a", "reg
 @mem ; [ss unknown]
 0d72:4c95 mov [bp-4],di
 0d72:4c98 push bp
-@jmp 0d72:4b0c
+@jmp write_stdout_near_buffer@0d72:4b0c
 0d72:4c99 call 4B0Ch
 @jmp 0d72:673a
 0d72:4c9c call far ptr 0D72h:673Ah
@@ -165,7 +165,7 @@ callees = ["0d72:4b0c", "0d72:4b25", "0d72:5004", "0d72:656d", "0d72:673a", "reg
 0d72:4cb2 mov ax,2109h
 0d72:4cb5 push ax
 0d72:4cb6 push bp
-@jmp 0d72:4b0c
+@jmp write_stdout_near_buffer@0d72:4b0c
 0d72:4cb7 call 4B0Ch
 @mem ; [ds unknown]
 0d72:4cba push word ptr ds:[608h]
@@ -177,7 +177,7 @@ callees = ["0d72:4b0c", "0d72:4b25", "0d72:5004", "0d72:656d", "0d72:673a", "reg
 0d72:4cc6 mov ax,210Fh
 0d72:4cc9 push ax
 0d72:4cca push bp
-@jmp 0d72:4b0c
+@jmp write_stdout_near_buffer@0d72:4b0c
 0d72:4ccb call 4B0Ch
 @mem ; [ds unknown]
 0d72:4cce push word ptr ds:[606h]
@@ -189,7 +189,7 @@ callees = ["0d72:4b0c", "0d72:4b25", "0d72:5004", "0d72:656d", "0d72:673a", "reg
 0d72:4cda mov ax,2111h
 0d72:4cdd push ax
 0d72:4cde push bp
-@jmp 0d72:4b0c
+@jmp write_stdout_near_buffer@0d72:4b0c
 0d72:4cdf call 4B0Ch
 0d72:4ce2 mov bx,5FAh
 0d72:4ce5 push ds
@@ -208,7 +208,7 @@ callees = ["0d72:4b0c", "0d72:4b25", "0d72:5004", "0d72:656d", "0d72:673a", "reg
 0d72:4cf8 mov ax,2119h
 0d72:4cfb push ax
 0d72:4cfc push bp
-@jmp 0d72:4b0c
+@jmp write_stdout_near_buffer@0d72:4b0c
 0d72:4cfd call 4B0Ch
 @mem ; [ds unknown]
 0d72:4d00 push word ptr ds:[604h]
@@ -220,7 +220,7 @@ callees = ["0d72:4b0c", "0d72:4b25", "0d72:5004", "0d72:656d", "0d72:673a", "reg
 0d72:4d0c mov ax,2121h
 0d72:4d0f push ax
 0d72:4d10 push bp
-@jmp 0d72:4b0c
+@jmp write_stdout_near_buffer@0d72:4b0c
 0d72:4d11 call 4B0Ch
 @mem ; [ds unknown]
 0d72:4d14 push word ptr ds:[602h]

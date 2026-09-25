@@ -23,6 +23,7 @@ desc = "Shared caller-frame context-match count, incremented on a successful mat
 
 ---
 ; Test character-property bit 0x04 for the current byte.
+@mem ; [bx unknown]
 0d72:01e1 mov al,cs:[bx+4A9Ch]
 0d72:01e6 and al,4
 @jmp 'return_to_context_matcher@2
@@ -30,6 +31,7 @@ desc = "Shared caller-frame context-match count, incremented on a successful mat
 
 ; Consume one matching byte and record one successful context match.
 0d72:01ea dec si
+@mem ; [ss unknown]
 0d72:01eb inc byte ptr [bp+3]
 
 @label return_to_context_matcher

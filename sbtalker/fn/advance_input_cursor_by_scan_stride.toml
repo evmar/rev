@@ -17,6 +17,7 @@ desc = "Signed cursor increment, normally +1 for forward scanning or -1 for reve
 
 ---
 ; Advance SI by one signed scan step from the caller stack frame.
+@mem ; [ss unknown]
 0d72:0190 add si,[bp+0Ch]
 ; Return to the encoded-rule context matcher.
 0d72:0193 ret

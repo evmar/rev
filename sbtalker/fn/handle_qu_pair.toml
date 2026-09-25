@@ -36,19 +36,23 @@ desc = "Preserved high byte of the character-table index; BL becomes Q on a matc
 ---
 ; Increment the caller's byte counter at SS:[BP+3] (wraps modulo 256).
 @label update_scan_state
+@mem ; [ss unknown]
 0d72:01f8 inc byte ptr [bp+3]
 ; Advance SI by the word stride at SS:[BP+0x0C]; total advance on this entry path is twice the stride.
+@mem ; [ss unknown]
 0d72:01fb add si,[bp+0Ch]
 ; Use CH as the low byte of the character-table index; BH is not cleared here.
 0d72:01fe mov bl,ch
 ; Load character flags from CS:[0x4A9C+BX] (CS:[0x4AED] for Q if BH=0).
+@mem ; [bx unknown]
 0d72:0200 mov al,cs:[bx+4A9Ch]
 ; Only bit 0 controls whether DI is saved; AL is left holding this bit.
 0d72:0205 and al,1
-@jmp '2
+@jmp 'return_to_caller@2
 0d72:0207 je short 020Ch
 
 ; Save DI in the caller's state when the character-table flag is set.
+@mem ; [ss unknown]
 0d72:0209 mov [bp+0Eh],di
 
 @label return_to_caller
@@ -56,16 +60,17 @@ desc = "Preserved high byte of the character-table index; BL becomes Q on a matc
 
 ; Require CH == 'Q'; otherwise return without updating scan state.
 0d72:0213 cmp ch,51h
-@jmp '2
+@jmp 'return_to_caller@2
 0d72:0216 jne short 020Ch
 
 ; Require CL == 'U' to recognize the QU pair.
 0d72:0218 cmp cl,55h
-@jmp '2
+@jmp 'return_to_caller@2
 0d72:021b jne short 020Ch
 
 ; First stride advance for QU; the shared update block advances SI once more.
+@mem ; [ss unknown]
 0d72:021d add si,[bp+0Ch]
-@jmp '0
+@jmp 'update_scan_state@0
 0d72:0220 jmp short 01F8h
 

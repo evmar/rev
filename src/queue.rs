@@ -10,8 +10,8 @@ use anyhow::anyhow;
 #[argh(subcommand, name = "queue")]
 pub struct Args {
     /// run one task
-    #[argh(switch)]
-    one: bool,
+    #[argh(option)]
+    count: usize,
 }
 
 pub enum Task {
@@ -59,15 +59,13 @@ pub fn codex_task(_db: &DB, task: &Task) -> anyhow::Result<()> {
 }
 
 pub fn run(path: PathBuf, args: Args) -> anyhow::Result<()> {
-    loop {
+    let count = if args.count > 0 { args.count } else { 1000 };
+    for _ in 0..count {
         let db = DB::load(path.clone())?;
         let Some(task) = next_task(&db) else {
             return Ok(());
         };
         codex_task(&db, &task)?;
-        if args.one {
-            break;
-        }
     }
     Ok(())
 }

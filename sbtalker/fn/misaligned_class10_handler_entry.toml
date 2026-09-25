@@ -1,0 +1,34 @@
+ip = "0d72:0170"
+name = "misaligned_class10_handler_entry"
+desc = "Spurious function entry in the immediate operand of the class-0x10 context handler's property test."
+details = "Address 0d72:0170 is not a valid semantic entry point: it is the 0x10 immediate byte of the instruction `and al,10h` beginning at 0d72:016f. Decoding at 0170 creates an overlapping `adc [si+10h],dh`; normal control instead executes the test at 016f and branches at 0171, while the surviving fall-through at 0173 checks whether the next rule token permits repetition and either redispatches or saves DI as the backtracking marker."
+callees = ["unknown:reg"]
+
+---
+0d72:0140 mov cl,[si]
+0d72:0142 mov bx,[bp+0Ch]
+0d72:0145 mov ch,[bx+si]
+0d72:0147 mov al,[bp+1]
+0d72:014a shl al,1
+0d72:014c mov bl,al
+0d72:014e xor bh,bh
+0d72:0150 mov ax,cs:[bx+2EAh]
+0d72:0155 mov bl,cl
+@jmp unknown:reg
+0d72:0157 jmp ax
+
+; Misaligned decode: this byte is the immediate operand of `and al,10h` at 0d72:016f, not an ADC opcode in normal execution.
+0d72:0170 adc [si+10h],dh
+; Look up the next encoded rule token and test property bit 0x01, which permits greedy repetition.
+0d72:0173 mov bl,cs:[di+1]
+0d72:0177 mov al,cs:[bx+4A3Ch]
+0d72:017c and al,1
+; If repetition is permitted, return to the shared context-operator dispatcher.
+@jmp '0
+0d72:017e jne short 0140h
+
+; Otherwise save DI as the caller's context backtracking marker.
+@label save_backtracking_marker
+0d72:0180 mov [bp+0Eh],di
+0d72:0183 ret
+

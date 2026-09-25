@@ -50,7 +50,7 @@ desc = "Signed input direction, normally -1 for left context or +1 for right con
 ; Reject unless the current input byte has character-property bit 0x10.
 0d72:0159 mov al,cs:[bx+4A9Ch]
 0d72:015e and al,10h
-@jmp '5
+@jmp 'return_to_rule_matcher@5
 0d72:0160 je short 0183h
 
 ; Count this match and advance the input cursor in the active context-scan direction.
@@ -60,7 +60,7 @@ desc = "Signed input direction, normally -1 for left context or +1 for right con
 0d72:0168 mov bl,ch
 0d72:016a mov al,cs:[bx+4A9Ch]
 0d72:016f and al,10h
-@jmp '5
+@jmp 'return_to_rule_matcher@5
 0d72:0171 je short 0183h
 
 ; If the next encoded rule token has property bit 0x01, redispatch this operator to greedily consume another class member.

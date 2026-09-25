@@ -97,6 +97,17 @@ impl DB {
     pub fn meta(&self) -> PathBuf {
         self.project_path("db.toml")
     }
+
+    pub fn get_function<'a>(&'a self, key: &str) -> Option<&'a Function> {
+        match SegOfs::parse(key) {
+            Ok(addr) => self.functions.get(&addr),
+            Err(_) => self
+                .functions
+                .values()
+                .find(|func| func.name.as_deref() == Some(key))
+                .map(|func| func),
+        }
+    }
 }
 
 fn write_if_changed(path: &Path, contents: &[u8]) -> std::io::Result<()> {
@@ -158,15 +169,16 @@ pub fn run_func(db: &mut DB, FuncArgs { cmd }: FuncArgs) -> anyhow::Result<()> {
 #[argh(subcommand, name = "read")]
 pub struct FuncReadArgs {
     #[argh(positional)]
-    addr: String,
+    addr_or_name: String,
 }
 
-pub fn run_func_read(db: &mut DB, FuncReadArgs { addr }: FuncReadArgs) -> anyhow::Result<()> {
-    let addr = SegOfs::parse(&addr).map_err(|_| anyhow::anyhow!("bad address {:?}", addr))?;
-    let func = db
-        .functions
-        .get(&addr)
-        .ok_or_else(|| anyhow::anyhow!("unknown function {addr}"))?;
+pub fn run_func_read(
+    db: &mut DB,
+    FuncReadArgs { addr_or_name }: FuncReadArgs,
+) -> anyhow::Result<()> {
+    let Some(func) = db.get_function(&addr_or_name) else {
+        anyhow::bail!("unknown function {addr_or_name:?}")
+    };
     let mut buf = String::new();
     func.serialize(&mut buf)?;
     print!("{}", buf);

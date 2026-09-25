@@ -1,0 +1,62 @@
+ip = "0d72:0194"
+name = "try_reverse_qu_class_01"
+desc = "Accepts reverse-scanned QU as one logical match for character class bit 0x01."
+details = "This is a secondary entry/tail fragment of the class-0x01 context matcher at 0d72:0184. It applies only when scan_stride is not +1; if the current byte is U and the adjacent byte is Q, it advances SI by two strides through the shared match block and increments the caller's match count once, otherwise it returns without changing state."
+
+[[params]]
+name = "input_cursor"
+value = "si"
+type = "*mut u8"
+desc = "Near input pointer; advanced by two scan strides when reverse QU is accepted."
+
+[[params]]
+name = "current_byte"
+value = "cl"
+type = "u8"
+desc = "Current input byte, which must be ASCII U (0x55)."
+
+[[params]]
+name = "adjacent_byte"
+value = "ch"
+type = "u8"
+desc = "Adjacent input byte in the scan direction, which must be ASCII Q (0x51)."
+
+[[params]]
+name = "match_count"
+value = "[bp+3]"
+type = "*mut u8"
+desc = "Caller-owned logical match counter incremented once through the shared success block."
+
+[[params]]
+name = "scan_stride"
+value = "[bp+0Ch]"
+type = "i16"
+desc = "Signed scan step; +1 disables this reverse-only QU special case."
+
+---
+@label record_qu_match
+0d72:018d inc byte ptr [bp+3]
+0d72:0190 add si,[bp+0Ch]
+
+@label return_no_match
+0d72:0193 ret
+
+; Reject the QU exception for forward (+1) scans.
+0d72:0194 cmp word ptr [bp+0Ch],1
+@jmp 'return_no_match@1
+0d72:0198 je short 0193h
+
+; Require adjacent ASCII Q followed by current ASCII U.
+0d72:019a cmp ch,51h
+@jmp 'return_no_match@1
+0d72:019d jne short 0193h
+
+0d72:019f cmp cl,55h
+@jmp 'return_no_match@1
+0d72:01a2 jne short 0193h
+
+; Advance over Q, then enter the shared success block to count one logical match and advance over U.
+0d72:01a4 add si,[bp+0Ch]
+@jmp 'record_qu_match@0
+0d72:01a7 jmp short 018Dh
+

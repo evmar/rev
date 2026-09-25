@@ -1,0 +1,71 @@
+ip = "0d72:01a9"
+name = "match_zero_or_more_class_01_context"
+desc = "Matches zero or more pronunciation-context characters having property bit 0x01."
+details = "This is a specialized tail-dispatched context matcher that always increments the caller's shared match count, so the operator succeeds even when it consumes no input. If the current byte has character-property bit 0x01, it advances SI by the signed scan stride; when the adjacent byte also has bit 0x01, it saves DI as the backtracking marker so the caller can repeat the same encoded context token."
+
+[[params]]
+name = "current_byte"
+value = "bl"
+type = "u8"
+desc = "Current input byte, used to index the character-property table at CS:4A9C."
+
+[[params]]
+name = "adjacent_byte"
+value = "ch"
+type = "u8"
+desc = "Input byte one scan step beyond the current byte."
+
+[[params]]
+name = "input_cursor"
+value = "si"
+type = "*mut u8"
+desc = "Near input pointer; advanced by scan_stride when current_byte belongs to class 0x01."
+
+[[params]]
+name = "rule_cursor"
+value = "di"
+type = "*const u8"
+desc = "Near encoded-rule pointer saved as the repetition/backtracking marker when another class member follows."
+
+[[params]]
+name = "match_count"
+value = "[bp+3]"
+type = "u8"
+desc = "Shared caller-frame match count; incremented unconditionally because zero occurrences are valid."
+
+[[params]]
+name = "scan_stride"
+value = "[bp+0Ch]"
+type = "i16"
+desc = "Signed input scan step, normally -1 for left context or +1 for right context."
+
+[[params]]
+name = "backtracking_marker"
+value = "[bp+0Eh]"
+type = "u16"
+desc = "Shared caller-frame rule offset updated to DI when the operator can consume another class-0x01 byte."
+
+---
+; Mark this context token successful even if it consumes zero class members.
+0d72:01a9 inc byte ptr [bp+3]
+; Test whether the current input byte has character-property bit 0x01.
+0d72:01ac mov al,cs:[bx+4A9Ch]
+0d72:01b1 and al,1
+@jmp 'return@3
+0d72:01b3 je short 01C6h
+
+; Consume the current class member by advancing one signed scan step.
+0d72:01b5 add si,[bp+0Ch]
+; Test the adjacent input byte for another class-0x01 member.
+0d72:01b8 mov bl,ch
+0d72:01ba mov al,cs:[bx+4A9Ch]
+0d72:01bf and al,1
+@jmp 'return@3
+0d72:01c1 je short 01C6h
+
+; Save this rule position so the caller can repeat the same context operator.
+0d72:01c3 mov [bp+0Eh],di
+
+@label return
+0d72:01c6 ret
+

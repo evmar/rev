@@ -17,18 +17,13 @@ callees = ["unknown:reg"]
 @jmp unknown:reg
 0d72:0157 jmp ax
 
-; Misaligned decode: this byte is the immediate operand of `and al,10h` at 0d72:016f, not an ADC opcode in normal execution.
 0d72:0170 adc [si+10h],dh
-; Look up the next encoded rule token and test property bit 0x01, which permits greedy repetition.
 0d72:0173 mov bl,cs:[di+1]
 0d72:0177 mov al,cs:[bx+4A3Ch]
 0d72:017c and al,1
-; If repetition is permitted, return to the shared context-operator dispatcher.
 @jmp '0
 0d72:017e jne short 0140h
 
-; Otherwise save DI as the caller's context backtracking marker.
-@label save_backtracking_marker
 0d72:0180 mov [bp+0Eh],di
 0d72:0183 ret
 

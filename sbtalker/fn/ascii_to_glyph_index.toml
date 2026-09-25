@@ -1,8 +1,8 @@
+ip = "0935:0063"
 name = "ascii_to_glyph_index"
 desc = "Converts an ASCII character to a zero-based font/glyph index by subtracting 32"
 details = "Takes a character value, subtracts 0x20 (' ', ASCII 32) so printable characters start at index 0, masks the result to an 8-bit unsigned value, and returns it."
 callers = ["get_next_char@0935:11a0", "parse_and_emit_token@0935:12fc"]
-ip = "0935:0063"
 
 [[params]]
 name = "c"

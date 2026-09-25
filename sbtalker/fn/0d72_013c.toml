@@ -1,16 +1,22 @@
+ip = "0d72:013c"
 callers = ["apply_pronunciation_rules@0d72:0010"]
 callees = ["unknown:reg"]
-ip = "0d72:013c"
 
 ---
+@mem ; [ss unknown]
 0d72:013c mov byte ptr [bp+3],0
+@mem ; [ds unknown]
 0d72:0140 mov cl,[si]
+@mem ; [ss unknown]
 0d72:0142 mov bx,[bp+0Ch]
+@mem ; [ds unknown]
 0d72:0145 mov ch,[bx+si]
+@mem ; [ss unknown]
 0d72:0147 mov al,[bp+1]
 0d72:014a shl al,1
 0d72:014c mov bl,al
 0d72:014e xor bh,bh
+@mem ; [bx unknown]
 0d72:0150 mov ax,cs:[bx+2EAh]
 0d72:0155 mov bl,cl
 @jmp unknown:reg

@@ -1,6 +1,6 @@
+ip = "0d72:5ca6"
 callers = ["0d72:582a", "0d72:588e", "0d72:5909"]
 callees = ["0d72:4bac", "0d72:5004", "0d72:5ffd", "register_outermost_stack_frame@0d72:4fcc"]
-ip = "0d72:5ca6"
 
 ---
 0d72:5ca6 mov ax,0

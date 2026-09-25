@@ -1,9 +1,9 @@
+ip = "0935:12fc"
 name = "parse_and_emit_token"
 desc = "Parses and processes a token or identifier from the input context"
 details = "Extracts a Pascal string token using a helper, strips any trailing matched characters, and queries a symbol table. If defined, it emits a formatted representation of the symbol; otherwise, it handles prefixes, special characters (such as periods, quotes, or table-driven character classes), and dispatches token records to an emitter routine."
 callers = ["dispatch_command_input@0935:3cc9"]
 callees = ["0d72:538c", "0d72:53b0", "0d72:5452", "0d72:5570", "0d72:588e", "0d72:5909", "apply_pronunciation_rules@0d72:0010", "ascii_to_glyph_index@0935:0063", "bst_find_value@0935:0080", "path_append_component@0935:109f", "read_filtered_token@0935:1261"]
-ip = "0935:12fc"
 
 [[params]]
 name = "ctx"

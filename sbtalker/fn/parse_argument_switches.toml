@@ -1,9 +1,9 @@
+ip = "0935:23ed"
 name = "parse_argument_switches"
 desc = "Parses a command-line argument, file specification, and option switches"
 details = "This function parses an input command-line or argument token stream. It handles delimiter characters including comma (','), hyphen/minus ('-'), switch slash ('/'), dot/extension ('.'), and quotes ('''), validating syntax against sets of allowed characters, processing sub-options, and displaying diagnostic or error messages via a central output routine."
 callers = ["dispatch_command_input@0935:3cc9"]
 callees = ["0d72:5452", "0d72:5570", "0d72:55e0", "0d72:582a", "get_next_char@0935:11a0", "parse_date_or_time@0935:21f1", "parse_trailing_int@0935:1db1", "path_append_component@0935:109f", "read_filtered_token@0935:1261", "tts_pronounce_number@0935:1742"]
-ip = "0935:23ed"
 
 [[params]]
 name = "ctx"

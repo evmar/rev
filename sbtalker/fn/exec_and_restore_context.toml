@@ -1,9 +1,9 @@
+ip = "0823:0fdc"
 name = "exec_and_restore_context"
 desc = "Executes an external processing routine and restores a saved execution context"
 details = "Invokes a local helper, then makes a far call to 0935h:3D66h passing two buffer pointers derived from cs:[0DC3h] along with a word parameter from cs:[03F8h]. Upon completion, it switches SS:SP and DS back to the previously saved stack and data segments, then performs a near return to the saved instruction pointer."
 callers = ["dispatch_command@0823:0f5b"]
 callees = ["process_transaction_loop@0935:3d66", "switch_to_internal_stack@0823:0da2"]
-ip = "0823:0fdc"
 
 ---
 @jmp switch_to_internal_stack@0823:0da2

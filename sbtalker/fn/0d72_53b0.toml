@@ -1,6 +1,6 @@
+ip = "0d72:53b0"
 callers = ["parse_and_emit_token@0935:12fc"]
 callees = ["0d72:6b88", "unknown:mem"]
-ip = "0d72:53b0"
 
 ---
 @mem ; [ds unknown]

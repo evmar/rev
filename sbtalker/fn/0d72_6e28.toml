@@ -1,6 +1,6 @@
+ip = "0d72:6e28"
 callers = ["0d72:656d"]
 callees = ["0d72:6d3e", "0d72:6e86", "0d72:6eb3", "unknown:mem"]
-ip = "0d72:6e28"
 
 ---
 0d72:6e28 push bp
@@ -30,15 +30,18 @@ ip = "0d72:6e28"
 @jmp '4
 0d72:6e5b je short 6E68h
 
+@mem ; [ss unknown]
 0d72:6e5d cmp word ptr [bp+6],0
 @jmp '4
 0d72:6e61 jne short 6E68h
 
+@mem ; [ss unknown]
 0d72:6e63 mov word ptr [bp+6],0FFh
 
 0d72:6e68 mov cx,0Fh
 0d72:6e6b mov bx,5
 
+@mem ; [ds unknown]
 0d72:6e6e test byte ptr [bx+814h],1
 @jmp '7
 0d72:6e73 je short 6E79h
@@ -52,15 +55,18 @@ ip = "0d72:6e28"
 
 @jmp 0d72:6e86
 0d72:6e7c call 6E86h
+@mem ; [ss unknown]
 0d72:6e7f mov ax,[bp+6]
 0d72:6e82 mov ah,4Ch
 0d72:6e84 int 21h
+@mem ; [ds unknown]
 0d72:6e86 mov cx,ds:[1BB6h]
 @jmp '10
 0d72:6e8a jcxz 6E93h
 
 0d72:6e8c mov bx,2
 @jmp unknown:mem
+@mem ; [ds unknown]
 0d72:6e8f call dword ptr ds:[1BB4h]
 
 0d72:6e93 push ds
@@ -68,11 +74,13 @@ ip = "0d72:6e28"
 0d72:6e98 mov ax,2500h
 0d72:6e9b int 21h
 0d72:6e9d pop ds
+@mem ; [ds unknown]
 0d72:6e9e cmp byte ptr ds:[83Ah],0
 @jmp '12
 0d72:6ea3 je short 6EB2h
 
 0d72:6ea5 push ds
+@mem ; [ds unknown]
 0d72:6ea6 mov al,ds:[83Bh]
 0d72:6ea9 lds dx,ds:[83Ch]
 0d72:6ead mov ah,25h

@@ -1,12 +1,14 @@
+ip = "0935:1ec7"
 callers = ["parse_date_or_time@0935:21f1", "parse_date_or_time@0935:21f1", "parse_date_or_time@0935:21f1", "parse_date_or_time@0935:21f1", "parse_date_or_time@0935:21f1"]
 callees = ["read_filtered_token@0935:1261"]
-ip = "0935:1ec7"
 
 ---
 0935:1ec7 push bp
 0935:1ec8 mov bp,sp
 0935:1eca sub sp,0Ah
+@mem ; [ss unknown]
 0935:1ece mov di,[bp+4]
+@mem ; [ds unknown]
 0935:1ed1 lea ax,[di-106h]
 0935:1ed5 push ax
 0935:1ed6 mov si,170h
@@ -18,57 +20,81 @@ ip = "0935:1ec7"
 0935:1ee4 push ss
 0935:1ee5 pop es
 0935:1ee6 rep movsw
+@mem ; [ss unknown]
 0935:1ee8 mov [bp-0Ah],dx
+@mem ; [ss unknown]
 0935:1eeb mov bx,[bp+4]
+@mem ; [ds unknown]
 0935:1eee mov bx,[bx+4]
+@mem ; [ds unknown]
 0935:1ef1 push word ptr [bx+4]
 @jmp read_filtered_token@0935:1261
 0935:1ef4 call 1261h
+@mem ; [ss unknown]
 0935:1ef7 mov word ptr [bp-4],0
+@mem ; [ss unknown]
 0935:1efc mov di,[bp+4]
+@mem ; [ds unknown]
 0935:1eff mov al,[di-106h]
 0935:1f03 xor ah,ah
+@mem ; [ss unknown]
 0935:1f05 mov [bp-8],ax
+@mem ; [ss unknown]
 0935:1f08 cmp word ptr [bp-8],1
 @jmp '3
 0935:1f0c jl short 1F40h
 
+@mem ; [ss unknown]
 0935:1f0e mov word ptr [bp-6],1
 
 0935:1f13 mov ax,0Ah
 0935:1f16 imul word ptr [bp-4]
+@mem ; [ss unknown]
 0935:1f19 mov di,[bp+4]
+@mem ; [ss unknown]
 0935:1f1c mov si,[bp-6]
+@mem ; [ds unknown]
 0935:1f1f lea cx,[di-106h]
 0935:1f23 add si,cx
 0935:1f25 mov dx,ax
+@mem ; [ds unknown]
 0935:1f27 mov al,[si]
 0935:1f29 xor ah,ah
 0935:1f2b add dx,ax
 0935:1f2d add dx,0FFD0h
+@mem ; [ss unknown]
 0935:1f30 mov [bp-4],dx
+@mem ; [ss unknown]
 0935:1f33 mov ax,[bp-6]
 0935:1f36 inc ax
+@mem ; [ss unknown]
 0935:1f37 mov [bp-6],ax
 0935:1f3a dec ax
+@mem ; [ss unknown]
 0935:1f3b cmp ax,[bp-8]
 @jmp '2
 0935:1f3e jne short 1F13h
 
+@mem ; [ss unknown]
 0935:1f40 mov di,[bp+4]
+@mem ; [ds unknown]
 0935:1f43 mov al,[di-106h]
 0935:1f47 xor ah,ah
 0935:1f49 or ax,ax
 @jmp '5
 0935:1f4b jle short 1F55h
 
+@mem ; [ss unknown]
 0935:1f4d mov ax,[bp-4]
+@mem ; [ss unknown]
 0935:1f50 mov [bp-2],ax
 @jmp '6
 0935:1f53 jmp short 1F5Ah
 
+@mem ; [ss unknown]
 0935:1f55 mov word ptr [bp-2],0FFFFh
 
+@mem ; [ss unknown]
 0935:1f5a mov ax,[bp-2]
 0935:1f5d mov sp,bp
 0935:1f5f pop bp

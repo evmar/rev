@@ -1,8 +1,8 @@
+ip = "0823:0a97"
 name = "swap_memory_with_ems"
 desc = "Swaps a block of conventional memory with EMS expanded memory pages"
 details = "Checks whether EMS paging is active via the flag at cs:[1CBh]. If enabled, it saves the current EMS page map state, iterates through each EMS logical page, maps it into the page frame at cs:[9Ch], and exchanges the 16KB block word-by-word with conventional memory starting at segment cs:[9]. Afterwards, it restores the previous EMS page map state and returns."
 callers = ["tsr_entry_point@0823:0ae2", "tsr_entry_point@0823:0ae2"]
-ip = "0823:0a97"
 
 ---
 @label do_ems_swap

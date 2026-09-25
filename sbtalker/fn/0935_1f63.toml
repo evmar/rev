@@ -1,11 +1,12 @@
+ip = "0935:1f63"
 callers = ["parse_date_or_time@0935:21f1"]
 callees = ["path_append_component@0935:109f", "unknown:mem"]
-ip = "0935:1f63"
 
 ---
 0935:1f63 push bp
 0935:1f64 mov bp,sp
 0935:1f66 sub sp,0
+@mem ; [ss unknown]
 0935:1f6a mov bx,[bp+6]
 @jmp '2
 0935:1f6d jmp near ptr 21C4h
@@ -26,9 +27,13 @@ ip = "0935:1f63"
 0935:1f8d push ss
 0935:1f8e pop es
 0935:1f8f rep movsw
+@mem ; [ss unknown]
 0935:1f91 mov bx,[bp+4]
+@mem ; [ds unknown]
 0935:1f94 mov bx,[bx+4]
+@mem ; [ds unknown]
 0935:1f97 mov bx,[bx+4]
+@mem ; [ds unknown]
 0935:1f9a push word ptr [bx+4]
 @jmp path_append_component@0935:109f
 0935:1f9d call 109Fh
@@ -44,6 +49,7 @@ ip = "0935:1f63"
 
 0935:21cc shl bx,1
 @jmp unknown:mem
+@mem ; [bx unknown]
 0935:21ce jmp word ptr cs:[bx+21D3h]
 
 0935:21eb mov sp,bp

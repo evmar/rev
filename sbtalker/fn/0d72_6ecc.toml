@@ -1,6 +1,6 @@
+ip = "0d72:6ecc"
 callers = ["0d72:5c2a", "0d72:5c2a", "0d72:5ffd", "0d72:5ffd", "0d72:64c8", "0d72:64c8", "0d72:676b", "0d72:676b", "0d72:6b88", "0d72:6b88", "0d72:6d3e"]
 callees = ["0d72:6f1b", "unknown:mem"]
-ip = "0d72:6ecc"
 
 ---
 0d72:6ecc push bp
@@ -9,11 +9,13 @@ ip = "0d72:6ecc"
 0d72:6ed2 push ax
 @jmp 0d72:6f1b
 0d72:6ed3 call far ptr 0D72h:6F1Bh
+@mem ; [ds unknown]
 0d72:6ed8 cmp word ptr ds:[842h],0
 @jmp '2
 0d72:6edd je short 6EE3h
 
 @jmp unknown:mem
+@mem ; [ds unknown]
 0d72:6edf call dword ptr ds:[840h]
 
 0d72:6ee3 mov ax,0FFh

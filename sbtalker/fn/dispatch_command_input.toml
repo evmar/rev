@@ -1,9 +1,9 @@
+ip = "0935:3cc9"
 name = "dispatch_command_input"
 desc = "Processes keyboard input or menu commands and dispatches corresponding handlers"
 details = "Saves previous state byte from ds:[4Ch] to ds:[4Ah] and handles spacebar input (0x20) in a loop by copying message buffer data to stack and redrawing. Once non-space input is received, it checks membership in two character lookup sets via helper at 0D72:5452 to dispatch to specific action routines, or updates ds:[4Ch] if input is null."
 callers = ["process_transaction_loop@0935:3d66"]
 callees = ["0d72:5452", "dispatch_action_by_state@0935:30a1", "get_next_char@0935:11a0", "parse_and_emit_token@0935:12fc", "parse_argument_switches@0935:23ed", "path_append_component@0935:109f"]
-ip = "0935:3cc9"
 
 [[params]]
 name = "context_id"

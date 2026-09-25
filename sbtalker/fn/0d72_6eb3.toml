@@ -1,6 +1,6 @@
+ip = "0d72:6eb3"
 callers = ["0d72:6e28", "0d72:6e28", "0d72:6e28", "0d72:6e28"]
 callees = ["unknown:mem"]
-ip = "0d72:6eb3"
 
 ---
 0d72:6eb3 cmp si,di
@@ -8,12 +8,14 @@ ip = "0d72:6eb3"
 0d72:6eb5 jae short 6EC5h
 
 0d72:6eb7 sub di,4
+@mem ; [ds unknown]
 0d72:6eba mov ax,[di]
 0d72:6ebc or ax,[di+2]
 @jmp '0
 0d72:6ebf je short 6EB3h
 
 @jmp unknown:mem
+@mem ; [ds unknown]
 0d72:6ec1 call dword ptr [di]
 @jmp '0
 0d72:6ec3 jmp short 6EB3h

@@ -1,5 +1,5 @@
-callers = ["0d72:6f1b"]
 ip = "0d72:6ef0"
+callers = ["0d72:6f1b"]
 
 ---
 0d72:6ef0 push bp
@@ -8,6 +8,7 @@ ip = "0d72:6ef0"
 0d72:6ef4 push di
 0d72:6ef5 push ds
 0d72:6ef6 pop es
+@mem ; [ss unknown]
 0d72:6ef7 mov dx,[bp+6]
 0d72:6efa mov si,22C6h
 

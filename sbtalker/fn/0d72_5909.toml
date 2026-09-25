@@ -1,6 +1,6 @@
+ip = "0d72:5909"
 callers = ["edit_adjust_digit@0935:0c4c", "path_append_component@0935:109f", "path_append_component@0935:109f", "read_filtered_token@0935:1261", "parse_and_emit_token@0935:12fc"]
 callees = ["0d72:5004", "0d72:507e", "0d72:50a4", "0d72:5c2a", "0d72:5ca6", "register_outermost_stack_frame@0d72:4fcc"]
-ip = "0d72:5909"
 
 ---
 0d72:5909 mov ax,0Ch

@@ -1,8 +1,8 @@
+ip = "0823:0da2"
 name = "switch_to_internal_stack"
 desc = "Switches stack segment to DS and stack pointer to an internal stack"
 details = "Saves the caller's current stack pointer to a code-segment variable, switches SS to match DS, and sets SP to a preconfigured internal stack offset. Transfers the caller's return address to the new stack so the subsequent ret returns normally while running on the new stack."
 callers = ["exec_and_restore_context@0823:0fdc"]
-ip = "0823:0da2"
 
 ---
 ; Read return address into CX without altering original stack

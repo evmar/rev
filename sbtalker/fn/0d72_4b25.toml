@@ -1,11 +1,12 @@
+ip = "0d72:4b25"
 callers = ["0d72:4bac", "0d72:4bac", "0d72:4bac", "0d72:4bac", "0d72:4bac", "0d72:4bac", "0d72:4bac", "0d72:4bac"]
 callees = ["0d72:4b0c"]
-ip = "0d72:4b25"
 
 ---
 0d72:4b25 push bp
 0d72:4b26 mov bp,sp
 0d72:4b28 sub sp,2
+@mem ; [ds unknown]
 0d72:4b2c cmp word ptr ds:[4EAh],10h
 @jmp '2
 0d72:4b31 jne short 4B41h
@@ -30,36 +31,48 @@ ip = "0d72:4b25"
 0d72:4b4b movsw
 0d72:4b4c movsw
 
+@mem ; [ss unknown]
 0d72:4b4d mov word ptr [bp-2],5
 
+@mem ; [ss unknown]
 0d72:4b52 cmp word ptr [bp+6],0
 @jmp '8
 0d72:4b56 je short 4B8Fh
 
+@mem ; [ss unknown]
 0d72:4b58 mov di,[bp-2]
+@mem ; [ss unknown]
 0d72:4b5b mov ax,[bp+6]
 0d72:4b5e xor dx,dx
 0d72:4b60 div word ptr ds:[4EAh]
 0d72:4b64 add dx,30h
 0d72:4b67 xor dh,dh
+@mem ; [ds unknown]
 0d72:4b69 mov [di+4EBh],dl
+@mem ; [ds unknown]
 0d72:4b6d cmp byte ptr [di+4EBh],39h
 @jmp '7
 0d72:4b72 jbe short 4B83h
 
+@mem ; [ds unknown]
 0d72:4b74 mov al,[di+4EBh]
 0d72:4b78 xor ah,ah
 0d72:4b7a add ax,7
 0d72:4b7d xor ah,ah
+@mem ; [ds unknown]
 0d72:4b7f mov [di+4EBh],al
 
+@mem ; [ss unknown]
 0d72:4b83 mov ax,[bp+6]
 0d72:4b86 xor dx,dx
 0d72:4b88 div word ptr ds:[4EAh]
+@mem ; [ss unknown]
 0d72:4b8c mov [bp+6],ax
 
+@mem ; [ss unknown]
 0d72:4b8f mov ax,[bp-2]
 0d72:4b92 dec ax
+@mem ; [ss unknown]
 0d72:4b93 mov [bp-2],ax
 @jmp '4
 0d72:4b96 jne short 4B52h
@@ -68,6 +81,7 @@ ip = "0d72:4b25"
 0d72:4b9b push ax
 0d72:4b9c mov ax,4ECh
 0d72:4b9f push ax
+@mem ; [ss unknown]
 0d72:4ba0 push word ptr [bp+4]
 @jmp 0d72:4b0c
 0d72:4ba3 call 4B0Ch

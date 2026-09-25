@@ -1,6 +1,6 @@
+ip = "0d72:604f"
 callers = ["read_filtered_token@0935:1261"]
 callees = ["0d72:5004", "0d72:64c8", "register_outermost_stack_frame@0d72:4fcc"]
-ip = "0d72:604f"
 
 ---
 0d72:604f mov ax,4
@@ -12,57 +12,86 @@ ip = "0d72:604f"
 0d72:605a push ax
 @jmp register_outermost_stack_frame@0d72:4fcc
 0d72:605b call far ptr 0D72h:4FCCh
+@mem ; [ss unknown]
 0d72:6060 mov word ptr [bp-2],0
 
+@mem ; [ss unknown]
 0d72:6065 mov di,[bp-2]
+@mem ; [ss unknown]
 0d72:6068 add di,[bp+6]
+@mem ; [ds unknown]
 0d72:606b mov byte ptr [di],0
+@mem ; [ss unknown]
 0d72:606e mov ax,[bp-2]
 0d72:6071 inc ax
+@mem ; [ss unknown]
 0d72:6072 mov [bp-2],ax
 0d72:6075 cmp ax,20h
 @jmp '1
 0d72:6078 jne short 6065h
 
+@mem ; [ss unknown]
 0d72:607a mov ax,[bp+12h]
+@mem ; [ss unknown]
 0d72:607d mov [bp-4],ax
+@mem ; [ss unknown]
 0d72:6080 mov word ptr [bp-2],0
 
+@mem ; [ss unknown]
 0d72:6085 mov di,[bp+6]
+@mem ; [ss unknown]
 0d72:6088 add di,[bp-2]
+@mem ; [ss unknown]
 0d72:608b mov si,[bp-2]
 0d72:608e les bx,[bp+0Eh]
+@mem ; [es unknown]
 0d72:6091 mov al,es:[bx+si]
+@mem ; [ds unknown]
 0d72:6094 mov [di],al
+@mem ; [ss unknown]
 0d72:6096 mov ax,[bp-2]
 0d72:6099 inc ax
+@mem ; [ss unknown]
 0d72:609a mov [bp-2],ax
 0d72:609d dec ax
+@mem ; [ss unknown]
 0d72:609e cmp ax,[bp-4]
 @jmp '3
 0d72:60a1 jne short 6085h
 
+@mem ; [ss unknown]
 0d72:60a3 mov ax,[bp+0Ch]
+@mem ; [ss unknown]
 0d72:60a6 mov [bp-4],ax
+@mem ; [ss unknown]
 0d72:60a9 mov word ptr [bp-2],0
 
+@mem ; [ss unknown]
 0d72:60ae mov di,[bp+6]
+@mem ; [ss unknown]
 0d72:60b1 add di,[bp-2]
+@mem ; [ds unknown]
 0d72:60b4 mov al,[di]
+@mem ; [ss unknown]
 0d72:60b6 mov si,[bp-2]
 0d72:60b9 les bx,[bp+8]
 0d72:60bc or al,es:[bx+si]
+@mem ; [ds unknown]
 0d72:60bf mov [di],al
+@mem ; [ss unknown]
 0d72:60c1 mov ax,[bp-2]
 0d72:60c4 inc ax
+@mem ; [ss unknown]
 0d72:60c5 mov [bp-2],ax
 0d72:60c8 dec ax
+@mem ; [ss unknown]
 0d72:60c9 cmp ax,[bp-4]
 @jmp '5
 0d72:60cc jne short 60AEh
 
 @jmp 0d72:5004
 0d72:60ce call far ptr 0D72h:5004h
+@mem ; [ss unknown]
 0d72:60d3 mov ax,[bp+6]
 0d72:60d6 pop si
 0d72:60d7 pop di

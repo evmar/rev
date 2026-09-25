@@ -1,7 +1,7 @@
+ip = "0823:0898"
 name = "int2f_tsr_handler"
 desc = "TSR interrupt 2Fh (multiplex) handler supporting identification, reset, and uninstallation"
 details = "Handles custom INT 2Fh subfunctions for a TSR. Subfunction 0FBFBh returns an internal table pointer in ES:BX; 0FB00h clears an internal 22-byte state buffer; 0FBFFh verifies interrupt chaining, unhooks INT 2Fh, releases allocated TSR memory (and optional EMS pages), and restores the caller's PSP. Unhandled functions are passed down the previous INT 2Fh chain."
-ip = "0823:0898"
 
 [[params]]
 name = "func_ax"

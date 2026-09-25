@@ -4,6 +4,8 @@ use crate::{api::Var, xref::XRef};
 
 #[derive(serde::Serialize, serde::Deserialize, Default)]
 pub struct Function {
+    pub ip: SegOfs,
+
     pub name: Option<String>,
     pub desc: Option<String>,
     pub details: Option<String>,
@@ -12,8 +14,6 @@ pub struct Function {
 
     pub params: Option<Vec<Var>>,
     pub ret: Option<Var>,
-
-    pub ip: SegOfs,
 
     #[serde(skip)]
     pub blocks: Vec<Block>,

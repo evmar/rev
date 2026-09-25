@@ -1,9 +1,9 @@
+ip = "0935:21f1"
 name = "parse_date_or_time"
 desc = "Parses a formatted date (MM/DD/YY) or time (HH:MM[:SS]) string."
 details = "Attempts to parse a date or time from the input scanner stream. If the delimiter following the first integer is '/' or '-', it parses day and year values (normalizing years >= 1900) and checks their ranges. If the delimiter is ':', it parses minutes and optional seconds. On failure, it rolls back the stream state and returns 0."
 callers = ["parse_argument_switches@0935:23ed"]
 callees = ["0935:1e4e", "0935:1ec7", "0935:1f63", "0d72:538c", "get_next_char@0935:11a0", "path_append_component@0935:109f", "tts_pronounce_number@0935:1742"]
-ip = "0935:21f1"
 
 [[params]]
 name = "ctx"

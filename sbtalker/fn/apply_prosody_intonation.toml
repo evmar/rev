@@ -1,9 +1,9 @@
+ip = "0935:0d7f"
 name = "apply_prosody_intonation"
 desc = "Calculates prosodic pitch contours and processes stress markers in a text-to-speech input string"
 details = '''Parses words and trailing punctuation in a Pascal string to compute baseline intonation and pitch contours for vowels according to punctuation rules (periods, question marks, exclamations, semicolons, and WH-questions). It also interprets manual pitch and stress control characters ('#', '@', '/', '\'), updating pitch levels and removing the control characters from the string using System.Delete.'''
 callers = ["process_transaction_loop@0935:3d66"]
 callees = ["0d72:5452", "0d72:588e", "edit_adjust_digit@0935:0c4c", "is_not_sentence_end@0935:0b91"]
-ip = "0935:0d7f"
 
 [[params]]
 name = "parent_bp"

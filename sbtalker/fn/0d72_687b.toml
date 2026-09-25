@@ -1,7 +1,8 @@
-callers = ["0d72:67ff"]
 ip = "0d72:687b"
+callers = ["0d72:67ff"]
 
 ---
+@mem ; [ds unknown]
 0d72:6871 mov ds:[805h],ax
 0d72:6874 mov ax,0FFFFh
 0d72:6877 mov dx,ax
@@ -13,6 +14,7 @@ ip = "0d72:687b"
 0d72:687d jb short 6871h
 
 0d72:687f xor bx,bx
+@mem ; [ds unknown]
 0d72:6881 mov ds:[805h],bx
 
 0d72:6885 ret

@@ -1,9 +1,9 @@
+ip = "0d72:0010"
 name = "apply_pronunciation_rules"
 desc = "Converts a Pascal-style input word to a Pascal-style phoneme string using table-driven pronunciation rules."
 details = "Temporarily replaces the input length byte and byte after the word with spaces, then scans the word from left to right. For each character it searches a character-indexed rule table, tests the rule's left and right contexts (including metacharacters dispatched by the helper at 0d72:013c), appends the matched rule's encoded phoneme bytes to the output, restores the input length byte, and stores the output length."
 callers = ["parse_and_emit_token@0935:12fc"]
 callees = ["0d72:013c"]
-ip = "0d72:0010"
 
 [[params]]
 name = "output"

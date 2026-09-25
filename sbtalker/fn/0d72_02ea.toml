@@ -9,6 +9,7 @@ ip = "0d72:02ea"
 0d72:0304 inc si
 0d72:0305 inc si
 0d72:0306 inc si
+@mem ; [ss unknown]
 0d72:0307 inc byte ptr [bp+3]
 0d72:030a ret
 

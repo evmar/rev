@@ -1,6 +1,6 @@
+ip = "0d72:588e"
 callers = ["edit_adjust_digit@0935:0c4c", "apply_prosody_intonation@0935:0d7f", "apply_prosody_intonation@0935:0d7f", "apply_prosody_intonation@0935:0d7f", "apply_prosody_intonation@0935:0d7f", "path_append_component@0935:109f", "parse_and_emit_token@0935:12fc"]
 callees = ["0d72:5004", "0d72:507e", "0d72:5c2a", "0d72:5ca6", "register_outermost_stack_frame@0d72:4fcc"]
-ip = "0d72:588e"
 
 ---
 0d72:588e mov ax,8

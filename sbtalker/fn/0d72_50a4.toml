@@ -1,16 +1,21 @@
-callers = ["0d72:5909"]
 ip = "0d72:50a4"
+callers = ["0d72:5909"]
 
 ---
 0d72:50a4 push bp
 0d72:50a5 mov bp,sp
 0d72:50a7 push ds
+@mem ; [ss unknown]
 0d72:50a8 mov ax,[bp+0Eh]
 0d72:50ab mov ds,ax
+@mem ; [ss unknown]
 0d72:50ad mov si,[bp+0Ch]
+@mem ; [ss unknown]
 0d72:50b0 mov ax,[bp+0Ah]
 0d72:50b3 mov es,ax
+@mem ; [ss unknown]
 0d72:50b5 mov di,[bp+8]
+@mem ; [ss unknown]
 0d72:50b8 mov cx,[bp+6]
 0d72:50bb add si,cx
 0d72:50bd dec si

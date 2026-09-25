@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use runtime::SegOfs;
 
 use crate::db::DB;
@@ -6,7 +8,11 @@ use anyhow::anyhow;
 /// agentically process queue
 #[derive(argh::FromArgs)]
 #[argh(subcommand, name = "queue")]
-pub struct Args {}
+pub struct Args {
+    /// run one task
+    #[argh(switch)]
+    one: bool,
+}
 
 pub enum Task {
     DescribeFunction(SegOfs),
@@ -52,10 +58,16 @@ pub fn codex_task(_db: &DB, task: &Task) -> anyhow::Result<()> {
     Ok(())
 }
 
-pub fn run(db: &DB) -> anyhow::Result<()> {
-    let Some(task) = next_task(db) else {
-        return Ok(());
-    };
-    codex_task(db, &task)?;
+pub fn run(path: PathBuf, args: Args) -> anyhow::Result<()> {
+    loop {
+        let db = DB::load(path.clone())?;
+        let Some(task) = next_task(&db) else {
+            return Ok(());
+        };
+        codex_task(&db, &task)?;
+        if args.one {
+            break;
+        }
+    }
     Ok(())
 }

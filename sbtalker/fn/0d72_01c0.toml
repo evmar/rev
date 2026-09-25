@@ -1,0 +1,7 @@
+ip = "0d72:01c0"
+
+---
+0d72:01c0 add [si+3],si
+0d72:01c3 mov [bp+0Eh],di
+0d72:01c6 ret
+

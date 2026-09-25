@@ -1,50 +1,36 @@
-ip = "0d72:0159"
+ip = "0d72:0160"
 callees = ["unknown:reg"]
 
 ---
-@mem ; [ds unknown]
 0d72:0140 mov cl,[si]
-@mem ; [ss unknown]
 0d72:0142 mov bx,[bp+0Ch]
-@mem ; [ds unknown]
 0d72:0145 mov ch,[bx+si]
-@mem ; [ss unknown]
 0d72:0147 mov al,[bp+1]
 0d72:014a shl al,1
 0d72:014c mov bl,al
 0d72:014e xor bh,bh
-@mem ; [bx unknown]
 0d72:0150 mov ax,cs:[bx+2EAh]
 0d72:0155 mov bl,cl
 @jmp unknown:reg
 0d72:0157 jmp ax
 
-@mem ; [bx unknown]
-0d72:0159 mov al,cs:[bx+4A9Ch]
-0d72:015e and al,10h
 @jmp '5
 0d72:0160 je short 0183h
 
-@mem ; [ss unknown]
 0d72:0162 inc byte ptr [bp+3]
-@mem ; [ss unknown]
 0d72:0165 add si,[bp+0Ch]
 0d72:0168 mov bl,ch
-@mem ; [bx unknown]
 0d72:016a mov al,cs:[bx+4A9Ch]
 0d72:016f and al,10h
 @jmp '5
 0d72:0171 je short 0183h
 
-@mem ; [di unknown]
 0d72:0173 mov bl,cs:[di+1]
-@mem ; [bx unknown]
 0d72:0177 mov al,cs:[bx+4A3Ch]
 0d72:017c and al,1
 @jmp '0
 0d72:017e jne short 0140h
 
-@mem ; [ss unknown]
 0d72:0180 mov [bp+0Eh],di
 
 0d72:0183 ret

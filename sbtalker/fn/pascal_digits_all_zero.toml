@@ -1,0 +1,76 @@
+ip = "0935:16ff"
+name = "pascal_digits_all_zero"
+desc = "Tests whether every character in a 256-byte Pascal-style digit string is ASCII '0'."
+details = "The string is passed by value on the stack: byte 0 is its length and bytes 1..length are the characters. The function returns true for an empty string and stops at the first non-'0' byte; RET 0x102 discards the caller's extra saved-BP word plus the 256-byte value argument."
+callers = ["tts_pronounce_number@0935:1742", "tts_pronounce_number@0935:1742", "tts_pronounce_number@0935:1742"]
+
+[[params]]
+name = "digits"
+value = "[bp+6]"
+type = "[u8; 256]"
+desc = "Stack-passed Pascal string whose first byte is the character count and whose remaining bytes contain ASCII digits"
+
+[ret]
+name = "all_zero"
+value = "al"
+type = "u8"
+desc = "1 if all characters in the string are ASCII '0' (including an empty string), otherwise 0"
+
+---
+0935:16ff push bp
+0935:1700 mov bp,sp
+0935:1702 sub sp,6
+; Initialize result to true and start at Pascal-string character index 1
+@mem ; [ss unknown]
+0935:1706 mov byte ptr [bp-6],1
+@mem ; [ss unknown]
+0935:170a mov word ptr [bp-4],1
+
+; Stop once the one-based index passes the length byte, or after a mismatch
+@label scan_next_digit
+@mem ; [ss unknown]
+0935:170f mov al,[bp+6]
+0935:1712 xor ah,ah
+@mem ; [ss unknown]
+0935:1714 cmp ax,[bp-4]
+@jmp 'return_result@7
+0935:1717 jl short 1733h
+
+@mem ; [ss unknown]
+0935:1719 test byte ptr [bp-6],1
+@jmp 'return_result@7
+0935:171d je short 1733h
+
+@mem ; [ss unknown]
+0935:171f mov di,[bp-4]
+; Test the current character for ASCII '0'
+@mem ; [ss unknown]
+0935:1722 cmp byte ptr [bp+di+6],30h
+@jmp 'found_nonzero@5
+0935:1726 jne short 172Dh
+
+; Advance while the string contains leading/all zero digits
+@mem ; [ss unknown]
+0935:1728 inc word ptr [bp-4]
+@jmp '6
+0935:172b jmp short 1731h
+
+@label found_nonzero
+@mem ; [ss unknown]
+0935:172d mov byte ptr [bp-6],0
+
+@jmp 'scan_next_digit@1
+0935:1731 jmp short 170Fh
+
+@label return_result
+@mem ; [ss unknown]
+0935:1733 mov al,[bp-6]
+@mem ; [ss unknown]
+0935:1736 mov [bp-2],al
+@mem ; [ss unknown]
+0935:1739 mov ax,[bp-2]
+0935:173c mov sp,bp
+0935:173e pop bp
+; Callee removes the 256-byte value argument and the caller's extra saved-BP word
+0935:173f ret 102h
+

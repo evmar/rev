@@ -2,8 +2,8 @@ ip = "0935:1742"
 name = "tts_pronounce_number"
 desc = "Converts a numeric digit string into speech tokens (cardinal, ordinal, or digit-by-digit)"
 details = "Processes a Pascal-style string of ASCII digits and synthesizes speech by decomposing numbers into magnitude groups (thousands, hundreds, tens, and units). Supports individual digit spelling (mode 0), cardinal pronunciation (mode 1), ordinal forms (mode 2, with phonetic adjustments such as changing 'v' to 'f' for 'twelfth'), and 4-digit year/grouped pronunciations (mode 3). Generated speech frame packets are queued via call 109Fh."
-callers = ["0935:1e4e", "parse_date_or_time@0935:21f1", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed"]
-callees = ["0935:019f", "0935:16ff", "0d72:538c", "path_append_component@0935:109f"]
+callers = ["pronounce_two_digit_number@0935:1e4e", "parse_date_or_time@0935:21f1", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed"]
+callees = ["0d72:538c", "pascal_digits_all_zero@0935:16ff", "pascal_string_copy_slice@0935:019f", "path_append_component@0935:109f"]
 
 [[params]]
 name = "ctx"
@@ -118,7 +118,7 @@ desc = "Pronunciation mode: 0 = digits, 1 = cardinal, 2 = ordinal, 3 = year/auto
 0935:17c9 xor ah,ah
 0935:17cb dec ax
 0935:17cc push ax
-@jmp 0935:019f
+@jmp pascal_string_copy_slice@0935:019f
 0935:17cd call 019Fh
 @mem ; [ss unknown]
 0935:17d0 lea si,[bp-104h]
@@ -130,7 +130,7 @@ desc = "Pronunciation mode: 0 = digits, 1 = cardinal, 2 = ordinal, 3 = year/auto
 0935:17df pop es
 0935:17e0 rep movsw
 0935:17e2 push bp
-@jmp 0935:16ff
+@jmp pascal_digits_all_zero@0935:16ff
 0935:17e3 call 16FFh
 0935:17e6 shr ax,1
 @jmp '8
@@ -381,7 +381,7 @@ desc = "Pronunciation mode: 0 = digits, 1 = cardinal, 2 = ordinal, 3 = year/auto
 0935:1939 idiv cx
 0935:193b inc dx
 0935:193c push dx
-@jmp 0935:019f
+@jmp pascal_string_copy_slice@0935:019f
 0935:193d call 019Fh
 
 @label next_magnitude_group
@@ -400,7 +400,7 @@ desc = "Pronunciation mode: 0 = digits, 1 = cardinal, 2 = ordinal, 3 = year/auto
 0935:1958 pop es
 0935:1959 rep movsw
 0935:195b push bp
-@jmp 0935:16ff
+@jmp pascal_digits_all_zero@0935:16ff
 0935:195c call 16FFh
 0935:195f shr ax,1
 @jmp '41
@@ -902,7 +902,7 @@ desc = "Pronunciation mode: 0 = digits, 1 = cardinal, 2 = ordinal, 3 = year/auto
 @mem ; [ss unknown]
 0935:1c8a mov [bp-108h],ax
 0935:1c8e push bp
-@jmp 0935:16ff
+@jmp pascal_digits_all_zero@0935:16ff
 0935:1c8f call 16FFh
 0935:1c92 or al,[bp-108h]
 0935:1c96 shr ax,1

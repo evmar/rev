@@ -87,9 +87,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             db::run(&mut db, args)?;
             Ok(())
         }
-        Command::Queue(_args) => {
-            let db = DB::load(project)?;
-            queue::run(&db)?;
+        Command::Queue(args) => {
+            queue::run(project, args)?;
             Ok(())
         }
     }

@@ -1,0 +1,13 @@
+ip = "0d72:01e1"
+
+---
+0d72:01e1 mov al,cs:[bx+4A9Ch]
+0d72:01e6 and al,4
+@jmp '2
+0d72:01e8 je short 01EEh
+
+0d72:01ea dec si
+0d72:01eb inc byte ptr [bp+3]
+
+0d72:01ee ret
+

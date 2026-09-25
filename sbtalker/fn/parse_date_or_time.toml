@@ -3,7 +3,7 @@ name = "parse_date_or_time"
 desc = "Parses a formatted date (MM/DD/YY) or time (HH:MM[:SS]) string."
 details = "Attempts to parse a date or time from the input scanner stream. If the delimiter following the first integer is '/' or '-', it parses day and year values (normalizing years >= 1900) and checks their ranges. If the delimiter is ':', it parses minutes and optional seconds. On failure, it rolls back the stream state and returns 0."
 callers = ["parse_argument_switches@0935:23ed"]
-callees = ["0935:1e4e", "0935:1ec7", "0935:1f63", "0d72:538c", "get_next_char@0935:11a0", "path_append_component@0935:109f", "tts_pronounce_number@0935:1742"]
+callees = ["0d72:538c", "append_spoken_month_name@0935:1f63", "get_next_char@0935:11a0", "parse_decimal_integer@0935:1ec7", "path_append_component@0935:109f", "pronounce_two_digit_number@0935:1e4e", "tts_pronounce_number@0935:1742"]
 
 [[params]]
 name = "ctx"
@@ -37,7 +37,7 @@ desc = "1 if date or time was successfully parsed, 0 on failure"
 0935:220a mov [bp-6],al
 0935:220d push bp
 ; Parse first integer (month or hour)
-@jmp 0935:1ec7
+@jmp parse_decimal_integer@0935:1ec7
 0935:220e call 1EC7h
 @mem ; [ss unknown]
 0935:2211 mov [bp-10Ah],ax
@@ -71,7 +71,7 @@ desc = "1 if date or time was successfully parsed, 0 on failure"
 0935:2233 call 11A0h
 0935:2236 push bp
 ; Parse day of month
-@jmp 0935:1ec7
+@jmp parse_decimal_integer@0935:1ec7
 0935:2237 call 1EC7h
 @mem ; [ss unknown]
 0935:223a mov [bp-10Ch],ax
@@ -104,7 +104,7 @@ desc = "1 if date or time was successfully parsed, 0 on failure"
 0935:225c call 11A0h
 0935:225f push bp
 ; Parse year
-@jmp 0935:1ec7
+@jmp parse_decimal_integer@0935:1ec7
 0935:2260 call 1EC7h
 @mem ; [ss unknown]
 0935:2263 mov [bp-10Eh],ax
@@ -155,12 +155,12 @@ desc = "1 if date or time was successfully parsed, 0 on failure"
 @mem ; [ss unknown]
 0935:229e push word ptr [bp-10Ah]
 0935:22a2 push bp
-@jmp 0935:1f63
+@jmp append_spoken_month_name@0935:1f63
 0935:22a3 call 1F63h
 @mem ; [ss unknown]
 0935:22a6 push word ptr [bp-10Ch]
 0935:22aa push bp
-@jmp 0935:1e4e
+@jmp pronounce_two_digit_number@0935:1e4e
 0935:22ab call 1E4Eh
 @mem ; [ss unknown]
 0935:22ae lea di,[bp-106h]
@@ -185,7 +185,7 @@ desc = "1 if date or time was successfully parsed, 0 on failure"
 @mem ; [ss unknown]
 0935:22d3 push word ptr [bp-10Eh]
 0935:22d7 push bp
-@jmp 0935:1e4e
+@jmp pronounce_two_digit_number@0935:1e4e
 0935:22d8 call 1E4Eh
 @jmp 'success@34
 0935:22db jmp near ptr 23D1h
@@ -224,7 +224,7 @@ desc = "1 if date or time was successfully parsed, 0 on failure"
 0935:2304 call 11A0h
 0935:2307 push bp
 ; Parse minute
-@jmp 0935:1ec7
+@jmp parse_decimal_integer@0935:1ec7
 0935:2308 call 1EC7h
 @mem ; [ss unknown]
 0935:230b mov [bp-10Ch],ax
@@ -269,7 +269,7 @@ desc = "1 if date or time was successfully parsed, 0 on failure"
 0935:2340 call 11A0h
 0935:2343 push bp
 ; Parse optional seconds
-@jmp 0935:1ec7
+@jmp parse_decimal_integer@0935:1ec7
 0935:2344 call 1EC7h
 @mem ; [ss unknown]
 0935:2347 mov [bp-10Eh],ax
@@ -285,12 +285,12 @@ desc = "1 if date or time was successfully parsed, 0 on failure"
 @mem ; [ss unknown]
 0935:2355 push word ptr [bp-10Ah]
 0935:2359 push bp
-@jmp 0935:1e4e
+@jmp pronounce_two_digit_number@0935:1e4e
 0935:235a call 1E4Eh
 @mem ; [ss unknown]
 0935:235d push word ptr [bp-10Ch]
 0935:2361 push bp
-@jmp 0935:1e4e
+@jmp pronounce_two_digit_number@0935:1e4e
 0935:2362 call 1E4Eh
 @mem ; [ss unknown]
 0935:2365 cmp word ptr [bp-10Eh],0
@@ -325,7 +325,7 @@ desc = "1 if date or time was successfully parsed, 0 on failure"
 @mem ; [ss unknown]
 0935:2397 push word ptr [bp-10Eh]
 0935:239b push bp
-@jmp 0935:1e4e
+@jmp pronounce_two_digit_number@0935:1e4e
 0935:239c call 1E4Eh
 0935:239f mov si,1BC2h
 0935:23a2 mov cx,7Bh

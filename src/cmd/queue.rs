@@ -68,6 +68,7 @@ pub fn run(path: PathBuf, args: Args) -> anyhow::Result<()> {
         let mut db = DB::load(path.clone())?;
         if crawl(&mut db)? {
             db.write()?;
+            println!("crawl found new code, looping");
             continue;
         }
         let Some(task) = next_task(&db) else {

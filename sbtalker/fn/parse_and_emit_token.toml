@@ -3,7 +3,7 @@ name = "parse_and_emit_token"
 desc = "Parses and processes a token or identifier from the input context"
 details = "Extracts a Pascal string token using a helper, strips any trailing matched characters, and queries a symbol table. If defined, it emits a formatted representation of the symbol; otherwise, it handles prefixes, special characters (such as periods, quotes, or table-driven character classes), and dispatches token records to an emitter routine."
 callers = ["dispatch_command_input@0935:3cc9"]
-callees = ["0d72:588e", "0d72:5909", "apply_pronunciation_rules@0d72:0010", "ascii_to_glyph_index@0935:0063", "bst_find_value@0935:0080", "copy_words_to_stack@0d72:53b0", "pascal_string_copy_bounded@0d72:538c", "pascal_string_equal@0d72:5570", "path_append_component@0935:109f", "read_filtered_token@0935:1261", "set_contains@0d72:5452"]
+callees = ["apply_pronunciation_rules@0d72:0010", "ascii_to_glyph_index@0935:0063", "bst_find_value@0935:0080", "copy_words_to_stack@0d72:53b0", "pascal_string_copy_bounded@0d72:538c", "pascal_string_delete@0d72:588e", "pascal_string_equal@0d72:5570", "pascal_string_insert_bytes@0d72:5909", "path_append_component@0935:109f", "read_filtered_token@0935:1261", "set_contains@0d72:5452"]
 
 [[params]]
 name = "ctx"
@@ -127,7 +127,7 @@ desc = "Pointer to parser/context state structure containing string buffers and 
 0935:13af mov ax,1
 0935:13b2 push ax
 ; Delete trailing character from Pascal string
-@jmp 0d72:588e
+@jmp pascal_string_delete@0d72:588e
 0935:13b3 call far ptr 0D72h:588Eh
 @mem ; [ss unknown]
 0935:13b8 dec word ptr [bp-4]
@@ -238,7 +238,7 @@ desc = "Pointer to parser/context state structure containing string buffers and 
 @mem ; [ss unknown]
 0935:1455 mov [bp-110h],di
 ; Insert character into string
-@jmp 0d72:5909
+@jmp pascal_string_insert_bytes@0d72:5909
 0935:1459 call far ptr 0D72h:5909h
 @mem ; [ss unknown]
 0935:145e mov di,[bp+4]

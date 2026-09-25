@@ -3,7 +3,7 @@ name = "edit_adjust_digit"
 desc = "Adjusts a single-digit numeric field (0-9) in an input buffer, updating the display string and cursor."
 details = "Calculates a new digit value by adding the delta parameter to a base offset, clamping the result to the range [0, 9]. If the value changed, it formats the digit to ASCII ('0'-'9'), optionally removes an existing digit from the buffer, inserts the new character via a string manipulation routine, and updates cursor/length offsets in the context structure."
 callers = ["apply_prosody_intonation@0935:0d7f"]
-callees = ["0d72:588e", "0d72:5909", "set_contains@0d72:5452"]
+callees = ["pascal_string_delete@0d72:588e", "pascal_string_insert_bytes@0d72:5909", "set_contains@0d72:5452"]
 
 [[params]]
 name = "ctx"
@@ -183,7 +183,7 @@ desc = "Delta to adjust the numeric digit by"
 0935:0d2b push ax
 0935:0d2c mov ax,1
 0935:0d2f push ax
-@jmp 0d72:588e
+@jmp pascal_string_delete@0d72:588e
 0935:0d30 call far ptr 0D72h:588Eh
 ; Decrement buffer length/cursor
 @mem ; [ss unknown]
@@ -216,7 +216,7 @@ desc = "Delta to adjust the numeric digit by"
 @mem ; [ds unknown]
 0935:0d5b mov ax,[di-10h]
 0935:0d5e push ax
-@jmp 0d72:5909
+@jmp pascal_string_insert_bytes@0d72:5909
 0935:0d5f call far ptr 0D72h:5909h
 ; Increment buffer length/cursor
 @mem ; [ss unknown]

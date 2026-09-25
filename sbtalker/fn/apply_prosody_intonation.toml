@@ -3,7 +3,7 @@ name = "apply_prosody_intonation"
 desc = "Calculates prosodic pitch contours and processes stress markers in a text-to-speech input string"
 details = '''Parses words and trailing punctuation in a Pascal string to compute baseline intonation and pitch contours for vowels according to punctuation rules (periods, question marks, exclamations, semicolons, and WH-questions). It also interprets manual pitch and stress control characters ('#', '@', '/', '\'), updating pitch levels and removing the control characters from the string using System.Delete.'''
 callers = ["process_transaction_loop@0935:3d66"]
-callees = ["0d72:588e", "edit_adjust_digit@0935:0c4c", "is_not_sentence_end@0935:0b91", "set_contains@0d72:5452"]
+callees = ["edit_adjust_digit@0935:0c4c", "is_not_sentence_end@0935:0b91", "pascal_string_delete@0d72:588e", "set_contains@0d72:5452"]
 
 [[params]]
 name = "parent_bp"
@@ -447,7 +447,7 @@ desc = "Far pointer to Pascal text/phoneme string"
 0935:0fb6 push di
 0935:0fb7 mov ax,1
 0935:0fba push ax
-@jmp 0d72:588e
+@jmp pascal_string_delete@0d72:588e
 0935:0fbb call far ptr 0D72h:588Eh
 @mem ; [ss unknown]
 0935:0fc0 dec word ptr [bp-10h]
@@ -479,7 +479,7 @@ desc = "Far pointer to Pascal text/phoneme string"
 0935:0fe3 push word ptr [bp-10h]
 0935:0fe6 mov ax,1
 0935:0fe9 push ax
-@jmp 0d72:588e
+@jmp pascal_string_delete@0d72:588e
 0935:0fea call far ptr 0D72h:588Eh
 @mem ; [ss unknown]
 0935:0fef dec word ptr [bp-10h]
@@ -505,7 +505,7 @@ desc = "Far pointer to Pascal text/phoneme string"
 0935:100a push word ptr [bp-10h]
 0935:100d mov ax,1
 0935:1010 push ax
-@jmp 0d72:588e
+@jmp pascal_string_delete@0d72:588e
 0935:1011 call far ptr 0D72h:588Eh
 @mem ; [ss unknown]
 0935:1016 dec word ptr [bp-10h]
@@ -531,7 +531,7 @@ desc = "Far pointer to Pascal text/phoneme string"
 0935:1030 push word ptr [bp-10h]
 0935:1033 mov ax,1
 0935:1036 push ax
-@jmp 0d72:588e
+@jmp pascal_string_delete@0d72:588e
 0935:1037 call far ptr 0D72h:588Eh
 @mem ; [ss unknown]
 0935:103c dec word ptr [bp-10h]

@@ -1,0 +1,161 @@
+ip = "0d72:5909"
+name = "pascal_string_insert_bytes"
+desc = "Insert raw bytes at a one-based position in a length-prefixed Pascal string."
+details = "For normal arguments (1 <= position <= length+1 and length+count <= capacity <= 255), shifts length-position+1 suffix bytes upward by count using a backward copy, copies count raw source bytes into the gap, and updates the destination's leading length byte; position length+1 appends and no NUL terminator is written. Calls the fatal-error helper at 0d72:5ca6 if the signed 16-bit length+count comparison exceeds capacity or position exceeds length+1, but does not check position >= 1, nonnegative count/capacity, arithmetic overflow, or the 255-byte representation limit; pointer offsets wrap within their segments and source aliasing is not generally safe because the suffix is shifted before the forward source copy. Uses 12 bytes of locals and runtime frame registration, preserves SI/DI/BP/DS, returns no defined value, and RETF 0Eh removes seven argument words."
+callers = ["edit_adjust_digit@0935:0c4c", "path_append_component@0935:109f", "path_append_component@0935:109f", "read_filtered_token@0935:1261", "parse_and_emit_token@0935:12fc"]
+callees = ["0d72:5c2a", "0d72:5ca6", "copy_far_bytes_backward@0d72:50a4", "copy_far_bytes_forward@0d72:507e", "register_outermost_stack_frame@0d72:4fcc", "unregister_outermost_stack_frame@0d72:5004"]
+
+[[params]]
+name = "position"
+value = "[sp+4]"
+type = "i16"
+desc = "One-based insertion position (BP+6); length+1 appends. Only the upper bound is checked."
+
+[[params]]
+name = "destination_offset"
+value = "[sp+6]"
+type = "u16"
+desc = "Offset of destination Pascal string's length byte (BP+8)."
+
+[[params]]
+name = "destination_segment"
+value = "[sp+8]"
+type = "u16"
+desc = "Segment of destination Pascal string (BP+0Ah)."
+
+[[params]]
+name = "capacity"
+value = "[sp+0Ah]"
+type = "i16"
+desc = "Maximum destination character count, excluding the length byte (BP+0Ch); normally <=255."
+
+[[params]]
+name = "source_offset"
+value = "[sp+0Ch]"
+type = "u16"
+desc = "Offset of first raw source byte, not a Pascal length prefix (BP+0Eh)."
+
+[[params]]
+name = "source_segment"
+value = "[sp+0Eh]"
+type = "u16"
+desc = "Segment containing raw source bytes (BP+10h)."
+
+[[params]]
+name = "count"
+value = "[sp+10h]"
+type = "u16"
+desc = "Number of bytes to insert (BP+12h); expected small and nonnegative, though not explicitly validated."
+
+---
+; Allocate 12 local bytes through the runtime prologue; BP+6 is the first argument.
+0d72:5909 mov ax,0Ch
+@jmp 0d72:5c2a
+0d72:590c call 5C2Ah
+0d72:590f push di
+0d72:5910 push si
+0d72:5911 mov ax,10h
+0d72:5914 push ax
+@jmp register_outermost_stack_frame@0d72:4fcc
+0d72:5915 call far ptr 0D72h:4FCCh
+; Load destination length L from its prefix; preserve its low byte in DX.
+0d72:591a les di,[bp+8]
+@mem ; [es unknown]
+0d72:591d mov al,es:[di]
+0d72:5920 mov dx,ax
+0d72:5922 xor ah,ah
+; Signed 16-bit check: if L+count > capacity, report a fatal string-bounds error.
+@mem ; [ss unknown]
+0d72:5924 add ax,[bp+12h]
+@mem ; [ss unknown]
+0d72:5927 cmp ax,[bp+0Ch]
+@jmp 'string_bounds_error@2
+0d72:592a jg short 5935h
+
+; Recover L, zero-extend, and require position <= L+1 (signed). No lower-bound check.
+0d72:592c xchg dx,ax
+0d72:592d xor ah,ah
+0d72:592f inc ax
+@mem ; [ss unknown]
+0d72:5930 cmp ax,[bp+6]
+@jmp 'shift_suffix_and_insert@3
+0d72:5933 jge short 593Ah
+
+; Invoke fatal-error helper for capacity overflow or position beyond L+1.
+@label string_bounds_error
+@jmp 0d72:5ca6
+0d72:5935 call far ptr 0D72h:5CA6h
+
+; Save and push suffix source far pointer destination+position.
+@label shift_suffix_and_insert
+0d72:593a les di,[bp+8]
+@mem ; [ss unknown]
+0d72:593d add di,[bp+6]
+@mem ; [ss unknown]
+0d72:5940 mov [bp-4],di
+@mem ; [ss unknown]
+0d72:5943 mov [bp-2],es
+0d72:5946 push es
+0d72:5947 push di
+; Save and push shifted suffix destination pointer destination+position+count.
+@mem ; [ss unknown]
+0d72:5948 mov di,[bp+12h]
+@mem ; [ss unknown]
+0d72:594b add di,[bp+6]
+0d72:594e les si,[bp+8]
+0d72:5951 add si,di
+@mem ; [ss unknown]
+0d72:5953 mov [bp-8],si
+@mem ; [ss unknown]
+0d72:5956 mov [bp-6],es
+0d72:5959 push es
+0d72:595a push si
+; Suffix byte count = L-position+1; zero for append.
+0d72:595b les di,[bp+8]
+@mem ; [es unknown]
+0d72:595e mov al,es:[di]
+0d72:5961 xor ah,ah
+@mem ; [ss unknown]
+0d72:5963 sub ax,[bp+6]
+0d72:5966 inc ax
+0d72:5967 push ax
+; Copy suffix backward to higher addresses so its overlapping bytes are preserved.
+@jmp copy_far_bytes_backward@0d72:50a4
+0d72:5968 call far ptr 0D72h:50A4h
+; Push raw source pointer and destination+position, followed by insertion count.
+0d72:596d les di,[bp+0Eh]
+0d72:5970 push es
+0d72:5971 push di
+0d72:5972 les di,[bp+8]
+@mem ; [ss unknown]
+0d72:5975 add di,[bp+6]
+@mem ; [ss unknown]
+0d72:5978 mov [bp-0Ch],di
+@mem ; [ss unknown]
+0d72:597b mov [bp-0Ah],es
+0d72:597e push es
+0d72:597f push di
+@mem ; [ss unknown]
+0d72:5980 push word ptr [bp+12h]
+; Copy count source bytes forward into the insertion gap; general source/destination aliasing is unsafe.
+@jmp copy_far_bytes_forward@0d72:507e
+0d72:5983 call far ptr 0D72h:507Eh
+; Reload length prefix and store low byte of L+count; no terminator is added.
+0d72:5988 les di,[bp+8]
+@mem ; [es unknown]
+0d72:598b mov al,es:[di]
+0d72:598e xor ah,ah
+@mem ; [ss unknown]
+0d72:5990 add ax,[bp+12h]
+0d72:5993 xor ah,ah
+@mem ; [es unknown]
+0d72:5995 mov es:[di],al
+; Unregister runtime frame, restore saved registers, and far-return discarding 14 argument bytes.
+@jmp unregister_outermost_stack_frame@0d72:5004
+0d72:5998 call far ptr 0D72h:5004h
+0d72:599d pop si
+0d72:599e pop di
+0d72:599f mov sp,bp
+0d72:59a1 pop bp
+0d72:59a2 retf 0Eh
+

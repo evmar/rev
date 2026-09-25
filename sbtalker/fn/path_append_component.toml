@@ -3,7 +3,7 @@ name = "path_append_component"
 desc = "Appends a path component to a destination string buffer with separator and overflow handling."
 details = "Checks if the combined path length exceeds 240 bytes or if a global buffer is already in use. If valid and not empty, it checks for redundant separators or appends the component to the destination Pascal string; otherwise, it appends to an overflow buffer."
 callers = ["parse_and_emit_token@0935:12fc", "parse_and_emit_token@0935:12fc", "parse_and_emit_token@0935:12fc", "parse_and_emit_token@0935:12fc", "parse_and_emit_token@0935:12fc", "parse_and_emit_token@0935:12fc", "parse_and_emit_token@0935:12fc", "parse_and_emit_token@0935:12fc", "parse_and_emit_token@0935:12fc", "tts_pronounce_number@0935:1742", "tts_pronounce_number@0935:1742", "tts_pronounce_number@0935:1742", "tts_pronounce_number@0935:1742", "tts_pronounce_number@0935:1742", "tts_pronounce_number@0935:1742", "tts_pronounce_number@0935:1742", "tts_pronounce_number@0935:1742", "tts_pronounce_number@0935:1742", "tts_pronounce_number@0935:1742", "tts_pronounce_number@0935:1742", "tts_pronounce_number@0935:1742", "tts_pronounce_number@0935:1742", "tts_pronounce_number@0935:1742", "tts_pronounce_number@0935:1742", "tts_pronounce_number@0935:1742", "tts_pronounce_number@0935:1742", "append_spoken_month_name@0935:1f63", "parse_date_or_time@0935:21f1", "parse_date_or_time@0935:21f1", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "dispatch_action_by_state@0935:30a1", "dispatch_command_input@0935:3cc9"]
-callees = ["0d72:588e", "0d72:5909", "pascal_string_copy_bounded@0d72:538c", "pascal_string_equal@0d72:5570"]
+callees = ["pascal_string_copy_bounded@0d72:538c", "pascal_string_delete@0d72:588e", "pascal_string_equal@0d72:5570", "pascal_string_insert_bytes@0d72:5909"]
 
 [[params]]
 name = "dest_rec"
@@ -144,7 +144,7 @@ desc = "Pascal string containing path component to append"
 0935:114a mov ax,1
 0935:114d push ax
 ; delete trailing separator from destination string
-@jmp 0d72:588e
+@jmp pascal_string_delete@0d72:588e
 0935:114e call far ptr 0D72h:588Eh
 @jmp 'exit@12
 0935:1153 jmp short 1178h
@@ -171,7 +171,7 @@ desc = "Pascal string containing path component to append"
 0935:1171 inc ax
 0935:1172 push ax
 ; append string component to destination path
-@jmp 0d72:5909
+@jmp pascal_string_insert_bytes@0d72:5909
 0935:1173 call far ptr 0D72h:5909h
 
 @label exit
@@ -198,7 +198,7 @@ desc = "Pascal string containing path component to append"
 0935:1193 inc ax
 0935:1194 push ax
 ; append string component to overflow buffer
-@jmp 0d72:5909
+@jmp pascal_string_insert_bytes@0d72:5909
 0935:1195 call far ptr 0D72h:5909h
 
 @label epilogue

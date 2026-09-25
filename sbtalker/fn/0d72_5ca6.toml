@@ -1,5 +1,5 @@
 ip = "0d72:5ca6"
-callers = ["0d72:582a", "0d72:588e", "0d72:5909"]
+callers = ["pascal_string_append_bytes@0d72:582a", "pascal_string_delete@0d72:588e", "pascal_string_insert_bytes@0d72:5909"]
 callees = ["0d72:5ffd", "register_outermost_stack_frame@0d72:4fcc", "report_fatal_error_and_exit@0d72:4bac", "unregister_outermost_stack_frame@0d72:5004"]
 
 ---

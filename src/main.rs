@@ -15,6 +15,7 @@ mod init;
 mod ir;
 mod load;
 mod memory;
+mod queue;
 mod web;
 mod xref;
 
@@ -28,6 +29,7 @@ enum Command {
     RoundTrip(RoundTrip),
     Web(web::Args),
     DB(db::Args),
+    Queue(queue::Args),
 }
 
 /// wip
@@ -83,6 +85,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Command::DB(args) => {
             let mut db = DB::load(project)?;
             db::run(&mut db, args)?;
+            Ok(())
+        }
+        Command::Queue(_args) => {
+            let db = DB::load(project)?;
+            queue::run(&db)?;
             Ok(())
         }
     }

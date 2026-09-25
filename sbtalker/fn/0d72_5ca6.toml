@@ -1,5 +1,5 @@
 callers = ["0d72:582a", "0d72:588e", "0d72:5909"]
-callees = ["0d72:4bac", "0d72:4fcc", "0d72:5004", "0d72:5ffd"]
+callees = ["0d72:4bac", "0d72:5004", "0d72:5ffd", "register_outermost_stack_frame@0d72:4fcc"]
 ip = "0d72:5ca6"
 
 ---
@@ -10,7 +10,7 @@ ip = "0d72:5ca6"
 0d72:5cad push si
 0d72:5cae mov ax,2
 0d72:5cb1 push ax
-@jmp 0d72:4fcc
+@jmp register_outermost_stack_frame@0d72:4fcc
 0d72:5cb2 call far ptr 0D72h:4FCCh
 0d72:5cb7 mov ax,27h
 0d72:5cba push ax

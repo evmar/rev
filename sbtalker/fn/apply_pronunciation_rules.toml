@@ -1,6 +1,21 @@
+name = "apply_pronunciation_rules"
+desc = "Converts a Pascal-style input word to a Pascal-style phoneme string using table-driven pronunciation rules."
+details = "Temporarily replaces the input length byte and byte after the word with spaces, then scans the word from left to right. For each character it searches a character-indexed rule table, tests the rule's left and right contexts (including metacharacters dispatched by the helper at 0d72:013c), appends the matched rule's encoded phoneme bytes to the output, restores the input length byte, and stores the output length."
 callers = ["parse_and_emit_token@0935:12fc"]
 callees = ["0d72:013c"]
 ip = "0d72:0010"
+
+[[params]]
+name = "output"
+value = "[sp+4]"
+type = "*mut u8"
+desc = "Far pointer to the destination Pascal string; byte 0 receives the phoneme-string length and bytes 1.. contain encoded phonemes."
+
+[[params]]
+name = "input"
+value = "[sp+8]"
+type = "*mut u8"
+desc = "Far pointer to a mutable Pascal input string; its length byte is saved/restored, and the byte immediately after its characters is temporarily overwritten with a space sentinel."
 
 ---
 0d72:0010 push bp
@@ -8,9 +23,11 @@ ip = "0d72:0010"
 0d72:0012 push es
 0d72:0013 sub sp,10h
 0d72:0016 mov bp,sp
+; Load output segment and input far pointer.
 @mem ; [ss unknown]
 0d72:0018 mov es,[bp+1Ch]
 0d72:001b lds si,[bp+1Eh]
+; Save the Pascal length, replace it with a leading space, and place a trailing space sentinel after the input characters.
 @mem ; [ds unknown]
 0d72:001e mov al,[si]
 @mem ; [ss unknown]
@@ -25,16 +42,18 @@ ip = "0d72:0010"
 @mem ; [ss unknown]
 0d72:002e mov word ptr [bp+6],0
 
+@label next_input_character
 0d72:0033 lodsb
 0d72:0034 cmp al,20h
 @jmp '3
 0d72:0036 jne short 003Bh
 
-@jmp '31
+@jmp 'finish@31
 0d72:0038 jmp near ptr 0122h
 
 0d72:003b xor dx,dx
 
+@label skip_rule_index_punctuation
 0d72:003d cmp al,27h
 @jmp '6
 0d72:003f je short 0045h
@@ -45,12 +64,13 @@ ip = "0d72:0010"
 
 0d72:0045 lodsb
 0d72:0046 cmp al,20h
-@jmp '4
+@jmp 'skip_rule_index_punctuation@4
 0d72:0048 jne short 003Dh
 
-@jmp '31
+@jmp 'finish@31
 0d72:004a jmp near ptr 0122h
 
+; Use the current character to select its pronunciation-rule list.
 0d72:004d mov bl,al
 0d72:004f xor bh,bh
 0d72:0051 shl bx,1
@@ -62,6 +82,8 @@ ip = "0d72:0010"
 @mem ; [ss unknown]
 0d72:005e mov [bp+8],si
 
+; Select a candidate rule, preserving the input position after the rule's literal trigger character.
+@label try_next_rule
 @mem ; [ss unknown]
 0d72:0061 mov di,[bp+4]
 0d72:0064 add di,dx
@@ -73,18 +95,20 @@ ip = "0d72:0010"
 0d72:006c mov si,[bp+8]
 0d72:006f xor bh,bh
 
+; Match the rule's literal spelling against successive input bytes until its context delimiter is reached.
+@label match_literal_prefix
 0d72:0071 inc di
 0d72:0072 lodsb
 @mem ; [di unknown]
 0d72:0073 mov bl,cs:[di]
 @mem ; [bx unknown]
 0d72:0076 cmp al,cs:[bx+49FEh]
-@jmp '10
+@jmp 'match_literal_prefix@10
 0d72:007b je short 0071h
 
 @mem ; [di unknown]
 0d72:007d cmp byte ptr cs:[di],3Eh
-@jmp '9
+@jmp 'try_next_rule@9
 0d72:0081 jb short 0061h
 
 @mem ; [ss unknown]
@@ -96,16 +120,19 @@ ip = "0d72:0010"
 0d72:008c mov si,[bp+8]
 0d72:008f sub si,2
 
+@label match_rule_contexts
 @mem ; [ss unknown]
 0d72:0092 mov word ptr [bp+0Eh],0FFFFh
 
+; Match encoded left/right context operators; negative table entries are handled by the context-test dispatcher at 0d72:013c.
+@label match_next_context_token
 0d72:0097 inc di
 @mem ; [di unknown]
 0d72:0098 mov bl,cs:[di]
 @mem ; [ss unknown]
 0d72:009b mov [bp+2],bl
 0d72:009e cmp bl,3Eh
-@jmp '21
+@jmp 'update_context_match_state@21
 0d72:00a1 jae short 00D6h
 
 0d72:00a3 xor bh,bh
@@ -126,7 +153,7 @@ ip = "0d72:0010"
 @mem ; [ss unknown]
 0d72:00bd mov al,[bp+3]
 0d72:00c0 or al,al
-@jmp '21
+@jmp 'update_context_match_state@21
 0d72:00c2 jne short 00D6h
 
 @mem ; [ss unknown]
@@ -134,7 +161,7 @@ ip = "0d72:0010"
 @jmp '23
 0d72:00c8 jne short 00E2h
 
-@jmp '9
+@jmp 'try_next_rule@9
 0d72:00ca jmp short 0061h
 
 @mem ; [ds unknown]
@@ -147,23 +174,25 @@ ip = "0d72:0010"
 @mem ; [ss unknown]
 0d72:00d3 add si,[bp+0Ch]
 
+@label update_context_match_state
 @mem ; [ss unknown]
 0d72:00d6 cmp di,[bp+0Eh]
-@jmp '24
+@jmp 'finish_context_match@24
 0d72:00d9 je short 00EAh
 
 @mem ; [ss unknown]
 0d72:00db mov word ptr [bp+0Eh],0FFFFh
-@jmp '24
+@jmp 'finish_context_match@24
 0d72:00e0 jmp short 00EAh
 
 @mem ; [ss unknown]
 0d72:00e2 mov word ptr [bp+0Eh],0FFFFh
 0d72:00e7 sub di,2
 
+@label finish_context_match
 @mem ; [ss unknown]
 0d72:00ea cmp byte ptr [bp+2],3Eh
-@jmp '14
+@jmp 'match_next_context_token@14
 0d72:00ee jb short 0097h
 
 @mem ; [ss unknown]
@@ -173,9 +202,10 @@ ip = "0d72:0010"
 @jmp '27
 0d72:00f7 jae short 00FBh
 
-@jmp '13
+@jmp 'match_rule_contexts@13
 0d72:00f9 jmp short 0092h
 
+; A rule matched: advance the output pointer past its Pascal length byte.
 0d72:00fb mov bx,di
 @mem ; [ss unknown]
 0d72:00fd mov di,[bp+1Ah]
@@ -185,6 +215,8 @@ ip = "0d72:0010"
 0d72:0104 mov cx,si
 0d72:0106 xor ah,ah
 
+; Copy the rule's encoded phoneme result bytes into the output until the rule terminator.
+@label copy_rule_output
 0d72:0108 inc bx
 @mem ; [bx unknown]
 0d72:0109 mov al,cs:[bx]
@@ -198,13 +230,15 @@ ip = "0d72:0010"
 @mem ; [si unknown]
 0d72:0115 mov al,cs:[si+49FEh]
 0d72:011a stosb
-@jmp '28
+@jmp 'copy_rule_output@28
 0d72:011b jmp short 0108h
 
 0d72:011d mov si,cx
-@jmp '1
+@jmp 'next_input_character@1
 0d72:011f jmp near ptr 0033h
 
+; Restore the original input length byte and store the accumulated output length.
+@label finish
 @mem ; [ss unknown]
 0d72:0122 mov al,[bp]
 @mem ; [ss unknown]

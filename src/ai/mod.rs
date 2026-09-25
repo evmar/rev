@@ -29,6 +29,7 @@ fn print_usage(start: std::time::Instant, usage: &ResponseUsage) {
 }
 
 async fn run_next_queued(db: &mut DB, client: &OpenRouterClient) -> anyhow::Result<bool> {
+    // TODO: move to queue:next_task
     for func in db.functions.values() {
         if func.desc.is_none() {
             println!("task: annotate function {}", func.ip);

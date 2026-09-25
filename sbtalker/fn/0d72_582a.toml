@@ -1,5 +1,5 @@
 callers = ["parse_argument_switches@0935:23ed"]
-callees = ["0d72:4fcc", "0d72:5004", "0d72:507e", "0d72:5c2a", "0d72:5ca6"]
+callees = ["0d72:5004", "0d72:507e", "0d72:5c2a", "0d72:5ca6", "register_outermost_stack_frame@0d72:4fcc"]
 ip = "0d72:582a"
 
 ---
@@ -10,7 +10,7 @@ ip = "0d72:582a"
 0d72:5831 push si
 0d72:5832 mov ax,0Eh
 0d72:5835 push ax
-@jmp 0d72:4fcc
+@jmp register_outermost_stack_frame@0d72:4fcc
 0d72:5836 call far ptr 0D72h:4FCCh
 0d72:583b les di,[bp+0Ch]
 @mem ; [es unknown]

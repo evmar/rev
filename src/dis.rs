@@ -5,7 +5,7 @@ use crate::{
 use runtime::SegOfs;
 use std::collections::{BTreeMap, VecDeque};
 
-/// disassemble
+/// given an address, disassemble its code and create a new function entry for it
 #[derive(argh::FromArgs)]
 #[argh(subcommand, name = "dis")]
 pub struct Args {

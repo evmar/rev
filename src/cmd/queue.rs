@@ -11,7 +11,7 @@ use anyhow::anyhow;
 pub struct Args {
     /// run one task
     #[argh(option)]
-    count: usize,
+    count: Option<usize>,
 }
 
 pub enum Task {
@@ -59,7 +59,7 @@ pub fn codex_task(_db: &DB, task: &Task) -> anyhow::Result<()> {
 }
 
 pub fn run(path: PathBuf, args: Args) -> anyhow::Result<()> {
-    let count = if args.count > 0 { args.count } else { 1000 };
+    let count = args.count.unwrap_or(1000);
     for _ in 0..count {
         let db = DB::load(path.clone())?;
         let Some(task) = next_task(&db) else {

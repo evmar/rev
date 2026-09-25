@@ -2,7 +2,10 @@ use std::path::PathBuf;
 
 use runtime::SegOfs;
 
-use crate::{cmd::func, db::DB};
+use crate::{
+    cmd::{func, queue},
+    db::DB,
+};
 
 mod ai;
 mod api;
@@ -16,7 +19,6 @@ mod init;
 mod ir;
 mod load;
 mod memory;
-mod queue;
 mod web;
 mod xref;
 

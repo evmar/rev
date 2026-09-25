@@ -3,7 +3,7 @@ name = "bst_find_value"
 desc = "Searches a binary search tree for a given string key and returns the associated far pointer value."
 details = "Traverses a binary search tree rooted at ds:[0044h] comparing each node's string key against the input key. If a match is found, returns the 32-bit far pointer stored in the node (+04h); otherwise returns NULL."
 callers = ["parse_and_emit_token@0935:12fc"]
-callees = ["0d72:538c", "0d72:5570", "0d72:5615"]
+callees = ["0d72:5615", "pascal_string_copy_bounded@0d72:538c", "pascal_string_equal@0d72:5570"]
 
 [[params]]
 name = "key"
@@ -82,7 +82,7 @@ desc = "Far pointer to value stored in node, or NULL if not found"
 0935:00cf pop es
 0935:00d0 mov cx,21h
 ; copy node key to stack buffer
-@jmp 0d72:538c
+@jmp pascal_string_copy_bounded@0d72:538c
 0935:00d3 call far ptr 0D72h:538Ch
 @mem ; [ss unknown]
 0935:00d8 lea ax,[bp-2Ah]
@@ -92,7 +92,7 @@ desc = "Far pointer to value stored in node, or NULL if not found"
 @mem ; [ss unknown]
 0935:00de push word ptr [bp+4]
 ; test if keys match
-@jmp 0d72:5570
+@jmp pascal_string_equal@0d72:5570
 0935:00e1 call far ptr 0D72h:5570h
 0935:00e6 shr ax,1
 @jmp 'compare_key@8

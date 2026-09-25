@@ -1,6 +1,6 @@
 ip = "0d72:5615"
 callers = ["bst_find_value@0935:0080"]
-callees = ["0d72:5004", "0d72:5c2a", "register_outermost_stack_frame@0d72:4fcc"]
+callees = ["0d72:5c2a", "register_outermost_stack_frame@0d72:4fcc", "unregister_outermost_stack_frame@0d72:5004"]
 
 ---
 0d72:5615 mov ax,8
@@ -89,7 +89,7 @@ callees = ["0d72:5004", "0d72:5c2a", "register_outermost_stack_frame@0d72:4fcc"]
 @jmp '6
 0d72:568c jne short 5662h
 
-@jmp 0d72:5004
+@jmp unregister_outermost_stack_frame@0d72:5004
 0d72:568e call far ptr 0D72h:5004h
 @mem ; [ss unknown]
 0d72:5693 mov ax,[bp-2]

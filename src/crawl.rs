@@ -11,7 +11,14 @@ use crate::{
 #[argh(subcommand, name = "crawl")]
 pub struct Args {}
 
-pub async fn run(db: &mut DB, _args: Args) -> anyhow::Result<()> {
+pub fn run(db: &mut DB, _args: Args) -> anyhow::Result<()> {
+    if crawl(db)? {
+        db.write()?;
+    }
+    Ok(())
+}
+
+pub fn crawl(db: &mut DB) -> anyhow::Result<bool> {
     let mut queue = VecDeque::new();
     for func in db.functions.values() {
         let Some(callees) = &func.callees else {
@@ -32,6 +39,7 @@ pub async fn run(db: &mut DB, _args: Args) -> anyhow::Result<()> {
         }
     }
 
+    let mut changed = false;
     while let Some(ip) = queue.pop_front() {
         if db.functions.contains_key(&ip) {
             continue;
@@ -41,10 +49,12 @@ pub async fn run(db: &mut DB, _args: Args) -> anyhow::Result<()> {
         let func = db.functions.get_mut(&ip).unwrap();
         xref::update_callees(func, &db.mem, |ip| XRef::External(None, ip));
         db.write()?;
+        changed = true;
     }
 
-    xref::update_all_xrefs(db);
-    db.write()?;
+    if xref::update_all_xrefs(db) {
+        changed = true;
+    }
 
-    Ok(())
+    Ok(changed)
 }

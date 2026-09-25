@@ -3,7 +3,7 @@ name = "parse_and_emit_token"
 desc = "Parses and processes a token or identifier from the input context"
 details = "Extracts a Pascal string token using a helper, strips any trailing matched characters, and queries a symbol table. If defined, it emits a formatted representation of the symbol; otherwise, it handles prefixes, special characters (such as periods, quotes, or table-driven character classes), and dispatches token records to an emitter routine."
 callers = ["dispatch_command_input@0935:3cc9"]
-callees = ["0d72:538c", "0d72:53b0", "0d72:5452", "0d72:5570", "0d72:588e", "0d72:5909", "apply_pronunciation_rules@0d72:0010", "ascii_to_glyph_index@0935:0063", "bst_find_value@0935:0080", "path_append_component@0935:109f", "read_filtered_token@0935:1261"]
+callees = ["0d72:588e", "0d72:5909", "apply_pronunciation_rules@0d72:0010", "ascii_to_glyph_index@0935:0063", "bst_find_value@0935:0080", "copy_words_to_stack@0d72:53b0", "pascal_string_copy_bounded@0d72:538c", "pascal_string_equal@0d72:5570", "path_append_component@0935:109f", "read_filtered_token@0935:1261", "set_contains@0d72:5452"]
 
 [[params]]
 name = "ctx"
@@ -71,7 +71,7 @@ desc = "Pointer to parser/context state structure containing string buffers and 
 0935:1356 push ax
 @mem ; [ss unknown]
 0935:1357 mov [bp-112h],di
-@jmp 0d72:5570
+@jmp pascal_string_equal@0d72:5570
 0935:135b call far ptr 0D72h:5570h
 0935:1360 shr ax,1
 @jmp 'trim_trailing_loop@2
@@ -107,7 +107,7 @@ desc = "Pointer to parser/context state structure containing string buffers and 
 @mem ; [ss unknown]
 0935:138f mov [bp-114h],cx
 ; Test set membership (in set 1D08h)
-@jmp 0d72:5452
+@jmp set_contains@0d72:5452
 0935:1393 call far ptr 0D72h:5452h
 0935:1398 shr ax,1
 @jmp 'symbol_lookup@4
@@ -169,7 +169,7 @@ desc = "Pointer to parser/context state structure containing string buffers and 
 0935:13f0 rep movsw
 0935:13f2 les bx,[bp-8]
 0935:13f5 mov cx,11h
-@jmp 0d72:53b0
+@jmp copy_words_to_stack@0d72:53b0
 0935:13f8 call far ptr 0D72h:53B0h
 @mem ; [ss unknown]
 0935:13fd mov bx,[bp+4]
@@ -271,7 +271,7 @@ desc = "Pointer to parser/context state structure containing string buffers and 
 0935:148c push ax
 @mem ; [ss unknown]
 0935:148d mov [bp-112h],dx
-@jmp 0d72:5452
+@jmp set_contains@0d72:5452
 0935:1491 call far ptr 0D72h:5452h
 0935:1496 shr ax,1
 @jmp 'store_converted_char@16
@@ -513,7 +513,7 @@ desc = "Pointer to parser/context state structure containing string buffers and 
 0935:15f7 mov cx,1D36h
 0935:15fa push ds
 0935:15fb push cx
-@jmp 0d72:5452
+@jmp set_contains@0d72:5452
 0935:15fc call far ptr 0D72h:5452h
 0935:1601 shr ax,1
 @jmp 'handle_quoted_token@35
@@ -549,7 +549,7 @@ desc = "Pointer to parser/context state structure containing string buffers and 
 0935:1630 mov ax,ds
 @mem ; [ss unknown]
 0935:1632 mov [bp-110h],dx
-@jmp 0d72:538c
+@jmp pascal_string_copy_bounded@0d72:538c
 0935:1636 call far ptr 0D72h:538Ch
 @mem ; [ss unknown]
 0935:163b mov di,[bp+4]
@@ -571,7 +571,7 @@ desc = "Pointer to parser/context state structure containing string buffers and 
 0935:1657 mov ax,1D46h
 0935:165a push ds
 0935:165b push ax
-@jmp 0d72:5452
+@jmp set_contains@0d72:5452
 0935:165c call far ptr 0D72h:5452h
 0935:1661 shr ax,1
 @jmp 'emit_quoted_suffix@37

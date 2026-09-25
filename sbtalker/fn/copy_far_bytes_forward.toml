@@ -1,0 +1,75 @@
+ip = "0d72:507e"
+name = "copy_far_bytes_forward"
+desc = "Copy a byte count from a far source pointer to a far destination pointer, proceeding forward."
+details = "Loads DS:SI from the source and ES:DI from the destination, clears DF, and copies count/2 words followed by one byte when count is odd; MOVSW preserves the carry set by SHR for the odd-byte test. The caller pushes source segment/offset, destination segment/offset, then count; RETF 0Ah removes all five argument words, with no defined return value. Preserves DS and BP, clobbers AX/CX/SI/DI/ES, and leaves DF clear; offsets advance with 16-bit wrapping without segment adjustment, and overlapping regions require a forward-safe layout (the string-deletion caller shifts data toward lower addresses)."
+callers = ["0d72:582a", "0d72:588e", "0d72:5909", "0d72:66cc"]
+
+[[params]]
+name = "count"
+value = "[sp+4]"
+type = "u16"
+desc = "Number of bytes to copy; zero performs no memory transfer."
+
+[[params]]
+name = "destination_offset"
+value = "[sp+6]"
+type = "u16"
+desc = "Destination offset, loaded into DI."
+
+[[params]]
+name = "destination_segment"
+value = "[sp+8]"
+type = "u16"
+desc = "Destination segment, loaded into ES."
+
+[[params]]
+name = "source_offset"
+value = "[sp+0Ah]"
+type = "u16"
+desc = "Source offset, loaded into SI."
+
+[[params]]
+name = "source_segment"
+value = "[sp+0Ch]"
+type = "u16"
+desc = "Source segment, temporarily loaded into DS."
+
+---
+0d72:507e push bp
+0d72:507f mov bp,sp
+0d72:5081 push ds
+; Load source far pointer from BP+0Eh:BP+0Ch into DS:SI; original DS is saved.
+@mem ; [ss unknown]
+0d72:5082 mov ax,[bp+0Eh]
+0d72:5085 mov ds,ax
+@mem ; [ss unknown]
+0d72:5087 mov si,[bp+0Ch]
+; Load destination far pointer from BP+0Ah:BP+8 into ES:DI.
+@mem ; [ss unknown]
+0d72:508a mov ax,[bp+0Ah]
+0d72:508d mov es,ax
+@mem ; [ss unknown]
+0d72:508f mov di,[bp+8]
+; Load unsigned byte count; force forward copying.
+@mem ; [ss unknown]
+0d72:5092 mov cx,[bp+6]
+0d72:5095 cld
+; CX = count / 2; CF = count & 1.
+0d72:5096 shr cx,1
+; Copy whole words forward. REP MOVSW does not change CF.
+0d72:5098 rep movsw
+; Skip trailing byte if original byte count was even (CF clear).
+@jmp 'restore_and_return@2
+0d72:509a jae short 509Dh
+
+; Copy the remaining byte for an odd count.
+0d72:509c movsb
+
+; Restore caller DS and stack frame.
+@label restore_and_return
+0d72:509d pop ds
+0d72:509e mov sp,bp
+0d72:50a0 pop bp
+; Far return, discarding 10 bytes of arguments.
+0d72:50a1 retf 0Ah
+

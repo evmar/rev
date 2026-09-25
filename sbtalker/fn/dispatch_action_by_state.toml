@@ -3,7 +3,7 @@ name = "dispatch_action_by_state"
 desc = "Dispatches an action or command handler based on a state code"
 details = "Initializes flags at ds:[50h] and ds:[4Ch], then checks the action code at ds:[164h]. If the action code falls within the range 0x22 to 0x5E, it performs an indirect jump via a jump table at CS:3C40h. Otherwise, it executes the default fallback handler, which copies data from DS:1BC2h to the stack, invokes a sub-handler (109Fh), and finally calls a cleanup function (11A0h) passing a field from the parameter."
 callers = ["dispatch_command_input@0935:3cc9"]
-callees = ["0d72:538c", "get_next_char@0935:11a0", "path_append_component@0935:109f", "unknown:mem"]
+callees = ["get_next_char@0935:11a0", "pascal_string_copy_bounded@0d72:538c", "path_append_component@0935:109f", "unknown:mem"]
 
 [[params]]
 name = "context_ptr"
@@ -37,7 +37,7 @@ desc = "Pointer to entity or context structure whose field at offset +4 is used 
 0935:3bfc mov si,20AEh
 0935:3bff mov cx,2
 0935:3c02 mov ax,ds
-@jmp 0d72:538c
+@jmp pascal_string_copy_bounded@0d72:538c
 0935:3c04 call far ptr 0D72h:538Ch
 ; Store current action code into local variable
 @mem ; [ds unknown]

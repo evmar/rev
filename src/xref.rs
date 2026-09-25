@@ -7,27 +7,40 @@ use crate::{
     function::{Function, Instr},
 };
 
-pub fn update_all_xrefs(db: &mut DB) {
+pub fn update_all_xrefs(db: &mut DB) -> bool {
     let names = db
         .functions
         .values()
         .filter_map(|func| Some((func.ip, func.name.as_ref()?.clone())))
         .collect::<HashMap<_, _>>();
     let mut callers = HashMap::<SegOfs, Vec<XRef>>::new();
+    let mut changed = false;
     for func in db.functions.values_mut() {
         let xref = XRef::External(func.name.clone(), func.ip);
-        update_callees(func, &db.mem, |ip| {
+        if update_callees(func, &db.mem, |ip| {
             callers.entry(ip).or_default().push(xref.clone());
             let name = names.get(&ip).cloned();
             XRef::External(name, ip)
-        });
+        }) {
+            changed = true;
+        }
     }
+
     for func in db.functions.values_mut() {
-        func.callers = callers.remove(&func.ip);
+        let new_callers = callers.remove(&func.ip);
+        if new_callers != func.callers {
+            func.callers = new_callers;
+            changed = true;
+        }
     }
+    changed
 }
 
-pub fn update_callees(func: &mut Function, mem: &[u8], mut xref: impl FnMut(SegOfs) -> XRef) {
+pub fn update_callees(
+    func: &mut Function,
+    mem: &[u8],
+    mut xref: impl FnMut(SegOfs) -> XRef,
+) -> bool {
     let mut ip_to_block = HashMap::new();
     let mut block_to_label = Vec::new();
     for (i, block) in func.blocks.iter().enumerate() {
@@ -58,11 +71,17 @@ pub fn update_callees(func: &mut Function, mem: &[u8], mut xref: impl FnMut(SegO
         }
     }
 
+    let mut changed = false;
     let mut xrefs = all_xrefs.into_iter().collect::<Vec<_>>();
     if !xrefs.is_empty() {
         xrefs.sort();
-        func.callees = Some(xrefs);
+        let new_callees = Some(xrefs);
+        if new_callees != func.callees {
+            func.callees = new_callees;
+            changed = true;
+        }
     }
+    changed
 }
 
 fn xref_from_instr(

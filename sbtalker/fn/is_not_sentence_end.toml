@@ -3,7 +3,7 @@ name = "is_not_sentence_end"
 desc = "Tests whether a period at a given string index does NOT terminate a sentence"
 details = "Inspects a Pascal-style string at a specified 1-based index. If the character is not a period ('.') or is out of bounds, the function returns 1. If it is a period, it checks whether it marks a sentence boundary: either followed immediately by a terminator/control character (from a set at ds:1CB4h), or followed by optional closing punctuation (from a set at ds:1CC4h) and then a space plus a non-space character. If either sentence-ending condition is met, it returns 0; otherwise it returns 1."
 callers = ["apply_prosody_intonation@0935:0d7f"]
-callees = ["0d72:5452"]
+callees = ["set_contains@0d72:5452"]
 
 [[params]]
 name = "pos"
@@ -68,7 +68,7 @@ desc = "0 if the character at pos is a period ending a sentence; 1 if not a sent
 0935:0bc3 mov ax,1CB4h
 0935:0bc6 push ds
 0935:0bc7 push ax
-@jmp 0d72:5452
+@jmp set_contains@0d72:5452
 0935:0bc8 call far ptr 0D72h:5452h
 0935:0bcd shr ax,1
 ; If in set, sentence ends here -> set result to 0
@@ -104,7 +104,7 @@ desc = "0 if the character at pos is a period ending a sentence; 1 if not a sent
 0935:0bf4 mov ax,1CC4h
 0935:0bf7 push ds
 0935:0bf8 push ax
-@jmp 0d72:5452
+@jmp set_contains@0d72:5452
 0935:0bf9 call far ptr 0D72h:5452h
 0935:0bfe shr ax,1
 @jmp 'check_space_and_word@9

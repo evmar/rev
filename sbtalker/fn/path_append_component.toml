@@ -3,7 +3,7 @@ name = "path_append_component"
 desc = "Appends a path component to a destination string buffer with separator and overflow handling."
 details = "Checks if the combined path length exceeds 240 bytes or if a global buffer is already in use. If valid and not empty, it checks for redundant separators or appends the component to the destination Pascal string; otherwise, it appends to an overflow buffer."
 callers = ["parse_and_emit_token@0935:12fc", "parse_and_emit_token@0935:12fc", "parse_and_emit_token@0935:12fc", "parse_and_emit_token@0935:12fc", "parse_and_emit_token@0935:12fc", "parse_and_emit_token@0935:12fc", "parse_and_emit_token@0935:12fc", "parse_and_emit_token@0935:12fc", "parse_and_emit_token@0935:12fc", "tts_pronounce_number@0935:1742", "tts_pronounce_number@0935:1742", "tts_pronounce_number@0935:1742", "tts_pronounce_number@0935:1742", "tts_pronounce_number@0935:1742", "tts_pronounce_number@0935:1742", "tts_pronounce_number@0935:1742", "tts_pronounce_number@0935:1742", "tts_pronounce_number@0935:1742", "tts_pronounce_number@0935:1742", "tts_pronounce_number@0935:1742", "tts_pronounce_number@0935:1742", "tts_pronounce_number@0935:1742", "tts_pronounce_number@0935:1742", "tts_pronounce_number@0935:1742", "tts_pronounce_number@0935:1742", "tts_pronounce_number@0935:1742", "append_spoken_month_name@0935:1f63", "parse_date_or_time@0935:21f1", "parse_date_or_time@0935:21f1", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "dispatch_action_by_state@0935:30a1", "dispatch_command_input@0935:3cc9"]
-callees = ["0d72:538c", "0d72:5570", "0d72:588e", "0d72:5909"]
+callees = ["0d72:588e", "0d72:5909", "pascal_string_copy_bounded@0d72:538c", "pascal_string_equal@0d72:5570"]
 
 [[params]]
 name = "dest_rec"
@@ -73,7 +73,7 @@ desc = "Pascal string containing path component to append"
 @mem ; [ss unknown]
 0935:10e6 mov [bp-8],dx
 ; destination is empty; copy input string directly
-@jmp 0d72:538c
+@jmp pascal_string_copy_bounded@0d72:538c
 0935:10e9 call far ptr 0D72h:538Ch
 @jmp 'exit@12
 0935:10ee jmp near ptr 1178h
@@ -86,7 +86,7 @@ desc = "Pascal string containing path component to append"
 0935:10f6 mov ax,1CD8h
 0935:10f9 push ds
 0935:10fa push ax
-@jmp 0d72:5570
+@jmp pascal_string_equal@0d72:5570
 0935:10fb call far ptr 0D72h:5570h
 0935:1100 shr ax,1
 @jmp 'test_slash@8
@@ -112,7 +112,7 @@ desc = "Pascal string containing path component to append"
 0935:111a mov ax,1CDAh
 0935:111d push ds
 0935:111e push ax
-@jmp 0d72:5570
+@jmp pascal_string_equal@0d72:5570
 0935:111f call far ptr 0D72h:5570h
 0935:1124 shr ax,1
 @jmp 'do_append@11

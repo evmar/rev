@@ -2,7 +2,7 @@ ip = "0d72:4fcc"
 name = "register_outermost_stack_frame"
 desc = "Registers the outermost active runtime stack frame and snapshots its recovery context."
 details = "If no frame is currently registered at ds:0602, this records a marker within the present call frame, then uses the caller BP and the supplied frame span to locate and save three words from the caller's stack at ds:0604..0608. Nested calls leave the existing record unchanged; the paired routine at 0d72:5004 clears ds:0602 as the registered frame is unwound."
-callers = ["0d72:4bac", "0d72:5570", "0d72:55e0", "0d72:5615", "0d72:582a", "0d72:588e", "0d72:5909", "0d72:5ca6", "0d72:604f"]
+callers = ["report_fatal_error_and_exit@0d72:4bac", "pascal_string_equal@0d72:5570", "pascal_string_not_equal@0d72:55e0", "0d72:5615", "0d72:582a", "0d72:588e", "0d72:5909", "0d72:5ca6", "0d72:604f"]
 
 [[params]]
 name = "frame_span"

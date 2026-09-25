@@ -1,6 +1,6 @@
 ip = "0d72:582a"
 callers = ["parse_argument_switches@0935:23ed"]
-callees = ["0d72:5004", "0d72:507e", "0d72:5c2a", "0d72:5ca6", "register_outermost_stack_frame@0d72:4fcc"]
+callees = ["0d72:5c2a", "0d72:5ca6", "copy_far_bytes_forward@0d72:507e", "register_outermost_stack_frame@0d72:4fcc", "unregister_outermost_stack_frame@0d72:5004"]
 
 ---
 0d72:582a mov ax,4
@@ -44,7 +44,7 @@ callees = ["0d72:5004", "0d72:507e", "0d72:5c2a", "0d72:5ca6", "register_outermo
 0d72:5868 push di
 @mem ; [ss unknown]
 0d72:5869 push word ptr [bp+0Ah]
-@jmp 0d72:507e
+@jmp copy_far_bytes_forward@0d72:507e
 0d72:586c call far ptr 0D72h:507Eh
 0d72:5871 les di,[bp+0Ch]
 @mem ; [es unknown]
@@ -55,7 +55,7 @@ callees = ["0d72:5004", "0d72:507e", "0d72:5c2a", "0d72:5ca6", "register_outermo
 0d72:587c xor ah,ah
 @mem ; [es unknown]
 0d72:587e mov es:[di],al
-@jmp 0d72:5004
+@jmp unregister_outermost_stack_frame@0d72:5004
 0d72:5881 call far ptr 0D72h:5004h
 0d72:5886 pop si
 0d72:5887 pop di

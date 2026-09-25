@@ -3,7 +3,7 @@ name = "read_filtered_token"
 desc = "Reads characters into a buffer while they belong to an allowed character set"
 details = "Initializes the output buffer and loops reading characters until a maximum length of 120 (0x78) is reached or an input character does not belong to the permitted character set passed at [bp+6]. It also checks characters against a secondary character set to set a global flag at ds:[0054h] and updates an editor/UI state via an internal callback."
 callers = ["parse_and_emit_token@0935:12fc", "parse_decimal_integer@0935:1ec7", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed"]
-callees = ["0d72:5452", "0d72:5909", "0d72:604f", "get_next_char@0935:11a0"]
+callees = ["0d72:5909", "0d72:604f", "get_next_char@0935:11a0", "set_contains@0d72:5452"]
 
 [[params]]
 name = "out_buf"
@@ -88,7 +88,7 @@ desc = "Pointer to UI/input state structure"
 0935:12bc push ds
 0935:12bd push ax
 ; Check if character is in secondary set
-@jmp 0d72:5452
+@jmp set_contains@0d72:5452
 0935:12be call far ptr 0D72h:5452h
 0935:12c3 shr ax,1
 @jmp 'check_valid_set@3
@@ -117,7 +117,7 @@ desc = "Pointer to UI/input state structure"
 0935:12e2 push ds
 0935:12e3 push ax
 ; Check if character is in valid_chars set
-@jmp 0d72:5452
+@jmp set_contains@0d72:5452
 0935:12e4 call far ptr 0D72h:5452h
 0935:12e9 shr ax,1
 ; Stop reading if character is not in valid_chars

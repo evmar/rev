@@ -3,7 +3,7 @@ name = "parse_date_or_time"
 desc = "Parses a formatted date (MM/DD/YY) or time (HH:MM[:SS]) string."
 details = "Attempts to parse a date or time from the input scanner stream. If the delimiter following the first integer is '/' or '-', it parses day and year values (normalizing years >= 1900) and checks their ranges. If the delimiter is ':', it parses minutes and optional seconds. On failure, it rolls back the stream state and returns 0."
 callers = ["parse_argument_switches@0935:23ed"]
-callees = ["0d72:538c", "append_spoken_month_name@0935:1f63", "get_next_char@0935:11a0", "parse_decimal_integer@0935:1ec7", "path_append_component@0935:109f", "pronounce_two_digit_number@0935:1e4e", "tts_pronounce_number@0935:1742"]
+callees = ["append_spoken_month_name@0935:1f63", "get_next_char@0935:11a0", "parse_decimal_integer@0935:1ec7", "pascal_string_copy_bounded@0d72:538c", "path_append_component@0935:109f", "pronounce_two_digit_number@0935:1e4e", "tts_pronounce_number@0935:1742"]
 
 [[params]]
 name = "ctx"
@@ -169,7 +169,7 @@ desc = "1 if date or time was successfully parsed, 0 on failure"
 0935:22b4 mov si,1E36h
 0935:22b7 mov cx,3
 0935:22ba mov ax,ds
-@jmp 0d72:538c
+@jmp pascal_string_copy_bounded@0d72:538c
 0935:22bc call far ptr 0D72h:538Ch
 0935:22c1 mov ax,1
 0935:22c4 push ax

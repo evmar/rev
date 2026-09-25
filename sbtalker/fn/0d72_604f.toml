@@ -1,6 +1,6 @@
 ip = "0d72:604f"
 callers = ["read_filtered_token@0935:1261"]
-callees = ["0d72:5004", "0d72:64c8", "register_outermost_stack_frame@0d72:4fcc"]
+callees = ["0d72:64c8", "register_outermost_stack_frame@0d72:4fcc", "unregister_outermost_stack_frame@0d72:5004"]
 
 ---
 0d72:604f mov ax,4
@@ -89,7 +89,7 @@ callees = ["0d72:5004", "0d72:64c8", "register_outermost_stack_frame@0d72:4fcc"]
 @jmp '5
 0d72:60cc jne short 60AEh
 
-@jmp 0d72:5004
+@jmp unregister_outermost_stack_frame@0d72:5004
 0d72:60ce call far ptr 0D72h:5004h
 @mem ; [ss unknown]
 0d72:60d3 mov ax,[bp+6]

@@ -1,5 +1,5 @@
 ip = "0d72:5c2a"
-callers = ["0d72:5570", "0d72:55e0", "0d72:5615", "0d72:582a", "0d72:588e", "0d72:5909"]
+callers = ["pascal_string_equal@0d72:5570", "pascal_string_not_equal@0d72:55e0", "0d72:5615", "0d72:582a", "0d72:588e", "0d72:5909"]
 callees = ["0d72:6ecc", "0d72:6f1b", "unknown:mem", "unknown:reg"]
 
 ---

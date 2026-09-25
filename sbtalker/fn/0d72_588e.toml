@@ -1,6 +1,6 @@
 ip = "0d72:588e"
 callers = ["edit_adjust_digit@0935:0c4c", "apply_prosody_intonation@0935:0d7f", "apply_prosody_intonation@0935:0d7f", "apply_prosody_intonation@0935:0d7f", "apply_prosody_intonation@0935:0d7f", "path_append_component@0935:109f", "parse_and_emit_token@0935:12fc"]
-callees = ["0d72:5004", "0d72:507e", "0d72:5c2a", "0d72:5ca6", "register_outermost_stack_frame@0d72:4fcc"]
+callees = ["0d72:5c2a", "0d72:5ca6", "copy_far_bytes_forward@0d72:507e", "register_outermost_stack_frame@0d72:4fcc", "unregister_outermost_stack_frame@0d72:5004"]
 
 ---
 0d72:588e mov ax,8
@@ -67,9 +67,9 @@ callees = ["0d72:5004", "0d72:507e", "0d72:5c2a", "0d72:5ca6", "register_outermo
 0d72:58f2 sub ax,[bp+8]
 0d72:58f5 inc ax
 0d72:58f6 push ax
-@jmp 0d72:507e
+@jmp copy_far_bytes_forward@0d72:507e
 0d72:58f7 call far ptr 0D72h:507Eh
-@jmp 0d72:5004
+@jmp unregister_outermost_stack_frame@0d72:5004
 0d72:58fc call far ptr 0D72h:5004h
 0d72:5901 pop si
 0d72:5902 pop di

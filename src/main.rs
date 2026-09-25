@@ -81,7 +81,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         Command::Crawl(args) => {
             let mut db = DB::load(project)?;
-            crawl::run(&mut db, args).await?;
+            crawl::run(&mut db, args)?;
             Ok(())
         }
         Command::Queue(args) => {

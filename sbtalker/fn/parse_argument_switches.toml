@@ -3,7 +3,7 @@ name = "parse_argument_switches"
 desc = "Parses a command-line argument, file specification, and option switches"
 details = "This function parses an input command-line or argument token stream. It handles delimiter characters including comma (','), hyphen/minus ('-'), switch slash ('/'), dot/extension ('.'), and quotes ('''), validating syntax against sets of allowed characters, processing sub-options, and displaying diagnostic or error messages via a central output routine."
 callers = ["dispatch_command_input@0935:3cc9"]
-callees = ["0d72:5452", "0d72:5570", "0d72:55e0", "0d72:582a", "get_next_char@0935:11a0", "parse_date_or_time@0935:21f1", "parse_trailing_int@0935:1db1", "path_append_component@0935:109f", "read_filtered_token@0935:1261", "tts_pronounce_number@0935:1742"]
+callees = ["0d72:582a", "get_next_char@0935:11a0", "parse_date_or_time@0935:21f1", "parse_trailing_int@0935:1db1", "pascal_string_equal@0d72:5570", "pascal_string_not_equal@0d72:55e0", "path_append_component@0935:109f", "read_filtered_token@0935:1261", "set_contains@0d72:5452", "tts_pronounce_number@0935:1742"]
 
 [[params]]
 name = "ctx"
@@ -97,7 +97,7 @@ desc = "Pointer to parser context or argument token structure"
 @mem ; [ss unknown]
 0935:246a mov [bp-204h],dx
 ; Test if character is in character set (runtime set membership)
-@jmp 0d72:5452
+@jmp set_contains@0d72:5452
 0935:246e call far ptr 0D72h:5452h
 0935:2473 shr ax,1
 @jmp '8
@@ -166,7 +166,7 @@ desc = "Pointer to parser context or argument token structure"
 0935:24d5 mov ax,1E4Ah
 0935:24d8 push ds
 0935:24d9 push ax
-@jmp 0d72:5452
+@jmp set_contains@0d72:5452
 0935:24da call far ptr 0D72h:5452h
 0935:24df shr ax,1
 @jmp '12
@@ -238,7 +238,7 @@ desc = "Pointer to parser context or argument token structure"
 0935:2542 push ax
 @mem ; [ss unknown]
 0935:2543 mov [bp-206h],di
-@jmp 0d72:5570
+@jmp pascal_string_equal@0d72:5570
 0935:2547 call far ptr 0D72h:5570h
 0935:254c shr ax,1
 @jmp '15
@@ -266,7 +266,7 @@ desc = "Pointer to parser context or argument token structure"
 0935:2568 mov [bp-208h],di
 @mem ; [ss unknown]
 0935:256c mov [bp-20Ah],ax
-@jmp 0d72:5570
+@jmp pascal_string_equal@0d72:5570
 0935:2570 call far ptr 0D72h:5570h
 0935:2575 shr ax,1
 @jmp '18
@@ -281,7 +281,7 @@ desc = "Pointer to parser context or argument token structure"
 0935:2581 mov ax,1E68h
 0935:2584 push ds
 0935:2585 push ax
-@jmp 0d72:5570
+@jmp pascal_string_equal@0d72:5570
 0935:2586 call far ptr 0D72h:5570h
 0935:258b shr ax,1
 @jmp 'set_opt_type_2@24
@@ -306,7 +306,7 @@ desc = "Pointer to parser context or argument token structure"
 0935:25a4 mov [bp-20Ch],di
 @mem ; [ss unknown]
 0935:25a8 mov [bp-20Eh],ax
-@jmp 0d72:5570
+@jmp pascal_string_equal@0d72:5570
 0935:25ac call far ptr 0D72h:5570h
 0935:25b1 shr ax,1
 @jmp 'set_opt_type_2@24
@@ -318,7 +318,7 @@ desc = "Pointer to parser context or argument token structure"
 0935:25ba mov ax,1E6Eh
 0935:25bd push ds
 0935:25be push ax
-@jmp 0d72:5570
+@jmp pascal_string_equal@0d72:5570
 0935:25bf call far ptr 0D72h:5570h
 0935:25c4 shr ax,1
 @jmp 'set_opt_type_2@24
@@ -333,7 +333,7 @@ desc = "Pointer to parser context or argument token structure"
 0935:25d2 mov ax,1E72h
 0935:25d5 push ds
 0935:25d6 push ax
-@jmp 0d72:5452
+@jmp set_contains@0d72:5452
 0935:25d7 call far ptr 0D72h:5452h
 0935:25dc shr ax,1
 @jmp 'advance_cursor@25
@@ -350,7 +350,7 @@ desc = "Pointer to parser context or argument token structure"
 0935:25ed push ax
 @mem ; [ss unknown]
 0935:25ee mov [bp-210h],di
-@jmp 0d72:5570
+@jmp pascal_string_equal@0d72:5570
 0935:25f2 call far ptr 0D72h:5570h
 0935:25f7 shr ax,1
 @jmp 'advance_cursor@25
@@ -437,7 +437,7 @@ desc = "Pointer to parser context or argument token structure"
 0935:266f push ax
 @mem ; [ss unknown]
 0935:2670 mov [bp-204h],dx
-@jmp 0d72:5452
+@jmp set_contains@0d72:5452
 0935:2674 call far ptr 0D72h:5452h
 0935:2679 shr ax,1
 @jmp 'check_slash@32
@@ -536,7 +536,7 @@ desc = "Pointer to parser context or argument token structure"
 0935:2703 push ax
 @mem ; [ss unknown]
 0935:2704 mov [bp-204h],dx
-@jmp 0d72:5452
+@jmp set_contains@0d72:5452
 0935:2708 call far ptr 0D72h:5452h
 0935:270d shr ax,1
 @jmp '42
@@ -665,7 +665,7 @@ desc = "Pointer to parser context or argument token structure"
 0935:27ce push ax
 @mem ; [ss unknown]
 0935:27cf mov [bp-204h],dx
-@jmp 0d72:5452
+@jmp set_contains@0d72:5452
 0935:27d3 call far ptr 0D72h:5452h
 0935:27d8 shr ax,1
 @jmp '53
@@ -735,7 +735,7 @@ desc = "Pointer to parser context or argument token structure"
 0935:2840 mov ax,1E88h
 0935:2843 push ds
 0935:2844 push ax
-@jmp 0d72:5570
+@jmp pascal_string_equal@0d72:5570
 0935:2845 call far ptr 0D72h:5570h
 0935:284a shr ax,1
 @jmp '57
@@ -773,7 +773,7 @@ desc = "Pointer to parser context or argument token structure"
 0935:2880 push ax
 @mem ; [ss unknown]
 0935:2881 mov [bp-204h],di
-@jmp 0d72:5570
+@jmp pascal_string_equal@0d72:5570
 0935:2885 call far ptr 0D72h:5570h
 0935:288a shr ax,1
 @jmp '59
@@ -840,7 +840,7 @@ desc = "Pointer to parser context or argument token structure"
 0935:28ef push ax
 @mem ; [ss unknown]
 0935:28f0 mov [bp-204h],di
-@jmp 0d72:55e0
+@jmp pascal_string_not_equal@0d72:55e0
 0935:28f4 call far ptr 0D72h:55E0h
 0935:28f9 shr ax,1
 @jmp 'check_flag_56@65
@@ -945,7 +945,7 @@ desc = "Pointer to parser context or argument token structure"
 0935:299c push ax
 @mem ; [ss unknown]
 0935:299d mov [bp-204h],di
-@jmp 0d72:55e0
+@jmp pascal_string_not_equal@0d72:55e0
 0935:29a1 call far ptr 0D72h:55E0h
 0935:29a6 shr ax,1
 @jmp 'check_dot@68
@@ -1008,7 +1008,7 @@ desc = "Pointer to parser context or argument token structure"
 0935:29fd push ax
 @mem ; [ss unknown]
 0935:29fe mov [bp-204h],dx
-@jmp 0d72:5452
+@jmp set_contains@0d72:5452
 0935:2a02 call far ptr 0D72h:5452h
 0935:2a07 shr ax,1
 @jmp '74
@@ -1226,7 +1226,7 @@ desc = "Pointer to parser context or argument token structure"
 0935:2b54 push ax
 @mem ; [ss unknown]
 0935:2b55 mov [bp-204h],dx
-@jmp 0d72:5452
+@jmp set_contains@0d72:5452
 0935:2b59 call far ptr 0D72h:5452h
 0935:2b5e shr ax,1
 @jmp '88
@@ -1269,7 +1269,7 @@ desc = "Pointer to parser context or argument token structure"
 0935:2b98 push ax
 @mem ; [ss unknown]
 0935:2b99 mov [bp-206h],dx
-@jmp 0d72:5452
+@jmp set_contains@0d72:5452
 0935:2b9d call far ptr 0D72h:5452h
 0935:2ba2 shr ax,1
 @jmp '90

@@ -3,7 +3,7 @@ name = "edit_adjust_digit"
 desc = "Adjusts a single-digit numeric field (0-9) in an input buffer, updating the display string and cursor."
 details = "Calculates a new digit value by adding the delta parameter to a base offset, clamping the result to the range [0, 9]. If the value changed, it formats the digit to ASCII ('0'-'9'), optionally removes an existing digit from the buffer, inserts the new character via a string manipulation routine, and updates cursor/length offsets in the context structure."
 callers = ["apply_prosody_intonation@0935:0d7f"]
-callees = ["0d72:5452", "0d72:588e", "0d72:5909"]
+callees = ["0d72:588e", "0d72:5909", "set_contains@0d72:5452"]
 
 [[params]]
 name = "ctx"
@@ -124,7 +124,7 @@ desc = "Delta to adjust the numeric digit by"
 0935:0cd3 mov [bp-0Ch],dx
 @mem ; [ss unknown]
 0935:0cd6 mov [bp-0Eh],cx
-@jmp 0d72:5452
+@jmp set_contains@0d72:5452
 0935:0cd9 call far ptr 0D72h:5452h
 0935:0cde shr ax,1
 @jmp 'insert_digit@16
@@ -151,7 +151,7 @@ desc = "Delta to adjust the numeric digit by"
 0935:0cfe mov ax,1CCCh
 0935:0d01 push ds
 0935:0d02 push ax
-@jmp 0d72:5452
+@jmp set_contains@0d72:5452
 0935:0d03 call far ptr 0D72h:5452h
 0935:0d08 shr ax,1
 @jmp 'test_delete_flag@14

@@ -1,0 +1,63 @@
+ip = "0d72:55e0"
+name = "pascal_string_not_equal"
+desc = "Tests two length-prefixed Pascal strings for exact bytewise inequality."
+details = "Calls pascal_string_equal with the two far-pointer arguments and XORs its Boolean result with 1, returning true when lengths or any data bytes differ and false when the strings match. Comparison is case-sensitive and treats embedded zero bytes as ordinary data; two empty strings compare equal and therefore return false. Returns the Boolean in AL (AH is unspecified because only the low byte of the result local is initialized), preserves SI/DI/BP, registers and unregisters the runtime stack frame, and removes both far-pointer arguments with RETF 8."
+callers = ["parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed"]
+callees = ["0d72:5c2a", "pascal_string_equal@0d72:5570", "register_outermost_stack_frame@0d72:4fcc", "unregister_outermost_stack_frame@0d72:5004"]
+
+[[params]]
+name = "right"
+value = "[sp+4]"
+type = "*const u8"
+desc = "Far pointer (offset:segment words), at [bp+6] after the prologue, to a Pascal string: one unsigned length byte followed by that many data bytes."
+
+[[params]]
+name = "left"
+value = "[sp+8]"
+type = "*const u8"
+desc = "Far pointer (offset:segment words), at [bp+0Ah] after the prologue, to the other Pascal string."
+
+[ret]
+name = "not_equal"
+value = "al"
+type = "u8"
+desc = "1 if lengths or any data bytes differ, otherwise 0. AH is unspecified."
+
+---
+; Allocate two bytes of locals through the runtime prologue; only the result byte at BP-2 is initialized.
+0d72:55e0 mov ax,2
+@jmp 0d72:5c2a
+0d72:55e3 call 5C2Ah
+0d72:55e6 push di
+0d72:55e7 push si
+; Register the runtime stack frame with argument 0Ah.
+0d72:55e8 mov ax,0Ah
+0d72:55eb push ax
+@jmp register_outermost_stack_frame@0d72:4fcc
+0d72:55ec call far ptr 0D72h:4FCCh
+; Push left and right far pointers as arguments to pascal_string_equal.
+0d72:55f1 les di,[bp+0Ah]
+0d72:55f4 push es
+0d72:55f5 push di
+0d72:55f6 les di,[bp+6]
+0d72:55f9 push es
+0d72:55fa push di
+@jmp pascal_string_equal@0d72:5570
+0d72:55fb call far ptr 0D72h:5570h
+; Invert the normalized equality Boolean to obtain inequality and save it across frame cleanup.
+0d72:5600 xor al,1
+@mem ; [ss unknown]
+0d72:5602 mov [bp-2],al
+; Unregister the runtime stack frame.
+@jmp unregister_outermost_stack_frame@0d72:5004
+0d72:5605 call far ptr 0D72h:5004h
+; Reload result as a word; AL is the Boolean, while AH comes from an uninitialized local byte.
+@mem ; [ss unknown]
+0d72:560a mov ax,[bp-2]
+0d72:560d pop si
+0d72:560e pop di
+0d72:560f mov sp,bp
+0d72:5611 pop bp
+; Far return, discarding eight bytes for the two far-pointer arguments.
+0d72:5612 retf 8
+

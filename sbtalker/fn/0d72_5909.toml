@@ -1,6 +1,6 @@
 ip = "0d72:5909"
 callers = ["edit_adjust_digit@0935:0c4c", "path_append_component@0935:109f", "path_append_component@0935:109f", "read_filtered_token@0935:1261", "parse_and_emit_token@0935:12fc"]
-callees = ["0d72:5004", "0d72:507e", "0d72:50a4", "0d72:5c2a", "0d72:5ca6", "register_outermost_stack_frame@0d72:4fcc"]
+callees = ["0d72:5c2a", "0d72:5ca6", "copy_far_bytes_backward@0d72:50a4", "copy_far_bytes_forward@0d72:507e", "register_outermost_stack_frame@0d72:4fcc", "unregister_outermost_stack_frame@0d72:5004"]
 
 ---
 0d72:5909 mov ax,0Ch
@@ -64,7 +64,7 @@ callees = ["0d72:5004", "0d72:507e", "0d72:50a4", "0d72:5c2a", "0d72:5ca6", "reg
 0d72:5963 sub ax,[bp+6]
 0d72:5966 inc ax
 0d72:5967 push ax
-@jmp 0d72:50a4
+@jmp copy_far_bytes_backward@0d72:50a4
 0d72:5968 call far ptr 0D72h:50A4h
 0d72:596d les di,[bp+0Eh]
 0d72:5970 push es
@@ -80,7 +80,7 @@ callees = ["0d72:5004", "0d72:507e", "0d72:50a4", "0d72:5c2a", "0d72:5ca6", "reg
 0d72:597f push di
 @mem ; [ss unknown]
 0d72:5980 push word ptr [bp+12h]
-@jmp 0d72:507e
+@jmp copy_far_bytes_forward@0d72:507e
 0d72:5983 call far ptr 0D72h:507Eh
 0d72:5988 les di,[bp+8]
 @mem ; [es unknown]
@@ -91,7 +91,7 @@ callees = ["0d72:5004", "0d72:507e", "0d72:50a4", "0d72:5c2a", "0d72:5ca6", "reg
 0d72:5993 xor ah,ah
 @mem ; [es unknown]
 0d72:5995 mov es:[di],al
-@jmp 0d72:5004
+@jmp unregister_outermost_stack_frame@0d72:5004
 0d72:5998 call far ptr 0D72h:5004h
 0d72:599d pop si
 0d72:599e pop di

@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use runtime::SegOfs;
 
-use crate::db::DB;
+use crate::{crawl::crawl, db::DB};
 use anyhow::anyhow;
 
 /// agentically process queue
@@ -65,7 +65,11 @@ pub fn codex_task(_db: &DB, task: &Task) -> anyhow::Result<()> {
 pub fn run(path: PathBuf, args: Args) -> anyhow::Result<()> {
     let count = args.count.unwrap_or(1000);
     for _ in 0..count {
-        let db = DB::load(path.clone())?;
+        let mut db = DB::load(path.clone())?;
+        if crawl(&mut db)? {
+            db.write()?;
+            continue;
+        }
         let Some(task) = next_task(&db) else {
             return Ok(());
         };

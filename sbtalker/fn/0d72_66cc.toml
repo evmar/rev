@@ -1,6 +1,6 @@
 ip = "0d72:66cc"
 callers = ["write_stdout_near_buffer@0d72:4b0c"]
-callees = ["0d72:507e", "0d72:676b", "0d72:67ff"]
+callees = ["0d72:676b", "0d72:67ff", "copy_far_bytes_forward@0d72:507e"]
 
 ---
 0d72:66cc mov ax,8
@@ -40,7 +40,7 @@ callees = ["0d72:507e", "0d72:676b", "0d72:67ff"]
 0d72:66fe push ax
 @mem ; [ss unknown]
 0d72:66ff push word ptr [bp-4]
-@jmp 0d72:507e
+@jmp copy_far_bytes_forward@0d72:507e
 0d72:6702 call far ptr 0D72h:507Eh
 0d72:6707 mov ax,1
 0d72:670a push ax

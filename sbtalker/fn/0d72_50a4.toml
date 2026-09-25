@@ -1,0 +1,26 @@
+callers = ["0d72:5909"]
+ip = "0d72:50a4"
+
+---
+0d72:50a4 push bp
+0d72:50a5 mov bp,sp
+0d72:50a7 push ds
+0d72:50a8 mov ax,[bp+0Eh]
+0d72:50ab mov ds,ax
+0d72:50ad mov si,[bp+0Ch]
+0d72:50b0 mov ax,[bp+0Ah]
+0d72:50b3 mov es,ax
+0d72:50b5 mov di,[bp+8]
+0d72:50b8 mov cx,[bp+6]
+0d72:50bb add si,cx
+0d72:50bd dec si
+0d72:50be add di,cx
+0d72:50c0 dec di
+0d72:50c1 std
+0d72:50c2 rep movsb
+0d72:50c4 cld
+0d72:50c5 pop ds
+0d72:50c6 mov sp,bp
+0d72:50c8 pop bp
+0d72:50c9 retf 0Ah
+

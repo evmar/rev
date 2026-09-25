@@ -1,0 +1,91 @@
+callers = ["0d72:66cc", "0d72:673a"]
+callees = ["0d72:6ecc", "0d72:6f1b", "unknown:mem", "unknown:reg"]
+ip = "0d72:676b"
+
+---
+0d72:676b pop cx
+0d72:676c push bp
+0d72:676d mov bp,sp
+0d72:676f mov bx,sp
+0d72:6771 sub bx,ax
+@jmp '3
+0d72:6773 jb short 677Fh
+
+0d72:6775 cmp bx,ds:[792h]
+@jmp '3
+0d72:6779 jb short 677Fh
+
+0d72:677b mov sp,bx
+@jmp unknown:reg
+0d72:677d jmp cx
+
+0d72:677f push cs
+0d72:6780 push cx
+@jmp '4
+0d72:6781 jmp far ptr 0D72h:6B88h
+
+0d72:6b88 pop cx
+0d72:6b89 pop dx
+0d72:6b8a mov bx,sp
+0d72:6b8c sub bx,ax
+@jmp '7
+0d72:6b8e jb short 6B9Bh
+
+0d72:6b90 cmp bx,ds:[792h]
+@jmp '7
+0d72:6b94 jb short 6B9Bh
+
+0d72:6b96 mov sp,bx
+0d72:6b98 push dx
+0d72:6b99 push cx
+0d72:6b9a retf
+
+0d72:6b9b mov ax,ds:[78Eh]
+0d72:6b9e inc ax
+@jmp '9
+0d72:6b9f jne short 6BA6h
+
+0d72:6ba1 xor ax,ax
+@jmp '10
+0d72:6ba3 jmp near ptr 6D29h
+
+0d72:6ba6 push dx
+0d72:6ba7 push cx
+@jmp unknown:mem
+0d72:6ba8 jmp dword ptr ds:[78Eh]
+
+0d72:6d29 push ax
+@jmp 0d72:6ecc
+0d72:6d2a call far ptr 0D72h:6ECCh
+@jmp 0d72:6f1b
+0d72:6d2f call far ptr 0D72h:6F1Bh
+0d72:6d34 mov ax,0FFh
+0d72:6d37 push ax
+0d72:6d38 push cs
+@jmp unknown:mem
+0d72:6d39 call word ptr ds:[798h]
+0d72:6d3d add [bp+33h],dl
+0d72:6d40 idiv byte ptr [bx+di+42h]
+0d72:6d44 xor ah,ah
+0d72:6d46 cld
+
+0d72:6d47 lodsb
+0d72:6d48 xor ah,al
+@jmp '11
+0d72:6d4a loop 6D47h
+
+0d72:6d4c xor ah,55h
+@jmp '14
+0d72:6d4f je short 6D62h
+
+@jmp 0d72:6ecc
+0d72:6d51 call far ptr 0D72h:6ECCh
+0d72:6d56 mov ax,1
+0d72:6d59 push ax
+@jmp 0d72:6f1b
+0d72:6d5a call far ptr 0D72h:6F1Bh
+0d72:6d5f mov ax,1
+
+0d72:6d62 pop si
+0d72:6d63 retf
+

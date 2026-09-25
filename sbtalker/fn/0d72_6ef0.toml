@@ -1,0 +1,38 @@
+callers = ["0d72:6f1b"]
+ip = "0d72:6ef0"
+
+---
+0d72:6ef0 push bp
+0d72:6ef1 mov bp,sp
+0d72:6ef3 push si
+0d72:6ef4 push di
+0d72:6ef5 push ds
+0d72:6ef6 pop es
+0d72:6ef7 mov dx,[bp+6]
+0d72:6efa mov si,22C6h
+
+0d72:6efd lodsw
+0d72:6efe cmp ax,dx
+@jmp '4
+0d72:6f00 je short 6F12h
+
+0d72:6f02 inc ax
+0d72:6f03 xchg si,ax
+@jmp '4
+0d72:6f04 je short 6F12h
+
+0d72:6f06 xchg di,ax
+0d72:6f07 xor ax,ax
+0d72:6f09 mov cx,0FFFFh
+0d72:6f0c repne scasb
+0d72:6f0e mov si,di
+@jmp '1
+0d72:6f10 jmp short 6EFDh
+
+0d72:6f12 xchg si,ax
+0d72:6f13 pop di
+0d72:6f14 pop si
+0d72:6f15 mov sp,bp
+0d72:6f17 pop bp
+0d72:6f18 retf 2
+

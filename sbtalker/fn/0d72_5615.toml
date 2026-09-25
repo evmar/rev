@@ -1,0 +1,81 @@
+callers = ["bst_find_value@0935:0080"]
+callees = ["0d72:5004", "0d72:5c2a", "register_outermost_stack_frame@0d72:4fcc"]
+ip = "0d72:5615"
+
+---
+0d72:5615 mov ax,8
+@jmp 0d72:5c2a
+0d72:5618 call 5C2Ah
+0d72:561b push di
+0d72:561c push si
+0d72:561d mov ax,0Ah
+0d72:5620 push ax
+@jmp register_outermost_stack_frame@0d72:4fcc
+0d72:5621 call far ptr 0D72h:4FCCh
+0d72:5626 les di,[bp+0Ah]
+0d72:5629 mov al,es:[di]
+0d72:562c les di,[bp+6]
+0d72:562f cmp al,es:[di]
+0d72:5632 mov cx,0
+@jmp '2
+0d72:5635 jae short 5638h
+
+0d72:5637 inc cx
+
+0d72:5638 mov [bp-2],cl
+0d72:563b mov dx,ax
+0d72:563d mov al,es:[di]
+0d72:5640 xor ah,ah
+0d72:5642 mov [bp-6],ax
+0d72:5645 test byte ptr [bp-2],1
+@jmp '4
+0d72:5649 je short 5651h
+
+0d72:564b xchg dx,ax
+0d72:564c xor ah,ah
+0d72:564e mov [bp-6],ax
+
+0d72:5651 mov ax,[bp-6]
+0d72:5654 mov [bp-8],ax
+0d72:5657 cmp word ptr [bp-8],1
+@jmp '11
+0d72:565b jb short 568Eh
+
+0d72:565d mov word ptr [bp-4],1
+
+0d72:5662 mov di,[bp-4]
+0d72:5665 les bx,[bp+0Ah]
+0d72:5668 mov al,es:[bx+di]
+0d72:566b les bx,[bp+6]
+0d72:566e cmp al,es:[bx+di]
+@jmp '10
+0d72:5671 je short 5681h
+
+0d72:5673 cmp al,es:[bx+di]
+0d72:5676 mov cx,0
+@jmp '9
+0d72:5679 jae short 567Ch
+
+0d72:567b inc cx
+
+0d72:567c mov [bp-2],cl
+@jmp '11
+0d72:567f jmp short 568Eh
+
+0d72:5681 mov ax,[bp-4]
+0d72:5684 inc ax
+0d72:5685 mov [bp-4],ax
+0d72:5688 dec ax
+0d72:5689 cmp ax,[bp-8]
+@jmp '6
+0d72:568c jne short 5662h
+
+@jmp 0d72:5004
+0d72:568e call far ptr 0D72h:5004h
+0d72:5693 mov ax,[bp-2]
+0d72:5696 pop si
+0d72:5697 pop di
+0d72:5698 mov sp,bp
+0d72:569a pop bp
+0d72:569b retf 8
+

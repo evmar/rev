@@ -1,0 +1,14 @@
+ip = "0d72:02ea"
+
+---
+0d72:02ea pop ds
+@jmp '1
+0d72:02eb jmp short 0303h
+
+0d72:0303 inc si
+0d72:0304 inc si
+0d72:0305 inc si
+0d72:0306 inc si
+0d72:0307 inc byte ptr [bp+3]
+0d72:030a ret
+

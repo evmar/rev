@@ -1,0 +1,57 @@
+callers = ["parse_date_or_time@0935:21f1", "parse_date_or_time@0935:21f1", "parse_date_or_time@0935:21f1", "parse_date_or_time@0935:21f1", "parse_date_or_time@0935:21f1"]
+callees = ["0d72:538c", "tts_pronounce_number@0935:1742"]
+ip = "0935:1e4e"
+
+---
+0935:1e4e push bp
+0935:1e4f mov bp,sp
+0935:1e51 sub sp,2
+0935:1e55 mov di,[bp+4]
+0935:1e58 mov dx,di
+0935:1e5a lea di,[di-106h]
+0935:1e5e push ss
+0935:1e5f pop es
+0935:1e60 mov si,1DBEh
+0935:1e63 mov cx,3
+0935:1e66 mov ax,ds
+0935:1e68 mov [bp-2],dx
+@jmp 0d72:538c
+0935:1e6b call far ptr 0D72h:538Ch
+0935:1e70 cmp word ptr [bp+6],0Ah
+@jmp '2
+0935:1e74 jl short 1E8Bh
+
+0935:1e76 mov di,[bp+4]
+0935:1e79 mov cx,0Ah
+0935:1e7c mov ax,[bp+6]
+0935:1e7f cwd
+0935:1e80 idiv cx
+0935:1e82 add ax,30h
+0935:1e85 xor ah,ah
+0935:1e87 mov [di-105h],al
+
+0935:1e8b mov cx,0Ah
+0935:1e8e mov ax,[bp+6]
+0935:1e91 cwd
+0935:1e92 idiv cx
+0935:1e94 mov [bp+6],dx
+0935:1e97 mov di,[bp+4]
+0935:1e9a mov ax,[bp+6]
+0935:1e9d add ax,30h
+0935:1ea0 xor ah,ah
+0935:1ea2 mov [di-104h],al
+0935:1ea6 mov ax,1
+0935:1ea9 push ax
+0935:1eaa mov di,[bp+4]
+0935:1ead lea ax,[di-106h]
+0935:1eb1 push ax
+0935:1eb2 mov [bp-2],di
+0935:1eb5 mov bx,[bp+4]
+0935:1eb8 mov bx,[bx+4]
+0935:1ebb push word ptr [bx+4]
+@jmp tts_pronounce_number@0935:1742
+0935:1ebe call 1742h
+0935:1ec1 mov sp,bp
+0935:1ec3 pop bp
+0935:1ec4 ret 4
+

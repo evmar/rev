@@ -1,0 +1,79 @@
+ip = "0d72:01f0"
+name = "update_flagged_character_scan"
+desc = "Update a scan counter and position for a table-flagged character, with special handling for a QU pair."
+details = "Tests bit 0 of DS:[BX+0x4A9C]; if set, increments byte SS:[BP+3] and adds word SS:[BP+0x0C] to SI. If the bit is clear, the same update occurs only when the step is not 1 and CH=0x51 ('Q'), CL=0x55 ('U'); this path adds the step twice in total. After either accepted case, replaces BL with CH (preserving BH), tests bit 0 of CS:[BX+0x4A9C], and stores DI to SS:[BP+0x0E] if set; otherwise that word is unchanged. The semantic meaning of the table flag and state fields is not established by this routine alone; AL, flags, and, on accepted cases, BL are clobbered."
+
+[[params]]
+name = "table_index"
+value = "bx"
+type = "u16"
+desc = "Initial index into the byte table at DS:0x4A9C. On an accepted case BL is replaced with CH for a second lookup in CS; BH is preserved, so a plain byte index requires BH=0."
+
+[[params]]
+name = "character_pair"
+value = "cx"
+type = "u16"
+desc = "CH supplies the second lookup character; the fallback accepts exactly CH='Q' and CL='U'."
+
+[[params]]
+name = "scan_state"
+value = "bp"
+type = "u16"
+desc = "SS-relative state base: byte +3 is a counter, word +0x0C is the scan step, and word +0x0E receives DI conditionally."
+
+[[params]]
+name = "scan_position"
+value = "si"
+type = "u16"
+desc = "In/out scan position; unchanged on rejection, advanced by one step on ordinary acceptance or two steps on the QU fallback, with 16-bit wraparound."
+
+[[params]]
+name = "candidate_position"
+value = "di"
+type = "u16"
+desc = "Value saved to SS:[BP+0x0E] when the second table lookup has bit 0 set."
+
+---
+; Initial lookup uses DS (no segment override); test classification bit 0.
+0d72:01f0 mov al,[bx+4A9Ch]
+0d72:01f4 and al,1
+@jmp 'check_qu_fallback@4
+0d72:01f6 je short 020Dh
+
+; Increment the byte counter modulo 256 and advance SI by the configured word step.
+@label count_and_advance
+0d72:01f8 inc byte ptr [bp+3]
+0d72:01fb add si,[bp+0Ch]
+; Use CH as the low byte of the next table index; BH remains unchanged.
+0d72:01fe mov bl,ch
+; Second lookup explicitly uses CS, unlike the initial DS lookup.
+0d72:0200 mov al,cs:[bx+4A9Ch]
+0d72:0205 and al,1
+@jmp 'done@3
+0d72:0207 je short 020Ch
+
+; Save DI only if the CH-indexed table entry has bit 0 set.
+0d72:0209 mov [bp+0Eh],di
+
+@label done
+0d72:020c ret
+
+; An initially unflagged character can be accepted only if the step differs from 1 and CH:CL is 'Q':'U'.
+@label check_qu_fallback
+0d72:020d cmp word ptr [bp+0Ch],1
+@jmp 'done@3
+0d72:0211 je short 020Ch
+
+0d72:0213 cmp ch,51h
+@jmp 'done@3
+0d72:0216 jne short 020Ch
+
+0d72:0218 cmp cl,55h
+@jmp 'done@3
+0d72:021b jne short 020Ch
+
+; Extra advance for the QU fallback; jumping to count_and_advance adds the step again, but increments the counter only once.
+0d72:021d add si,[bp+0Ch]
+@jmp 'count_and_advance@1
+0d72:0220 jmp short 01F8h
+

@@ -44,6 +44,7 @@ fn cmd_new(db: &mut DB, NewArgs { addr }: NewArgs) -> anyhow::Result<()> {
 #[derive(argh::FromArgs)]
 #[argh(subcommand, name = "read")]
 struct ReadArgs {
+    /// function address or name
     #[argh(positional)]
     addr_or_name: String,
 }

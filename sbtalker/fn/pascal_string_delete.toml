@@ -3,7 +3,7 @@ name = "pascal_string_delete"
 desc = "Delete a character range from a far Pascal string in place, shifting the remaining suffix left."
 details = "Arguments at entry are count ([sp+4]), 1-based position ([sp+6]), string offset/segment ([sp+8]/[sp+0Ah]), and an unused capacity word ([sp+0Ch], callers pass 255); the string's first byte is its length. Checks unsigned 16-bit (position + count - 1) against the original length and calls fatal-error helper 0d72:5ca6 if greater, then stores the low byte of (length - count) and copies new_length - position + 1 bytes forward from string + position + count to string + position; no terminator is copied or cleared. The check does not independently validate position >= 1 or arithmetic overflow, so invalid inputs can pass it; the routine reserves eight local bytes, registers/unregisters its runtime stack frame, preserves SI/DI/BP and DS, has no defined return value, and discards ten argument bytes with RETF 0Ah."
 callers = ["edit_adjust_digit@0935:0c4c", "apply_prosody_intonation@0935:0d7f", "apply_prosody_intonation@0935:0d7f", "apply_prosody_intonation@0935:0d7f", "apply_prosody_intonation@0935:0d7f", "path_append_component@0935:109f", "parse_and_emit_token@0935:12fc"]
-callees = ["0d72:5c2a", "0d72:5ca6", "copy_far_bytes_forward@0d72:507e", "register_outermost_stack_frame@0d72:4fcc", "unregister_outermost_stack_frame@0d72:5004"]
+callees = ["checked_stack_frame_prologue@0d72:5c2a", "copy_far_bytes_forward@0d72:507e", "register_outermost_stack_frame@0d72:4fcc", "report_pascal_string_bounds_error@0d72:5ca6", "unregister_outermost_stack_frame@0d72:5004"]
 
 [[params]]
 name = "count"
@@ -38,7 +38,7 @@ desc = "Unused string capacity argument; observed callers pass 255."
 ---
 ; Allocate an 8-byte local frame through the checked prologue helper; resulting BP+6 is count.
 0d72:588e mov ax,8
-@jmp 0d72:5c2a
+@jmp checked_stack_frame_prologue@0d72:5c2a
 0d72:5891 call 5C2Ah
 0d72:5894 push di
 0d72:5895 push si
@@ -64,7 +64,7 @@ desc = "Unused string capacity argument; observed callers pass 255."
 0d72:58b2 jbe short 58B9h
 
 ; Deletion extends beyond the original length: invoke fatal string-range error helper.
-@jmp 0d72:5ca6
+@jmp report_pascal_string_bounds_error@0d72:5ca6
 0d72:58b4 call far ptr 0D72h:5CA6h
 
 ; Set length byte to (old_length - count) modulo 256.

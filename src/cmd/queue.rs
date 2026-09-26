@@ -2,8 +2,7 @@ use std::path::PathBuf;
 
 use runtime::SegOfs;
 
-use crate::{crawl::crawl, db::DB};
-use anyhow::anyhow;
+use crate::{cmd::codex, crawl::crawl, db::DB};
 
 /// agentically process queue
 #[derive(argh::FromArgs)]
@@ -51,14 +50,8 @@ pub fn codex_task(_db: &DB, task: &Task) -> anyhow::Result<()> {
         }
         Task::LabelMemory(_addr) => todo!(),
     };
+    codex::run(&task)?;
 
-    let cmd = "./agent.sh";
-    let mut process = std::process::Command::new("./agent.sh")
-        .current_dir("codex")
-        .arg(task)
-        .spawn()
-        .map_err(|err| anyhow!("{cmd}: {err}"))?;
-    let _exit = process.wait()?;
     Ok(())
 }
 

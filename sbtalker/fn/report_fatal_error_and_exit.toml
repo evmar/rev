@@ -2,7 +2,7 @@ ip = "0d72:4bac"
 name = "report_fatal_error_and_exit"
 desc = "Print a fatal diagnostic with optional source and saved runtime context, then terminate the DOS process."
 details = "Writes a leading two-byte separator, a fixed prefix and a DS-relative length-prefixed message, then a decimal diagnostic number and an optional nonzero hexadecimal detail; numeric fields are five characters wide. If DS:05F8h is nonzero, appends optional decimal DS:05FAh and two length-prefixed context names; if DS:0602h is nonzero, prints saved context words and the current DS in hexadecimal. Calls 0d72:656d, which passes DS:060Eh to runtime cleanup and DOS INT 21h/AH=4Ch termination (normally no return); exact literal strings, separator bytes and semantic meanings of individual context fields are not established by the available disassembly."
-callers = ["0d72:5ca6"]
+callers = ["report_pascal_string_bounds_error@0d72:5ca6"]
 callees = ["0d72:656d", "0d72:673a", "register_outermost_stack_frame@0d72:4fcc", "unregister_outermost_stack_frame@0d72:5004", "write_stdout_near_buffer@0d72:4b0c", "write_stdout_u16_field@0d72:4b25"]
 
 [[params]]

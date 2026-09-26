@@ -3,7 +3,7 @@ name = "pascal_string_equal"
 desc = "Tests two length-prefixed Pascal strings for exact bytewise equality."
 details = "Compares the unsigned length bytes at offset 0 of two far-pointer strings; unequal lengths return false, while two empty strings return true. For equal nonzero lengths, compares bytes 1 through length and returns false on the first mismatch, otherwise true (case-sensitive, with embedded zero bytes treated as ordinary data). Returns the Boolean in AL (AH is unspecified because only the low byte of the result local is initialized), preserves SI/DI/BP, uses the runtime stack-frame registration helpers, and removes both far-pointer arguments with RETF 8."
 callers = ["bst_find_value@0935:0080", "path_append_component@0935:109f", "path_append_component@0935:109f", "parse_and_emit_token@0935:12fc", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "pascal_string_not_equal@0d72:55e0"]
-callees = ["0d72:5c2a", "register_outermost_stack_frame@0d72:4fcc", "unregister_outermost_stack_frame@0d72:5004"]
+callees = ["checked_stack_frame_prologue@0d72:5c2a", "register_outermost_stack_frame@0d72:4fcc", "unregister_outermost_stack_frame@0d72:5004"]
 
 [[params]]
 name = "right"
@@ -26,7 +26,7 @@ desc = "1 if the lengths and all data bytes match, otherwise 0. AH is unspecifie
 ---
 ; Allocate six bytes of locals via runtime prologue: result byte at BP-2, index word at BP-4, length word at BP-6.
 0d72:5570 mov ax,6
-@jmp 0d72:5c2a
+@jmp checked_stack_frame_prologue@0d72:5c2a
 0d72:5573 call 5C2Ah
 0d72:5576 push di
 0d72:5577 push si

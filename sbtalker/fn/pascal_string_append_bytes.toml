@@ -3,7 +3,7 @@ name = "pascal_string_append_bytes"
 desc = "Append a counted byte sequence to a length-prefixed Pascal string, checking destination capacity."
 details = "Reads the destination length byte, adds count using 16-bit arithmetic, and uses a signed comparison against capacity; if the sum is greater, calls the fatal-error helper at 0d72:5ca6 (error code 0x27). Otherwise copies count bytes forward from the far source pointer to destination + 1 + old_length, then rereads and increases the destination length byte without adding a NUL terminator; intended inputs are valid Pascal string lengths/capacities (0..255), and arbitrary overlapping buffers are not supported by the forward copy. The caller at 0935:24be passes capacity 255 and a token payload excluding its length byte; the routine allocates four local bytes through 0d72:5c2a, registers/unregisters its runtime stack frame, preserves SI/DI/BP/DS, and returns with RETF 0Ch and no defined return value."
 callers = ["parse_argument_switches@0935:23ed"]
-callees = ["0d72:5c2a", "0d72:5ca6", "copy_far_bytes_forward@0d72:507e", "register_outermost_stack_frame@0d72:4fcc", "unregister_outermost_stack_frame@0d72:5004"]
+callees = ["checked_stack_frame_prologue@0d72:5c2a", "copy_far_bytes_forward@0d72:507e", "register_outermost_stack_frame@0d72:4fcc", "report_pascal_string_bounds_error@0d72:5ca6", "unregister_outermost_stack_frame@0d72:5004"]
 
 [[params]]
 name = "source_offset"
@@ -44,7 +44,7 @@ desc = "Maximum destination payload length, excluding length byte (normally <=25
 ---
 ; Allocate four local bytes via shared stack-checking prologue; BP points to saved BP.
 0d72:582a mov ax,4
-@jmp 0d72:5c2a
+@jmp checked_stack_frame_prologue@0d72:5c2a
 0d72:582d call 5C2Ah
 0d72:5830 push di
 0d72:5831 push si
@@ -67,7 +67,7 @@ desc = "Maximum destination payload length, excluding length byte (normally <=25
 0d72:5849 jle short 5850h
 
 ; Capacity exceeded: fatal-error helper reports error 27h.
-@jmp 0d72:5ca6
+@jmp report_pascal_string_bounds_error@0d72:5ca6
 0d72:584b call far ptr 0D72h:5CA6h
 
 ; Push source far pointer for copy_far_bytes_forward.

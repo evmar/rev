@@ -3,7 +3,7 @@ name = "pascal_string_not_equal"
 desc = "Tests two length-prefixed Pascal strings for exact bytewise inequality."
 details = "Calls pascal_string_equal with the two far-pointer arguments and XORs its Boolean result with 1, returning true when lengths or any data bytes differ and false when the strings match. Comparison is case-sensitive and treats embedded zero bytes as ordinary data; two empty strings compare equal and therefore return false. Returns the Boolean in AL (AH is unspecified because only the low byte of the result local is initialized), preserves SI/DI/BP, registers and unregisters the runtime stack frame, and removes both far-pointer arguments with RETF 8."
 callers = ["parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed"]
-callees = ["0d72:5c2a", "pascal_string_equal@0d72:5570", "register_outermost_stack_frame@0d72:4fcc", "unregister_outermost_stack_frame@0d72:5004"]
+callees = ["checked_stack_frame_prologue@0d72:5c2a", "pascal_string_equal@0d72:5570", "register_outermost_stack_frame@0d72:4fcc", "unregister_outermost_stack_frame@0d72:5004"]
 
 [[params]]
 name = "right"
@@ -26,7 +26,7 @@ desc = "1 if lengths or any data bytes differ, otherwise 0. AH is unspecified."
 ---
 ; Allocate two bytes of locals through the runtime prologue; only the result byte at BP-2 is initialized.
 0d72:55e0 mov ax,2
-@jmp 0d72:5c2a
+@jmp checked_stack_frame_prologue@0d72:5c2a
 0d72:55e3 call 5C2Ah
 0d72:55e6 push di
 0d72:55e7 push si

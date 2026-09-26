@@ -1,0 +1,123 @@
+ip = "0d72:5ffd"
+name = "checked_stack_frame_prologue_copy"
+desc = "Establish a BP frame and reserve AX local bytes after checking the runtime stack limit."
+details = "Called with a near CALL, this helper removes the continuation IP into CX, saves the old BP, sets BP to the saved word, and computes candidate SP = BP - AX. It rejects unsigned wraparound or a candidate below DS:[0792h]; otherwise it commits SP and jumps to the continuation. On failure it passes a far continuation to the shared allocator at 0d72:6b88, which retries the check and either resumes the caller, invokes the installed overflow handler at DS:[078Eh], or prints diagnostic code 0 and terminates through DS:[0798h]."
+callers = ["report_pascal_string_bounds_error@0d72:5ca6"]
+callees = ["0d72:6ecc", "0d72:6f1b", "unknown:mem", "unknown:reg"]
+
+[[params]]
+name = "local_bytes"
+value = "ax"
+type = "u16"
+desc = "Number of bytes to reserve below the saved BP."
+
+---
+; Remove the near CALL continuation, save BP in its place, and establish the caller's frame.
+0d72:5ffd pop cx
+0d72:5ffe push bp
+0d72:5fff mov bp,sp
+; Compute candidate SP = BP - AX; unsigned borrow indicates stack-offset wraparound.
+0d72:6001 mov bx,sp
+0d72:6003 sub bx,ax
+@jmp 'stack_allocation_failed@3
+0d72:6005 jb short 6011h
+
+; Require candidate SP >= unsigned runtime lower stack bound DS:[0792h].
+@mem ; [ds unknown]
+0d72:6007 cmp bx,ds:[792h]
+@jmp 'stack_allocation_failed@3
+0d72:600b jb short 6011h
+
+; Commit the allocation and jump to the saved near continuation; the caller later restores BP and SP.
+0d72:600d mov sp,bx
+@jmp unknown:reg
+0d72:600f jmp cx
+
+; Build a far continuation CS:CX and tail-jump to the shared checked allocator.
+@label stack_allocation_failed
+0d72:6011 push cs
+0d72:6012 push cx
+@jmp '4
+0d72:6013 jmp far ptr 0D72h:6B88h
+
+; Pop continuation IP:CS into CX:DX and retry the allocation after removing the far address.
+0d72:6b88 pop cx
+0d72:6b89 pop dx
+0d72:6b8a mov bx,sp
+0d72:6b8c sub bx,ax
+@jmp 'dispatch_stack_overflow@7
+0d72:6b8e jb short 6B9Bh
+
+@mem ; [ds unknown]
+0d72:6b90 cmp bx,ds:[792h]
+@jmp 'dispatch_stack_overflow@7
+0d72:6b94 jb short 6B9Bh
+
+; Commit allocation, restore the far continuation, and RETF to the caller's next instruction.
+0d72:6b96 mov sp,bx
+0d72:6b98 push dx
+0d72:6b99 push cx
+0d72:6b9a retf
+
+; Check the low word of the overflow-handler pointer; FFFFh means no handler is installed.
+@label dispatch_stack_overflow
+@mem ; [ds unknown]
+0d72:6b9b mov ax,ds:[78Eh]
+0d72:6b9e inc ax
+@jmp 'invoke_stack_overflow_handler@9
+0d72:6b9f jne short 6BA6h
+
+; Select diagnostic code 0 for the default overflow error path.
+0d72:6ba1 xor ax,ax
+@jmp 'default_stack_overflow_error@10
+0d72:6ba3 jmp near ptr 6D29h
+
+; Restore the far continuation and jump through the installed overflow handler at DS:[078Eh].
+@label invoke_stack_overflow_handler
+0d72:6ba6 push dx
+0d72:6ba7 push cx
+@jmp unknown:mem
+@mem ; [ds unknown]
+0d72:6ba8 jmp dword ptr ds:[78Eh]
+
+; Print the default runtime diagnostic with code 0.
+@label default_stack_overflow_error
+0d72:6d29 push ax
+@jmp 0d72:6ecc
+0d72:6d2a call far ptr 0D72h:6ECCh
+@jmp 0d72:6f1b
+0d72:6d2f call far ptr 0D72h:6F1Bh
+; Pass 00FFh to the indirect runtime termination entry at DS:[0798h]; normal execution should not return.
+0d72:6d34 mov ax,0FFh
+0d72:6d37 push ax
+0d72:6d38 push cs
+@jmp unknown:mem
+@mem ; [ds unknown]
+0d72:6d39 call word ptr ds:[798h]
+; Apparent fallthrough after termination is unrelated code, beginning with a separately decoded function at 6d3e.
+@mem ; [ss unknown]
+0d72:6d3d add [bp+33h],dl
+0d72:6d40 idiv byte ptr [bx+di+42h]
+0d72:6d44 xor ah,ah
+0d72:6d46 cld
+
+0d72:6d47 lodsb
+0d72:6d48 xor ah,al
+@jmp '11
+0d72:6d4a loop 6D47h
+
+0d72:6d4c xor ah,55h
+@jmp '14
+0d72:6d4f je short 6D62h
+
+@jmp 0d72:6ecc
+0d72:6d51 call far ptr 0D72h:6ECCh
+0d72:6d56 mov ax,1
+0d72:6d59 push ax
+@jmp 0d72:6f1b
+0d72:6d5a call far ptr 0D72h:6F1Bh
+0d72:6d5f mov ax,1
+
+0d72:6d62 pop si
+0d72:6d63 retf
+

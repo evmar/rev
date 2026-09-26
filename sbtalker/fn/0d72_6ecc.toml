@@ -1,5 +1,5 @@
 ip = "0d72:6ecc"
-callers = ["0d72:5c2a", "0d72:5c2a", "0d72:5ffd", "0d72:5ffd", "0d72:64c8", "0d72:64c8", "0d72:676b", "0d72:676b", "0d72:6b88", "0d72:6b88", "0d72:6d3e"]
+callers = ["checked_stack_frame_prologue@0d72:5c2a", "checked_stack_frame_prologue@0d72:5c2a", "checked_stack_frame_prologue_copy@0d72:5ffd", "checked_stack_frame_prologue_copy@0d72:5ffd", "0d72:64c8", "0d72:64c8", "0d72:676b", "0d72:676b", "0d72:6b88", "0d72:6b88", "0d72:6d3e"]
 callees = ["0d72:6f1b", "unknown:mem"]
 
 ---

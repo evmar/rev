@@ -143,6 +143,7 @@ impl Function {
         Ok(func)
     }
 
+    #[allow(unused)]
     pub fn clone_bare(&self) -> Function {
         Function {
             ip: self.ip,

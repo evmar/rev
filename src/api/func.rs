@@ -6,7 +6,8 @@ use runtime::SegOfs;
 
 use crate::function::{Function, Instr};
 
-#[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
+#[schemars(inline)]
 pub struct FunctionUpdate {
     /// short function name, a guess at what the function does
     pub name: String,
@@ -25,7 +26,8 @@ pub struct FunctionUpdate {
     pub inline_comments: Vec<Annotation>,
 }
 
-#[derive(serde::Deserialize, Debug, schemars::JsonSchema)]
+#[derive(serde::Serialize, serde::Deserialize, Debug, schemars::JsonSchema)]
+#[schemars(inline)]
 pub struct Annotation {
     pub addr: String,
     pub text: String,
@@ -41,6 +43,7 @@ impl Annotation {
 
 #[derive(serde::Deserialize, serde::Serialize, Debug, ts_rs::TS, schemars::JsonSchema)]
 #[ts(export)]
+#[schemars(inline)]
 pub struct Var {
     /// an identifier name for the variable within the function
     pub name: String,

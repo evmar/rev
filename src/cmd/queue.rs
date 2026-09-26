@@ -2,13 +2,13 @@ use std::path::PathBuf;
 
 use runtime::SegOfs;
 
-use crate::{cmd::codex, crawl::crawl, db::DB};
+use crate::{ai, crawl::crawl, db::DB};
 
 /// agentically process queue
 #[derive(argh::FromArgs)]
 #[argh(subcommand, name = "queue")]
 pub struct Args {
-    /// run one task
+    /// run a limited number of tasks
     #[argh(option)]
     count: Option<usize>,
 }
@@ -42,20 +42,24 @@ pub fn next_task(db: &DB) -> Option<Task> {
     None
 }
 
-pub fn codex_task(_db: &DB, task: &Task) -> anyhow::Result<()> {
-    let task = match task {
+pub async fn run_task(db: &mut DB, task: &Task) -> anyhow::Result<()> {
+    let prompt = match task {
         Task::DescribeFunction(ip) => {
             println!("task: describe function {ip}");
-            format!("analyze {ip} and write analysis back to database")
+            format!(
+                "analyze function {ip} and write analysis back to database using write_function()"
+            )
         }
         Task::LabelMemory(_addr) => todo!(),
     };
-    codex::run(&task)?;
+    // codex::run(&prompt)?;
+    ai::run(db, prompt).await?;
+    db.write()?;
 
     Ok(())
 }
 
-pub fn run(path: PathBuf, args: Args) -> anyhow::Result<()> {
+pub async fn run(path: PathBuf, args: Args) -> anyhow::Result<()> {
     let count = args.count.unwrap_or(1000);
     for _ in 0..count {
         let mut db = DB::load(path.clone())?;
@@ -67,7 +71,7 @@ pub fn run(path: PathBuf, args: Args) -> anyhow::Result<()> {
         let Some(task) = next_task(&db) else {
             return Ok(());
         };
-        codex_task(&db, &task)?;
+        run_task(&mut db, &task).await?;
     }
     Ok(())
 }

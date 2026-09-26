@@ -1,25 +1,44 @@
 ip = "0d72:64c8"
+name = "checked_stack_frame_prologue_3"
+desc = "Establish BP frame and reserve AX bytes on stack with stack overflow checking."
+details = "Invoked via near CALL in function prologues (e.g. set_union_into_buffer). Pops the return offset into CX, sets up BP frame (push bp; mov bp, sp), then checks if allocating AX bytes (sp - ax) would cause borrow or drop below the stack limit at ds:[0792h]. If safe, updates SP and jumps back to CX. Otherwise, pushes CS:CX and jumps to the far stack-check/overflow handler at 0d72:6b88."
 callers = ["set_union_into_buffer@0d72:604f"]
 callees = ["0d72:6ecc", "0d72:6f1b", "unknown:mem", "unknown:reg"]
 
+[[params]]
+name = "local_size"
+value = "ax"
+type = "u16"
+desc = "Number of bytes of local stack space to reserve"
+
 ---
+; pop return offset into CX
 0d72:64c8 pop cx
+; set up standard stack frame
 0d72:64c9 push bp
 0d72:64ca mov bp,sp
+; check candidate SP (sp - ax)
 0d72:64cc mov bx,sp
 0d72:64ce sub bx,ax
+; jump if underflow/borrow
 @jmp '3
 0d72:64d0 jb short 64DCh
 
+; check against stack limit
 @mem ; [ds unknown]
 0d72:64d2 cmp bx,ds:[792h]
+; jump if candidate SP < ds:[0792h]
 @jmp '3
 0d72:64d6 jb short 64DCh
 
+; allocate stack space for local variables
 0d72:64d8 mov sp,bx
+; return to caller via CX
 @jmp unknown:reg
 0d72:64da jmp cx
 
+; stack limit exceeded: push far return address and jump to handler
+@label handle_stack_overflow
 0d72:64dc push cs
 0d72:64dd push cx
 @jmp '4

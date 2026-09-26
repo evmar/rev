@@ -27,7 +27,6 @@ mod xref;
 enum Command {
     Init(init::Args),
     Func(func::Args),
-    AI(ai::Args),
     Crawl(crawl::Args),
     RoundTrip(RoundTrip),
     Web(web::Args),
@@ -68,11 +67,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             func::run(&mut db, args)?;
             Ok(())
         }
-        Command::AI(args) => {
-            let mut db = DB::load(project)?;
-            ai::run(&mut db, args).await?;
-            Ok(())
-        }
         Command::RoundTrip(args) => {
             let mut db = DB::load(project)?;
             eval::eval_all(&mut db, args.fns);
@@ -85,7 +79,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             Ok(())
         }
         Command::Queue(args) => {
-            queue::run(project, args)?;
+            queue::run(project, args).await?;
             Ok(())
         }
     }

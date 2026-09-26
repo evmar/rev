@@ -68,9 +68,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             Ok(())
         }
         Command::RoundTrip(args) => {
+            let now = std::time::Instant::now();
             let mut db = DB::load(project)?;
+            println!("load time: {:?}", now.elapsed());
+
+            let now = std::time::Instant::now();
             eval::eval_all(&mut db, args.fns);
+            println!("process time: {:?}", now.elapsed());
+
+            let now = std::time::Instant::now();
             db.write()?;
+            println!("write time: {:?}", now.elapsed());
+
             Ok(())
         }
         Command::Crawl(args) => {

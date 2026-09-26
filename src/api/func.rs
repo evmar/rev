@@ -4,7 +4,7 @@ use std::collections::HashMap;
 
 use runtime::SegOfs;
 
-use crate::function::{Function, Instr};
+use crate::db::{Function, Instr};
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[schemars(inline)]

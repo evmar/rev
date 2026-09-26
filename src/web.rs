@@ -82,7 +82,7 @@ fn function_ref(xref: &XRef) -> Option<XRefDetail> {
     }
 }
 
-fn function_detail<'a>(db: &'a DB, func: &'a crate::function::Function) -> FunctionDetail<'a> {
+fn function_detail<'a>(db: &'a DB, func: &'a crate::db::Function) -> FunctionDetail<'a> {
     let memory = func
         .blocks
         .iter()

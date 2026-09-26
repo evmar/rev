@@ -3,8 +3,7 @@ use std::collections::HashMap;
 use runtime::SegOfs;
 
 use crate::{
-    db::DB,
-    function::{Block, Instr},
+    db::{Block, DB, Instr},
     ir,
 };
 

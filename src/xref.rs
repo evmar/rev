@@ -2,10 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use runtime::SegOfs;
 
-use crate::{
-    db::DB,
-    function::{Function, Instr},
-};
+use crate::db::{DB, Function, Instr};
 
 pub fn update_all_xrefs(db: &mut DB) -> bool {
     let names = db

@@ -5,10 +5,9 @@ use std::{
 
 use runtime::SegOfs;
 
+use super::{Function, Memory};
 use crate::{
-    function::Function,
     load::{EXE, load_exe},
-    memory::Memory,
     xref,
 };
 

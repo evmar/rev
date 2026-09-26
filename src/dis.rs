@@ -1,9 +1,8 @@
-use crate::{
-    db::DB,
-    function::{Block, Function, Instr},
-};
-use runtime::SegOfs;
 use std::collections::{BTreeMap, VecDeque};
+
+use runtime::SegOfs;
+
+use crate::db::{Block, DB, Function, Instr};
 
 pub fn dis_func<'db>(db: &'db mut DB, ip: SegOfs) {
     if !db.functions.contains_key(&ip) {

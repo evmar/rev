@@ -5,11 +5,8 @@ use std::{
 
 use runtime::SegOfs;
 
-use super::{Function, Memory};
-use crate::{
-    load::{EXE, load_exe},
-    xref,
-};
+use super::{Function, Memory, xref};
+use crate::load::{EXE, load_exe};
 
 #[derive(Default)]
 pub struct DB {

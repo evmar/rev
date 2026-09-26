@@ -1,9 +1,8 @@
 use std::collections::VecDeque;
 
 use crate::{
-    db::DB,
+    db::{DB, XRef, xref},
     dis::dis_func,
-    xref::{self, XRef},
 };
 
 /// crawl references

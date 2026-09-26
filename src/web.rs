@@ -16,7 +16,7 @@ use runtime::SegOfs;
 use tokio::sync::RwLock;
 use tower_http::services::ServeDir;
 
-use crate::{db::DB, load::EXE, xref::XRef};
+use crate::{db::DB, db::XRef, load::EXE};
 
 #[derive(serde::Serialize, ts_rs::TS)]
 #[ts(export)]

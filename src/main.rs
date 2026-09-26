@@ -1,11 +1,6 @@
 use std::path::PathBuf;
 
-use runtime::SegOfs;
-
-use crate::{
-    cmd::{func, queue},
-    db::DB,
-};
+use crate::db::DB;
 
 mod ai;
 mod api;
@@ -14,21 +9,19 @@ mod crawl;
 mod db;
 mod dis;
 mod eval;
-mod init;
 mod ir;
 mod load;
 mod web;
-mod xref;
 
 #[derive(argh::FromArgs)]
 #[argh(subcommand)]
 enum Command {
-    Init(init::Args),
-    Func(func::Args),
+    Init(cmd::init::Args),
+    Func(cmd::func::Args),
     Crawl(crawl::Args),
-    RoundTrip(RoundTrip),
+    RoundTrip(cmd::roundtrip::Args),
     Web(web::Args),
-    Queue(queue::Args),
+    Queue(cmd::queue::Args),
 }
 
 /// wip
@@ -42,14 +35,6 @@ struct Args {
     cmd: Command,
 }
 
-/// load and save db
-#[derive(argh::FromArgs)]
-#[argh(subcommand, name = "roundtrip")]
-struct RoundTrip {
-    #[argh(positional, from_str_fn(SegOfs::parse))]
-    fns: Vec<SegOfs>,
-}
-
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let Args { project, cmd } = argh::from_env::<Args>();
@@ -59,25 +44,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             web::run(db, args).await?;
             Ok(())
         }
-        Command::Init(args) => init::init(project, args),
+        Command::Init(args) => cmd::init::init(project, args),
         Command::Func(args) => {
             let mut db = DB::load(project)?;
-            func::run(&mut db, args)?;
+            cmd::func::run(&mut db, args)?;
             Ok(())
         }
         Command::RoundTrip(args) => {
-            let now = std::time::Instant::now();
-            let mut db = DB::load(project)?;
-            println!("load time: {:?}", now.elapsed());
-
-            let now = std::time::Instant::now();
-            eval::eval_all(&mut db, args.fns);
-            println!("process time: {:?}", now.elapsed());
-
-            let now = std::time::Instant::now();
-            db.write()?;
-            println!("write time: {:?}", now.elapsed());
-
+            cmd::roundtrip::run(project, args)?;
             Ok(())
         }
         Command::Crawl(args) => {
@@ -86,7 +60,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             Ok(())
         }
         Command::Queue(args) => {
-            queue::run(project, args).await?;
+            cmd::queue::run(project, args).await?;
             Ok(())
         }
     }

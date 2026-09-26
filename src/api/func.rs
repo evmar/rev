@@ -1,4 +1,4 @@
-//! API to database, used by ai interfaces.
+//! Function write API.
 
 use std::collections::HashMap;
 

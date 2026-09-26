@@ -68,7 +68,7 @@ desc = "Near pointer to the destination set in DS."
 @mem ; [ss unknown]
 0d72:6072 mov [bp-2],ax
 0d72:6075 cmp ax,20h
-@jmp '1
+@jmp 'clear_next_byte@1
 0d72:6078 jne short 6065h
 
 ; Copy base_set[0..=base_last_index] into the cleared destination.
@@ -99,7 +99,7 @@ desc = "Near pointer to the destination set in DS."
 0d72:609d dec ax
 @mem ; [ss unknown]
 0d72:609e cmp ax,[bp-4]
-@jmp '3
+@jmp 'copy_next_byte@3
 0d72:60a1 jne short 6085h
 
 ; OR or_set[0..=or_last_index] into the destination.
@@ -131,7 +131,7 @@ desc = "Near pointer to the destination set in DS."
 0d72:60c8 dec ax
 @mem ; [ss unknown]
 0d72:60c9 cmp ax,[bp-4]
-@jmp '5
+@jmp 'or_next_byte@5
 0d72:60cc jne short 60AEh
 
 @jmp unregister_outermost_stack_frame@0d72:5004

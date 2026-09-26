@@ -1,17 +1,17 @@
 use openrouter_rs::types::TypedTool;
 use runtime::SegOfs;
 
-use crate::db::DB;
+use crate::{api, db::DB};
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
-pub struct ReadMemoryParams {
+pub struct ReadMemoryTool {
     /// address to read
     addr: String,
     /// number of bytes to read
     len: usize,
 }
 
-impl TypedTool for ReadMemoryParams {
+impl TypedTool for ReadMemoryTool {
     fn name() -> &'static str {
         "read_memory"
     }
@@ -21,17 +21,12 @@ impl TypedTool for ReadMemoryParams {
     }
 }
 
-impl ReadMemoryParams {
-    pub fn call(
-        db: &DB,
-        ReadMemoryParams { addr, len }: ReadMemoryParams,
-    ) -> anyhow::Result<String> {
+impl ReadMemoryTool {
+    pub fn call(db: &DB, ReadMemoryTool { addr, len }: ReadMemoryTool) -> anyhow::Result<String> {
         let addr = SegOfs::parse(&addr).map_err(|_| anyhow::anyhow!("bad address {:?}", addr))?;
         println!("Reading {} bytes from memory at {}", len, addr);
-        let ofs = addr.abs() as usize;
-        let Some(buf) = db.mem.get(ofs..ofs + len) else {
-            anyhow::bail!("invalid location");
-        };
+
+        let buf = api::read_memory(db, addr, len)?;
 
         use std::fmt::Write;
         let mut str = String::new();

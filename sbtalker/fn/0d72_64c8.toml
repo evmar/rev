@@ -1,5 +1,5 @@
 ip = "0d72:64c8"
-callers = ["0d72:604f"]
+callers = ["set_union_into_buffer@0d72:604f"]
 callees = ["0d72:6ecc", "0d72:6f1b", "unknown:mem", "unknown:reg"]
 
 ---

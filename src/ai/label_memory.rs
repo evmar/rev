@@ -1,47 +1,16 @@
 use openrouter_rs::{
     Message, OpenRouterClient,
     api::chat::ChatCompletionRequest,
-    types::{ResponseFormat, ResponseUsage, Role, TypedTool},
+    types::{ResponseFormat, ResponseUsage, Role},
 };
 use runtime::SegOfs;
 use schemars::schema_for;
 
-use crate::{ai::read_memory::ReadMemoryParams, db::DB, memory::MemoryLocation};
-
-#[derive(Debug, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
-struct GetFunctionParams {
-    /// address of function to get
-    addr: String,
-}
-
-impl TypedTool for GetFunctionParams {
-    fn name() -> &'static str {
-        "get_function"
-    }
-
-    fn description() -> &'static str {
-        "get a function's name, description, and a dump of its assembly code"
-    }
-}
-
-impl GetFunctionParams {
-    fn call(db: &DB, params: &GetFunctionParams) -> anyhow::Result<String> {
-        let addr = SegOfs::parse(&params.addr)
-            .map_err(|_| anyhow::anyhow!("bad address {:?}", params.addr))?;
-        let func = db
-            .functions
-            .get(&addr)
-            .ok_or_else(|| anyhow::anyhow!("unknown function {addr}"))?;
-        println!(
-            "Reading function {} ({})",
-            params.addr,
-            func.name.as_deref().unwrap_or("unknown name")
-        );
-        let mut buf = String::new();
-        func.serialize(&mut buf)?;
-        Ok(buf)
-    }
-}
+use crate::{
+    ai::tool::{GetFunctionTool, ReadMemoryTool},
+    db::DB,
+    memory::MemoryLocation,
+};
 
 #[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
 struct Response {
@@ -167,8 +136,8 @@ impl<'client> AgentLoop<'client> {
     async fn run_one(&mut self) -> anyhow::Result<Option<String>> {
         let request = ChatCompletionRequest::builder()
             .model("google/gemini-3.8-flash")
-            .typed_tool::<GetFunctionParams>()
-            .typed_tool::<ReadMemoryParams>()
+            .typed_tool::<GetFunctionTool>()
+            .typed_tool::<ReadMemoryTool>()
             .response_format(ResponseFormat::json_schema(
                 "label",
                 true,
@@ -192,12 +161,12 @@ impl<'client> AgentLoop<'client> {
             self.messages
                 .push(Message::assistant_with_tool_calls("", tool_calls.to_vec()));
             for call in tool_calls.iter() {
-                let out = if call.is_tool::<GetFunctionParams>() {
-                    let params = call.parse_params::<GetFunctionParams>()?;
-                    GetFunctionParams::call(self.db, &params)
-                } else if call.is_tool::<ReadMemoryParams>() {
-                    let params = call.parse_params::<ReadMemoryParams>()?;
-                    ReadMemoryParams::call(self.db, params)
+                let out = if call.is_tool::<GetFunctionTool>() {
+                    let params = call.parse_params::<GetFunctionTool>()?;
+                    GetFunctionTool::call(self.db, &params)
+                } else if call.is_tool::<ReadMemoryTool>() {
+                    let params = call.parse_params::<ReadMemoryTool>()?;
+                    ReadMemoryTool::call(self.db, params)
                 } else {
                     panic!("unexpected call {call:?}");
                 };

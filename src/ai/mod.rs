@@ -1,6 +1,6 @@
 mod annotate_function;
 mod label_memory;
-mod read_memory;
+mod tool;
 
 use crate::db::DB;
 use openrouter_rs::{OpenRouterClient, types::ResponseUsage};

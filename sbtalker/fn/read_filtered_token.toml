@@ -3,7 +3,7 @@ name = "read_filtered_token"
 desc = "Reads characters into a buffer while they belong to an allowed character set"
 details = "Initializes the output buffer and loops reading characters until a maximum length of 120 (0x78) is reached or an input character does not belong to the permitted character set passed at [bp+6]. It also checks characters against a secondary character set to set a global flag at ds:[0054h] and updates an editor/UI state via an internal callback."
 callers = ["parse_and_emit_token@0935:12fc", "parse_decimal_integer@0935:1ec7", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed"]
-callees = ["0d72:604f", "get_next_char@0935:11a0", "pascal_string_insert_bytes@0d72:5909", "set_contains@0d72:5452"]
+callees = ["get_next_char@0935:11a0", "pascal_string_insert_bytes@0d72:5909", "set_contains@0d72:5452", "set_union_into_buffer@0d72:604f"]
 
 [[params]]
 name = "out_buf"
@@ -83,7 +83,7 @@ desc = "Pointer to UI/input state structure"
 0935:12b3 lea ax,[bp-22h]
 0935:12b6 push ax
 ; Perform set operation into local temporary set [bp-22h]
-@jmp 0d72:604f
+@jmp set_union_into_buffer@0d72:604f
 0935:12b7 call far ptr 0D72h:604Fh
 0935:12bc push ds
 0935:12bd push ax

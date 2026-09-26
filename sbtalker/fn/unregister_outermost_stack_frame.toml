@@ -2,7 +2,7 @@ ip = "0d72:5004"
 name = "unregister_outermost_stack_frame"
 desc = "Clears the registered runtime stack-frame marker when the owning frame exits."
 details = "Pairs with register_outermost_stack_frame at 0d72:4fcc: computes boundary = ((entry BP & 0xFFFE) + 2) modulo 65536 and clears DS:0602h if boundary >= the saved marker using an unsigned comparison. A deeper nested caller whose boundary is below the marker leaves it unchanged; an already-zero marker remains zero, and saved context words DS:0604h..0608h are not modified. Takes no stack arguments and returns with RETF, preserving BP and clobbering AX, BX and arithmetic flags; AX contains the computed boundary but is not an established return value."
-callers = ["report_fatal_error_and_exit@0d72:4bac", "pascal_string_equal@0d72:5570", "pascal_string_not_equal@0d72:55e0", "pascal_string_less_than@0d72:5615", "pascal_string_append_bytes@0d72:582a", "pascal_string_delete@0d72:588e", "pascal_string_insert_bytes@0d72:5909", "report_pascal_string_bounds_error@0d72:5ca6", "0d72:604f"]
+callers = ["report_fatal_error_and_exit@0d72:4bac", "pascal_string_equal@0d72:5570", "pascal_string_not_equal@0d72:55e0", "pascal_string_less_than@0d72:5615", "pascal_string_append_bytes@0d72:582a", "pascal_string_delete@0d72:588e", "pascal_string_insert_bytes@0d72:5909", "report_pascal_string_bounds_error@0d72:5ca6", "set_union_into_buffer@0d72:604f"]
 
 [[params]]
 name = "caller_frame_pointer"

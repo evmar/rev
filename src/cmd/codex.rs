@@ -1,5 +1,7 @@
 //! Run `codex exec` subprocess, parsing its JSON output.
 
+#![allow(unused)]
+
 use std::io::BufReader;
 
 use anyhow::anyhow;

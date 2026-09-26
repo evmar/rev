@@ -1,4 +1,5 @@
 ip = "0935:12fc"
+len = 1027
 name = "parse_and_emit_token"
 desc = "Parses and processes a token or identifier from the input context"
 details = "Extracts a Pascal string token using a helper, strips any trailing matched characters, and queries a symbol table. If defined, it emits a formatted representation of the symbol; otherwise, it handles prefixes, special characters (such as periods, quotes, or table-driven character classes), and dispatches token records to an emitter routine."

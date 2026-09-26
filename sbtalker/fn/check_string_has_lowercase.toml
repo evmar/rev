@@ -1,4 +1,5 @@
 ip = "0935:1210"
+len = 81
 name = "check_string_has_lowercase"
 desc = "Checks if a Pascal string contains lowercase ASCII characters and sets a global flag."
 details = "Loads a far pointer to a Pascal-style string located at offset +0Ch of the input structure. Iterates through the characters from index 1 to the string length, checking if any character is between 'a' and 'z'. If a lowercase character is found, it sets the global byte at ds:0052h to 1."

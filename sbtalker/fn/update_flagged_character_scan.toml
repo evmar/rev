@@ -1,4 +1,5 @@
 ip = "0d72:01f0"
+len = 50
 name = "update_flagged_character_scan"
 desc = "Update a scan counter and position for a table-flagged character, with special handling for a QU pair."
 details = "Tests bit 0 of DS:[BX+0x4A9C]; if set, increments byte SS:[BP+3] and adds word SS:[BP+0x0C] to SI. If the bit is clear, the same update occurs only when the step is not 1 and CH=0x51 ('Q'), CL=0x55 ('U'); this path adds the step twice in total. After either accepted case, replaces BL with CH (preserving BH), tests bit 0 of CS:[BX+0x4A9C], and stores DI to SS:[BP+0x0E] if set; otherwise that word is unchanged. The semantic meaning of the table flag and state fields is not established by this routine alone; AL, flags, and, on accepted cases, BL are clobbered."

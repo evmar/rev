@@ -1,4 +1,5 @@
 ip = "0d72:01d0"
+len = 31
 name = "match_h_digraph_after_c_test"
 desc = "Completes the C/S/T prefix test for an H digraph and consumes the two-byte unit on success."
 details = "This is an overlapping tail fragment of match_class_04_context_with_h_digraph, entered immediately after CMP AL, 0x43 with AL holding the byte adjacent to H. It accepts C from the incoming ZF state or explicitly tests for S and T; a match subtracts two from SI and increments the shared context-match count at [BP+3], while failure returns without changing either value."

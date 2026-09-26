@@ -1,4 +1,5 @@
 ip = "0823:0dc7"
+len = 28
 name = "init_mcb_bounds"
 desc = "Reads the memory block size from its MCB and calculates segment boundaries"
 details = "Accesses the DOS Memory Control Block (MCB) located one paragraph before the segment stored at cs:[0x8E]. It extracts the block size in paragraphs from offset 0x03 of the MCB, saves it into cs:[0x90], and calculates the upper segment limit (base + size + 1) which is saved into cs:[0x0A9]."

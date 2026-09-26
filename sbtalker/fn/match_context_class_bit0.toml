@@ -1,4 +1,5 @@
 ip = "0d72:01ef"
+len = 51
 name = "match_context_class_bit0"
 desc = "Consume a context character belonging to character-class flag bit 0, with a backward QU digraph special case."
 details = "Tests the character in BL against bit 0 of the CS character-class table at 4A9Ch. On a match it increments the context-match count and advances SI by the signed scan step; when scanning backward it also accepts the Q/U digraph as a two-character unit. If the following character (CH) has the same class flag, it saves DI in [BP+0Eh], likely as a continuation/backtracking position."

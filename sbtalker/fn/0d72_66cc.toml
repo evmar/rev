@@ -1,4 +1,5 @@
 ip = "0d72:66cc"
+len = 110
 callers = ["write_stdout_near_buffer@0d72:4b0c"]
 callees = ["0d72:676b", "0d72:67ff", "copy_far_bytes_forward@0d72:507e"]
 

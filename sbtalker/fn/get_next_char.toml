@@ -1,4 +1,5 @@
 ip = "0935:11a0"
+len = 112
 name = "get_next_char"
 desc = "Reads and preprocesses the next character from a length-prefixed string."
 details = "Fetches the character at global index ds:[160h] from a length-prefixed string located at offset 0Ch in the provided structure. Clamps control characters under ASCII 0x20 to spaces, checks the character against a filter table at ds:1CDCh, optionally transforms it via an auxiliary routine, and increments the global character offset before returning."

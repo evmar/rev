@@ -1,4 +1,5 @@
 ip = "0d72:507e"
+len = 38
 name = "copy_far_bytes_forward"
 desc = "Copy a byte count from a far source pointer to a far destination pointer, proceeding forward."
 details = "Loads DS:SI from the source and ES:DI from the destination, clears DF, and copies count/2 words followed by one byte when count is odd; MOVSW preserves the carry set by SHR for the odd-byte test. The caller pushes source segment/offset, destination segment/offset, then count; RETF 0Ah removes all five argument words, with no defined return value. Preserves DS and BP, clobbers AX/CX/SI/DI/ES, and leaves DF clear; offsets advance with 16-bit wrapping without segment adjustment, and overlapping regions require a forward-safe layout (the string-deletion caller shifts data toward lower addresses)."

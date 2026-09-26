@@ -1,4 +1,5 @@
 ip = "0d72:0190"
+len = 4
 name = "advance_input_cursor_by_scan_stride"
 desc = "Advances the input cursor by one signed scan step and returns to the rule matcher."
 details = "Adds the caller-frame scan stride at [BP+0Ch] to SI, so the same block can move forward or backward through the input buffer. This address is also the shared tail of the surrounding class-0x01 context matcher; it assumes BP already refers to the active matcher stack frame."

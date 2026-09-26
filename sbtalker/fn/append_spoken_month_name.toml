@@ -1,4 +1,5 @@
 ip = "0935:1f63"
+len = 654
 name = "append_spoken_month_name"
 desc = "Appends the pronunciation fragment for a numeric month (1-12) to the date parser's speech output."
 details = "Dispatches on the supplied month number through a 12-entry jump table, constructs the corresponding prebuilt Pascal-string pronunciation fragment on the stack, and passes it to path_append_component. The output record is obtained by following nested fields from the caller frame/context; month values below 1 fall through to the first case, while validated callers supply only 1 through 12."

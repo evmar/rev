@@ -1,4 +1,5 @@
 ip = "0d72:0184"
+len = 37
 name = "match_class_01_context_with_reverse_qu"
 desc = "Matches one pronunciation-context character with property bit 0x01, treating reverse-scanned QU as one logical match."
 details = "Tests the current input byte through the character-property table at CS:4A9C. A normal class match increments the caller's shared match count and advances SI by scan_stride; when scanning backward, an otherwise-unmatched U preceded by Q is accepted as a QU digraph, advances SI by two strides, and still increments the count only once."

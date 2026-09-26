@@ -1,4 +1,5 @@
 ip = "0d72:5615"
+len = 137
 name = "pascal_string_less_than"
 desc = "Tests whether the first Pascal string is lexicographically less than the second, using unsigned byte comparisons."
 details = "Accepts two far pointers to byte-length-prefixed strings: lhs at [bp+0Ah] and rhs at [bp+6]. Initializes the result to lhs.length < rhs.length, then compares bytes 1 through min(lhs.length, rhs.length); the first unequal byte replaces the result with lhs[i] < rhs[i], so equal strings return false and a proper prefix sorts first. Returns the Boolean in AL (AH is unspecified because only the low byte of the result local is initialized), preserves SI/DI/BP, and removes eight argument bytes with RETF 8; stack allocation and outermost-frame registration use runtime helpers."

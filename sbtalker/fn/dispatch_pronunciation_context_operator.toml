@@ -1,4 +1,5 @@
 ip = "0d72:013c"
+len = 29
 name = "dispatch_pronunciation_context_operator"
 desc = "Dispatches a pronunciation-rule context metacharacter to its specialized matcher."
 details = "Uses the decoded context operator in the caller's shared frame to select a near handler from a code-segment jump table. It supplies the current input byte and the adjacent byte in the active scan direction; the selected handler updates the shared match flag, input cursor, and optional context backtracking marker before returning directly to apply_pronunciation_rules."

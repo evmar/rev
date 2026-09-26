@@ -1,4 +1,5 @@
 ip = "0d72:0213"
+len = 15
 name = "handle_qu_pair"
 desc = "Recognize an uppercase QU pair and update the caller's scan state."
 details = "Returns without changing scan state unless CH is 'Q' (0x51) and CL is 'U' (0x55). On a match, adds the word at SS:[BP+0x0C] to SI twice (with 16-bit wraparound), increments the byte at SS:[BP+3], and tests bit 0 of CS:[0x4A9C+BX] after replacing BL with CH; if set, stores DI to SS:[BP+0x0E]. BH is preserved, so interpreting the lookup as a simple character-indexed table requires the caller to supply BH=0; the precise meanings of the counter and saved DI are not established by this routine alone."

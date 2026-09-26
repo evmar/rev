@@ -1,4 +1,5 @@
 ip = "0d72:0160"
+len = 36
 name = "match_repeatable_class_10_context_after_test"
 desc = "Continues the repeatable class-0x10 context matcher after testing the current input byte."
 details = "Entry ZF is the result of ANDing the current byte's character-property value with 0x10 at 0d72:015e; a zero result rejects the current byte. On a match, this block increments the shared match count, advances SI by the signed scan stride, and checks whether the adjacent byte is also class 0x10. If repetition is permitted by property bit 0x01 on the next encoded rule token, it returns to the shared dispatcher; otherwise it saves DI as the context backtracking marker."

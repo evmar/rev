@@ -1,4 +1,5 @@
 ip = "0823:084d"
+len = 44
 name = "hook_int15h"
 desc = "Hooks interrupt 15h (BIOS System Services)"
 details = "Disables interrupts to safely hook INT 15h (vector at 0000:0054h). It saves the existing ISR vector to CS:[0086h] and CS:[0088h], then overwrites the interrupt vector table with the address of a new handler at 0823:07FCh."

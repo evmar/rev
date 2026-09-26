@@ -1,4 +1,5 @@
 ip = "0d72:5004"
+len = 28
 name = "unregister_outermost_stack_frame"
 desc = "Clears the registered runtime stack-frame marker when the owning frame exits."
 details = "Pairs with register_outermost_stack_frame at 0d72:4fcc: computes boundary = ((entry BP & 0xFFFE) + 2) modulo 65536 and clears DS:0602h if boundary >= the saved marker using an unsigned comparison. A deeper nested caller whose boundary is below the marker leaves it unchanged; an already-zero marker remains zero, and saved context words DS:0604h..0608h are not modified. Takes no stack arguments and returns with RETF, preserving BP and clobbering AX, BX and arithmetic flags; AX contains the computed boundary but is not an established return value."

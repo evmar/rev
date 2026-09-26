@@ -1,4 +1,5 @@
 ip = "0d72:50a4"
+len = 40
 name = "copy_far_bytes_backward"
 desc = "Copy a byte count from a far source pointer to a far destination pointer, proceeding backward."
 details = "Loads DS:SI from the source and ES:DI from the destination, adds count-1 to both offsets, then sets DF and uses REP MOVSB to copy from last byte to first; count zero performs no memory transfer, and offsets wrap at 16 bits without segment adjustment. The caller pushes source segment/offset, destination segment/offset, then count; RETF 0Ah discards these five words, with no defined return value, preserving DS/BP, clobbering AX/CX/SI/DI/ES, and leaving DF clear (CX is zero and SI/DI finish at their original offsets minus one). This supports backward-safe overlapping copies, as used by 0d72:5909 to shift a length-prefixed string's suffix toward higher addresses before insertion; it does not choose the copy direction or validate bounds."

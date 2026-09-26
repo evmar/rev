@@ -1,4 +1,5 @@
 ip = "0d72:64c8"
+len = 2204
 name = "checked_stack_frame_prologue_3"
 desc = "Establish BP frame and reserve AX bytes on stack with stack overflow checking."
 details = "Invoked via near CALL in function prologues (e.g. set_union_into_buffer). Pops the return offset into CX, sets up BP frame (push bp; mov bp, sp), then checks if allocating AX bytes (sp - ax) would cause borrow or drop below the stack limit at ds:[0792h]. If safe, updates SP and jumps back to CX. Otherwise, pushes CS:CX and jumps to the far stack-check/overflow handler at 0d72:6b88."
@@ -21,14 +22,14 @@ desc = "Number of bytes of local stack space to reserve"
 0d72:64cc mov bx,sp
 0d72:64ce sub bx,ax
 ; jump if underflow/borrow
-@jmp '3
+@jmp 'handle_stack_overflow@3
 0d72:64d0 jb short 64DCh
 
 ; check against stack limit
 @mem ; [ds unknown]
 0d72:64d2 cmp bx,ds:[792h]
 ; jump if candidate SP < ds:[0792h]
-@jmp '3
+@jmp 'handle_stack_overflow@3
 0d72:64d6 jb short 64DCh
 
 ; allocate stack space for local variables

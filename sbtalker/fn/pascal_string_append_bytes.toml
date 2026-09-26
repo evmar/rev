@@ -1,4 +1,5 @@
 ip = "0d72:582a"
+len = 100
 name = "pascal_string_append_bytes"
 desc = "Append a counted byte sequence to a length-prefixed Pascal string, checking destination capacity."
 details = "Reads the destination length byte, adds count using 16-bit arithmetic, and uses a signed comparison against capacity; if the sum is greater, calls the fatal-error helper at 0d72:5ca6 (error code 0x27). Otherwise copies count bytes forward from the far source pointer to destination + 1 + old_length, then rereads and increases the destination length byte without adding a NUL terminator; intended inputs are valid Pascal string lengths/capacities (0..255), and arbitrary overlapping buffers are not supported by the forward copy. The caller at 0935:24be passes capacity 255 and a token payload excluding its length byte; the routine allocates four local bytes through 0d72:5c2a, registers/unregisters its runtime stack frame, preserves SI/DI/BP/DS, and returns with RETF 0Ch and no defined return value."

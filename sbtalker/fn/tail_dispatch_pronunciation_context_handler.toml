@@ -1,4 +1,5 @@
 ip = "0d72:0157"
+len = 2
 name = "tail_dispatch_pronunciation_context_handler"
 desc = "Tail-dispatches to the selected pronunciation-context matcher."
 details = "AX contains the near code offset loaded from the context-operator handler table by dispatch_pronunciation_context_operator. The indirect jump preserves BL and the remaining shared matcher state and transfers control without adding a return address, so the selected handler returns directly to the dispatcher's caller."

@@ -1,4 +1,5 @@
 ip = "0935:0080"
+len = 199
 name = "bst_find_value"
 desc = "Searches a binary search tree for a given string key and returns the associated far pointer value."
 details = "Traverses a binary search tree rooted at ds:[0044h] comparing each node's string key against the input key. If a match is found, returns the 32-bit far pointer stored in the node (+04h); otherwise returns NULL."

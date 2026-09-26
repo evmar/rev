@@ -1,4 +1,5 @@
 ip = "0d72:01c7"
+len = 40
 name = "match_class_04_context_with_h_digraph"
 desc = "Matches character-property class 0x04, treating CH, SH, and TH as two-byte units."
 details = "Tests the current input byte via the character-property table at CS:4A9C. When the current byte is H and the adjacent byte in the scan direction is C, S, or T, it consumes two bytes; otherwise a class-bit 0x04 match consumes one byte. Each successful match increments the shared context-match count."

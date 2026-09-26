@@ -1,4 +1,5 @@
 ip = "0823:0cec"
+len = 162
 name = "entry_point"
 desc = "TSR installer and program entry point"
 details = "Initializes registers, frees the program's DOS environment block, and queries INT 2Fh (AX=FBFBh) to determine whether the TSR is already installed. If already resident, it terminates via INT 21h AH=4Ch with exit code 0FBh; otherwise, it records MCB allocation details, executes configuration and hardware setup routines, hooks INT 2Fh to its resident handler, and terminates via INT 21h AH=31h to stay resident."

@@ -1,4 +1,5 @@
 ip = "0d72:5570"
+len = 112
 name = "pascal_string_equal"
 desc = "Tests two length-prefixed Pascal strings for exact bytewise equality."
 details = "Compares the unsigned length bytes at offset 0 of two far-pointer strings; unequal lengths return false, while two empty strings return true. For equal nonzero lengths, compares bytes 1 through length and returns false on the first mismatch, otherwise true (case-sensitive, with embedded zero bytes treated as ordinary data). Returns the Boolean in AL (AH is unspecified because only the low byte of the result local is initialized), preserves SI/DI/BP, uses the runtime stack-frame registration helpers, and removes both far-pointer arguments with RETF 8."

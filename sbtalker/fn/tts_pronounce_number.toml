@@ -1,4 +1,5 @@
 ip = "0935:1742"
+len = 1647
 name = "tts_pronounce_number"
 desc = "Converts a numeric digit string into speech tokens (cardinal, ordinal, or digit-by-digit)"
 details = "Processes a Pascal-style string of ASCII digits and synthesizes speech by decomposing numbers into magnitude groups (thousands, hundreds, tens, and units). Supports individual digit spelling (mode 0), cardinal pronunciation (mode 1), ordinal forms (mode 2, with phonetic adjustments such as changing 'v' to 'f' for 'twelfth'), and 4-digit year/grouped pronunciations (mode 3). Generated speech frame packets are queued via call 109Fh."

@@ -1,4 +1,5 @@
 ip = "0d72:4b0c"
+len = 25
 name = "write_stdout_near_buffer"
 desc = "Write a counted byte buffer in DS to standard output through the far-buffer output helper."
 details = "Near-call wrapper: forwards the length at [bp+8] and the far pointer DS:[bp+6] to 0d72:66cc, which stages up to 85 bytes at a time and invokes DOS AH=40h with handle 1 (standard output). The word at [bp+4] is an unused hidden parent-frame/static-link argument, as shown by callers pushing BP or forwarding their own link; RET 6 discards all three argument words. No terminator scan or newline is added, and callers do not consume a return value (AX is left as produced by the helper)."

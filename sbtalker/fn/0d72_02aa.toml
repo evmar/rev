@@ -1,4 +1,5 @@
 ip = "0d72:02aa"
+len = 16
 
 ---
 @mem ; [bx unknown]

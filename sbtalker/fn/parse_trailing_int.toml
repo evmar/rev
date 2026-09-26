@@ -1,4 +1,5 @@
 ip = "0935:1db1"
+len = 157
 name = "parse_trailing_int"
 desc = "Parses a trailing integer from a Pascal string right-to-left"
 details = "Iterates backwards from the end of a Pascal-style string, converting decimal digit characters into an integer using a decimal multiplier. The loop validates characters against predefined character sets via a runtime helper. If the prefix or stopping character is invalid according to a final character set check, the parsed result is reset to zero."

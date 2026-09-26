@@ -1,4 +1,5 @@
 ip = "0935:3cc9"
+len = 157
 name = "dispatch_command_input"
 desc = "Processes keyboard input or menu commands and dispatches corresponding handlers"
 details = "Saves previous state byte from ds:[4Ch] to ds:[4Ah] and handles spacebar input (0x20) in a loop by copying message buffer data to stack and redrawing. Once non-space input is received, it checks membership in two character lookup sets via helper at 0D72:5452 to dispatch to specific action routines, or updates ds:[4Ch] if input is null."

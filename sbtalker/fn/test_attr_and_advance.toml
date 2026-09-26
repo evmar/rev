@@ -1,4 +1,5 @@
 ip = "0d72:0222"
+len = 16
 name = "test_attr_and_advance"
 desc = "Tests a flag in a lookup table for an indexed item and conditionally increments a counter and updates SI"
 details = "Checks bit 3 (0x08) of the byte at cs:[bx+4A9Ch]. If the bit is set, it increments a byte counter at [bp+3] and adds the word at [bp+0Ch] to register si."

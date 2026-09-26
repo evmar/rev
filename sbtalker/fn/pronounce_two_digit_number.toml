@@ -1,4 +1,5 @@
 ip = "0935:1e4e"
+len = 121
 name = "pronounce_two_digit_number"
 desc = "Formats a value as two decimal digits and emits its cardinal-number pronunciation."
 details = "Copies a two-character Pascal-string template into the caller's scratch buffer, replaces the ones digit and (for values of 10 or more) the tens digit, then passes the resulting zero-padded digit string to tts_pronounce_number in mode 1. The parser uses this helper to speak date and time fields such as month, day, hour, minute, and second."

@@ -5,6 +5,7 @@ use crate::{api::Var, xref::XRef};
 #[derive(serde::Serialize, serde::Deserialize, Default)]
 pub struct Function {
     pub ip: SegOfs,
+    pub len: usize,
 
     pub name: Option<String>,
     pub desc: Option<String>,
@@ -139,6 +140,16 @@ impl Function {
         if last.instrs.is_empty() {
             func.blocks.pop();
         }
+        let next_ip = func
+            .blocks
+            .last()
+            .unwrap()
+            .instrs
+            .last()
+            .unwrap()
+            .iced
+            .next_ip16();
+        func.len = (next_ip - func.ip.ofs) as usize;
 
         Ok(func)
     }
@@ -147,6 +158,7 @@ impl Function {
     pub fn clone_bare(&self) -> Function {
         Function {
             ip: self.ip,
+            len: self.len,
             blocks: self.blocks.iter().map(|block| block.clone_bare()).collect(),
             ..Default::default()
         }

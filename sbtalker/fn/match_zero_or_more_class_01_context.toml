@@ -1,4 +1,5 @@
 ip = "0d72:01a9"
+len = 30
 name = "match_zero_or_more_class_01_context"
 desc = "Matches zero or more pronunciation-context characters having property bit 0x01."
 details = "This is a specialized tail-dispatched context matcher that always increments the caller's shared match count, so the operator succeeds even when it consumes no input. If the current byte has character-property bit 0x01, it advances SI by the signed scan stride; when the adjacent byte also has bit 0x01, it saves DI as the backtracking marker so the caller can repeat the same encoded context token."

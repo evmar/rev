@@ -1,4 +1,5 @@
 ip = "0d72:01e1"
+len = 14
 name = "match_class_04_context"
 desc = "Consumes one input byte when the current character has property bit 0x04."
 details = "Looks up the current character property flags in the table at CS:4A9C using BX. If bit 0x04 is set, it decrements SI and increments the shared context-match count at [BP+3]; otherwise it returns without changing either value."

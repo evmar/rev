@@ -1,4 +1,5 @@
 ip = "0d72:5ca6"
+len = 48
 name = "report_pascal_string_bounds_error"
 desc = "Report a fatal Pascal string bounds error and terminate the DOS process."
 details = "Called when append, delete, or insert detects an invalid Pascal string length or position. Establishes a checked BP frame with no local storage, registers the frame, then calls the fatal diagnostic routine with a DS-relative length-prefixed message at 216Ch, diagnostic number 0867h (2151), zero optional detail, and an unused first argument 0027h. The diagnostic routine normally terminates the process; the remaining frame cleanup and far return are nominal fallthrough only. The message's literal text has not been established from this function."

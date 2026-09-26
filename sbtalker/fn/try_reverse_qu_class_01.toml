@@ -1,4 +1,5 @@
 ip = "0d72:0194"
+len = 21
 name = "try_reverse_qu_class_01"
 desc = "Accepts reverse-scanned QU as one logical match for character class bit 0x01."
 details = "This is a secondary entry/tail fragment of the class-0x01 context matcher at 0d72:0184. It applies only when scan_stride is not +1; if the current byte is U and the adjacent byte is Q, it advances SI by two strides through the shared match block and increments the caller's match count once, otherwise it returns without changing state."

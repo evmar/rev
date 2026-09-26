@@ -1,4 +1,5 @@
 ip = "0d72:53b0"
+len = 71
 name = "copy_words_to_stack"
 desc = "Allocates stack space and copies CX words from ES:BX onto the caller's stack."
 details = "Removes the far return address into DS:05F2/05F4, computes a 2*CX-byte allocation below the caller's SP, and calls 0d72:6b88 if subtraction borrows or the resulting offset is below the stack limit at DS:0792. It sets SP to the destination, copies words forward from ES:BX through DS:DI (requiring DS to address the stack, normally DS=SS), and far-jumps to the saved return address, leaving the copied block at SS:SP; the known caller supplies CX=0x11 to copy 34 bytes. The normal path consumes CX to zero, advances BX by 2*CX and DI to the pre-allocation caller SP, and leaves AX holding the last word; the unchecked count must be nonzero and small enough that doubling does not wrap, and the global return-address scratch makes this helper non-reentrant."

@@ -1,4 +1,5 @@
 ip = "0d72:5ffd"
+len = 3431
 name = "checked_stack_frame_prologue_copy"
 desc = "Establish a BP frame and reserve AX local bytes after checking the runtime stack limit."
 details = "Called with a near CALL, this helper removes the continuation IP into CX, saves the old BP, sets BP to the saved word, and computes candidate SP = BP - AX. It rejects unsigned wraparound or a candidate below DS:[0792h]; otherwise it commits SP and jumps to the continuation. On failure it passes a far continuation to the shared allocator at 0d72:6b88, which retries the check and either resumes the caller, invokes the installed overflow handler at DS:[078Eh], or prints diagnostic code 0 and terminates through DS:[0798h]."

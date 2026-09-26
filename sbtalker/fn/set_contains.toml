@@ -1,4 +1,5 @@
 ip = "0d72:5452"
+len = 48
 name = "set_contains"
 desc = "Tests whether an unsigned element belongs to an MSB-first packed bit set."
 details = "Computes byte_index = element >> 3 and returns 0 if it exceeds the inclusive last-byte index. Otherwise returns 1 exactly when set[byte_index] & (0x80 >> (element & 7)) is nonzero; callers use this helper for character-set membership. The set is passed as a 16:16 far pointer, and RETF 8 removes the eight bytes of arguments."

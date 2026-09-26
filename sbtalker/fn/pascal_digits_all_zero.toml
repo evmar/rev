@@ -1,4 +1,5 @@
 ip = "0935:16ff"
+len = 67
 name = "pascal_digits_all_zero"
 desc = "Tests whether every character in a 256-byte Pascal-style digit string is ASCII '0'."
 details = "The string is passed by value on the stack: byte 0 is its length and bytes 1..length are the characters. The function returns true for an empty string and stops at the first non-'0' byte; RET 0x102 discards the caller's extra saved-BP word plus the 256-byte value argument."

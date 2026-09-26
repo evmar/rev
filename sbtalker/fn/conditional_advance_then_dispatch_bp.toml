@@ -1,4 +1,5 @@
 ip = "0d72:01a0"
+len = 9
 name = "conditional_advance_then_dispatch_bp"
 desc = "Conditionally advances SI and a BP-relative byte counter, then transfers control to the near address held in BP."
 details = "This is a continuation-style trampoline rather than a conventional callee: PUSH BP followed by the shared RET makes execution continue at CS:BP while leaving the original return address on the stack. If the incoming ZF is clear it dispatches immediately with CF set; if ZF is set it adds [SS:BP+0x0c] to SI twice and increments byte [SS:BP+3], with the final ADD determining the outgoing arithmetic flags."

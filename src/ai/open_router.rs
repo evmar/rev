@@ -78,11 +78,10 @@ impl<'client> AgentLoop<'client> {
 
     pub async fn run(&mut self) -> anyhow::Result<String> {
         for i in 1..100 {
+            println!("agent turn {i}:");
             if let Some(content) = self.run_one().await? {
+                self.usage.print();
                 return Ok(content);
-            }
-            if i % 10 == 0 {
-                self.usage.print()
             }
         }
         anyhow::bail!("no response within turn limit")
@@ -138,7 +137,6 @@ impl<'client> AgentLoop<'client> {
                 FinishReason::ToolCalls => {}
                 FinishReason::Stop => {
                     println!("stop");
-                    self.usage.print();
                     return Ok(choice.content().map(|s| s.to_owned()));
                 }
                 _ => todo!("finish {:?}", reason),

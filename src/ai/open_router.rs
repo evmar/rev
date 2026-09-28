@@ -15,6 +15,7 @@ pub fn client() -> anyhow::Result<OpenRouterClient> {
     Ok(client)
 }
 
+#[allow(unused)]
 fn print_usage(start: std::time::Instant, usage: &ResponseUsage) {
     println!();
     let delta = std::time::Instant::now() - start;

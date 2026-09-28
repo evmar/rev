@@ -1,0 +1,25 @@
+ip = "0823:0da2"
+len = 17
+name = "switch_to_internal_stack"
+desc = "Switches stack segment to DS and stack pointer to an internal stack"
+details = "Saves the caller's current stack pointer to a code-segment variable, switches SS to match DS, and sets SP to a preconfigured internal stack offset. Transfers the caller's return address to the new stack so the subsequent ret returns normally while running on the new stack."
+callers = ["exec_and_restore_context@0823:0fdc"]
+
+---
+; Read return address into CX without altering original stack
+0823:0da2 pop cx
+0823:0da3 push cx
+0823:0da4 mov ax,sp
+; Save caller's SP
+@mem 0823:0e57
+0823:0da6 mov cs:[0E57h],ax
+; Set SS = DS
+0823:0daa push ds
+0823:0dab pop ss
+; Set SP to internal stack top
+@mem 0823:0e59
+0823:0dac mov sp,cs:[0E59h]
+; Place return address on the new stack
+0823:0db1 push cx
+0823:0db2 ret
+

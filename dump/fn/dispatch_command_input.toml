@@ -1,0 +1,135 @@
+ip = "0935:3cc9"
+len = 157
+name = "dispatch_command_input"
+desc = "Processes keyboard input or menu commands and dispatches corresponding handlers"
+details = "Saves previous state byte from ds:[4Ch] to ds:[4Ah] and handles spacebar input (0x20) in a loop by copying message buffer data to stack and redrawing. Once non-space input is received, it checks membership in two character lookup sets via helper at 0D72:5452 to dispatch to specific action routines, or updates ds:[4Ch] if input is null."
+callers = ["process_transaction_loop@0935:3d66"]
+callees = ["dispatch_action_by_state@0935:30a1", "get_next_char@0935:11a0", "parse_and_emit_token@0935:12fc", "parse_argument_switches@0935:23ed", "path_append_component@0935:109f", "set_contains@0d72:5452"]
+
+[[params]]
+name = "context_id"
+value = "[bp+4]"
+type = "u16"
+desc = "Context handle or window identifier passed to input polling and display subroutines"
+
+---
+0935:3cc9 push bp
+0935:3cca mov bp,sp
+0935:3ccc sub sp,200h
+; Backup state flag
+@mem ; [ds unknown]
+0935:3cd0 mov al,ds:[4Ch]
+@mem ; [ds unknown]
+0935:3cd3 mov ds:[4Ah],al
+; Check if active input character is space
+@mem ; [ds unknown]
+0935:3cd6 cmp byte ptr ds:[164h],20h
+@jmp 'space_loop@2
+0935:3cdb jne short 3CE8h
+
+@mem ; [ds unknown]
+0935:3cdd mov byte ptr ds:[50h],1
+@mem ; [ss unknown]
+0935:3ce2 push word ptr [bp+4]
+; Poll next input character
+@jmp get_next_char@0935:11a0
+0935:3ce5 call 11A0h
+
+@label space_loop
+@mem ; [ds unknown]
+0935:3ce8 cmp byte ptr ds:[164h],20h
+@jmp 'check_first_set@4
+0935:3ced jne short 3D12h
+
+0935:3cef mov si,1BC2h
+0935:3cf2 mov cx,7Fh
+; Allocate 254 bytes on stack
+0935:3cf5 sub sp,0FEh
+0935:3cf9 mov di,sp
+0935:3cfb cld
+0935:3cfc push ss
+0935:3cfd pop es
+; Copy prompt buffer to stack
+0935:3cfe rep movsw
+@mem ; [ds unknown]
+0935:3d00 push word ptr ds:[20B0h]
+@mem ; [ss unknown]
+0935:3d04 push word ptr [bp+4]
+; Render prompt/message
+@jmp path_append_component@0935:109f
+0935:3d07 call 109Fh
+@mem ; [ss unknown]
+0935:3d0a push word ptr [bp+4]
+@jmp get_next_char@0935:11a0
+0935:3d0d call 11A0h
+@jmp 'space_loop@2
+0935:3d10 jmp short 3CE8h
+
+@label check_first_set
+@mem ; [ds unknown]
+0935:3d12 mov al,ds:[164h]
+0935:3d15 xor ah,ah
+0935:3d17 push ax
+0935:3d18 mov ax,0Bh
+0935:3d1b push ax
+0935:3d1c mov ax,20B2h
+0935:3d1f push ds
+0935:3d20 push ax
+; Check if character is in table at 20B2h (length 11)
+@jmp set_contains@0d72:5452
+0935:3d21 call far ptr 0D72h:5452h
+0935:3d26 shr ax,1
+@jmp 'check_second_set@6
+0935:3d28 jae short 3D30h
+
+0935:3d2a push bp
+@jmp parse_and_emit_token@0935:12fc
+0935:3d2b call 12FCh
+@jmp 'epilogue@11
+0935:3d2e jmp short 3D60h
+
+@label check_second_set
+@mem ; [ds unknown]
+0935:3d30 mov al,ds:[164h]
+0935:3d33 xor ah,ah
+0935:3d35 push ax
+0935:3d36 mov ax,1Fh
+0935:3d39 push ax
+0935:3d3a mov ax,170h
+0935:3d3d push ds
+0935:3d3e push ax
+; Check if character is in table at 0170h (length 31)
+@jmp set_contains@0d72:5452
+0935:3d3f call far ptr 0D72h:5452h
+0935:3d44 shr ax,1
+@jmp 'check_null_input@8
+0935:3d46 jae short 3D4Eh
+
+0935:3d48 push bp
+@jmp parse_argument_switches@0935:23ed
+0935:3d49 call 23EDh
+@jmp 'epilogue@11
+0935:3d4c jmp short 3D60h
+
+; Check for null terminator or exit condition
+@label check_null_input
+@mem ; [ds unknown]
+0935:3d4e cmp byte ptr ds:[164h],0
+@jmp 'handle_default@10
+0935:3d53 jne short 3D5Ch
+
+@mem ; [ds unknown]
+0935:3d55 mov byte ptr ds:[4Ch],3
+@jmp 'epilogue@11
+0935:3d5a jmp short 3D60h
+
+@label handle_default
+0935:3d5c push bp
+@jmp dispatch_action_by_state@0935:30a1
+0935:3d5d call 30A1h
+
+@label epilogue
+0935:3d60 mov sp,bp
+0935:3d62 pop bp
+0935:3d63 ret 2
+

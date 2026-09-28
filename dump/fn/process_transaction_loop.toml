@@ -1,0 +1,143 @@
+ip = "0935:3d66"
+len = 174
+name = "process_transaction_loop"
+desc = "Initializes and executes an event/transaction processing loop, then finalizes state and returns an adjusted identifier."
+details = "Updates an 8-byte state table record indexed by ds:[166h] with configuration bytes, sets up a 256-byte buffer via far call, and enters a polling loop (calling subroutines to service tasks until ds:[4Ch] remains 3 or ds:[60h] becomes nonzero). Finally, it runs a completion callback passing the far buffer pointer and returns ds:[160h] decremented by 2."
+callers = ["exec_and_restore_context@0823:0fdc"]
+callees = ["apply_prosody_intonation@0935:0d7f", "check_string_has_lowercase@0935:1210", "dispatch_command_input@0935:3cc9", "get_next_char@0935:11a0", "pascal_string_copy_bounded@0d72:538c"]
+
+[[params]]
+name = "initial_id"
+value = "[bp+6]"
+type = "u16"
+desc = "Initial ID or counter value stored to ds:[160h]"
+
+[[params]]
+name = "buffer_ptr"
+value = "[bp+8]"
+type = "*mut [u8]"
+desc = "Far pointer to data buffer"
+
+[ret]
+name = "result_id"
+value = "ax"
+type = "u16"
+desc = "Value of ds:[160h] decremented by 2"
+
+---
+0935:3d66 push bp
+0935:3d67 mov bp,sp
+0935:3d69 sub sp,0Ah
+0935:3d6d push di
+0935:3d6e push si
+@mem ; [ss unknown]
+0935:3d6f mov ax,[bp+6]
+@mem ; [ds unknown]
+0935:3d72 mov ds:[160h],ax
+@mem ; [ds unknown]
+0935:3d75 mov ax,ds:[166h]
+; Calculate table record offset: index * 8 + 0x48C
+0935:3d78 shl ax,1
+0935:3d7a shl ax,1
+0935:3d7c shl ax,1
+0935:3d7e add ax,48Ch
+@mem ; [ss unknown]
+0935:3d81 mov [bp-0Ah],ax
+@mem ; [ss unknown]
+0935:3d84 mov di,[bp-0Ah]
+@mem ; [ds unknown]
+0935:3d87 mov ax,[di+4]
+@mem ; [ss unknown]
+0935:3d8a mov [bp-8],ax
+@mem ; [ds unknown]
+0935:3d8d mov ax,[di]
+@mem ; [ss unknown]
+0935:3d8f mov [bp-4],ax
+@mem ; [ds unknown]
+0935:3d92 mov ax,[di+2]
+@mem ; [ss unknown]
+0935:3d95 mov [bp-6],ax
+; Save status byte ds:[168h] into record offset +6
+@mem ; [ds unknown]
+0935:3d98 mov al,ds:[168h]
+@mem ; [ds unknown]
+0935:3d9b mov [di+6],al
+@mem ; [ss unknown]
+0935:3d9e mov di,[bp-0Ah]
+@mem ; [ds unknown]
+0935:3da1 mov al,ds:[16Ch]
+; Save status byte ds:[16Ch] into record offset +7
+@mem ; [ds unknown]
+0935:3da4 mov [di+7],al
+@mem ; [ds unknown]
+0935:3da7 mov al,ds:[168h]
+@mem ; [ds unknown]
+0935:3daa mov ds:[16Ah],al
+0935:3dad les di,[bp+8]
+0935:3db0 mov si,60h
+0935:3db3 mov cx,100h
+0935:3db6 mov ax,ds
+; Transfer or initialize 256-byte buffer
+@jmp pascal_string_copy_bounded@0d72:538c
+0935:3db8 call far ptr 0D72h:538Ch
+@mem ; [ds unknown]
+0935:3dbd mov byte ptr ds:[60h],0
+@mem ; [ds unknown]
+0935:3dc2 mov byte ptr ds:[52h],0
+@mem ; [ds unknown]
+0935:3dc7 mov byte ptr ds:[50h],1
+0935:3dcc push bp
+@jmp check_string_has_lowercase@0935:1210
+0935:3dcd call 1210h
+@mem ; [ds unknown]
+0935:3dd0 mov byte ptr ds:[56h],0
+@mem ; [ds unknown]
+0935:3dd5 mov byte ptr ds:[4Ch],3
+@mem ; [ds unknown]
+0935:3dda mov al,ds:[16Ch]
+@mem ; [ds unknown]
+0935:3ddd mov ds:[16Eh],al
+0935:3de0 push bp
+@jmp get_next_char@0935:11a0
+0935:3de1 call 11A0h
+
+@label poll_loop
+0935:3de4 push bp
+; Execute sub-task iteration
+@jmp dispatch_command_input@0935:3cc9
+0935:3de5 call 3CC9h
+@mem ; [ds unknown]
+0935:3de8 cmp byte ptr ds:[4Ch],3
+@jmp 'exit_loop@3
+0935:3ded je short 3DF8h
+
+@mem ; [ds unknown]
+0935:3def mov al,ds:[60h]
+0935:3df2 xor ah,ah
+0935:3df4 and ax,ax
+; Loop while ds:[4Ch] != 3 and ds:[60h] == 0
+@jmp 'poll_loop@1
+0935:3df6 je short 3DE4h
+
+@label exit_loop
+0935:3df8 les di,[bp+8]
+0935:3dfb push es
+0935:3dfc push di
+0935:3dfd push bp
+; Call completion handler with far pointer
+@jmp apply_prosody_intonation@0935:0d7f
+0935:3dfe call 0D7Fh
+@mem ; [ds unknown]
+0935:3e01 mov ax,ds:[160h]
+0935:3e04 dec ax
+0935:3e05 dec ax
+@mem ; [ss unknown]
+0935:3e06 mov [bp-2],ax
+@mem ; [ss unknown]
+0935:3e09 mov ax,[bp-2]
+0935:3e0c pop si
+0935:3e0d pop di
+0935:3e0e mov sp,bp
+0935:3e10 pop bp
+0935:3e11 retf 0Ah
+

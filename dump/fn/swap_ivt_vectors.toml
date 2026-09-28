@@ -1,0 +1,53 @@
+ip = "0823:0a04"
+len = 43
+name = "swap_ivt_vectors"
+desc = "swaps the lower half of the interrupt vector table with a local buffer"
+details = "Saves and restores 256 words (512 bytes, covering interrupt vectors 00h through 7Fh) between memory at 0000:0000 and CS:03FC using bidirectional word exchanges with interrupts disabled. Because each iteration decrements CX twice (once via DEC and once via LOOPNE), exactly 256 words are exchanged."
+callers = ["tsr_entry_point@0823:0ae2", "tsr_entry_point@0823:0ae2"]
+
+---
+0823:0a04 push ds
+0823:0a05 push es
+0823:0a06 push si
+0823:0a07 push di
+0823:0a08 push cx
+0823:0a09 push ax
+0823:0a0a sub cx,cx
+; Point DS to segment 0000h (Interrupt Vector Table)
+0823:0a0c mov ds,cx
+; Point ES to code segment
+0823:0a0e push cs
+0823:0a0f pop es
+; Buffer offset in CS
+0823:0a10 mov di,3FCh
+0823:0a13 mov si,cx
+; Counter for loop (decremented twice per iteration to yield 256 words)
+0823:0a15 mov cx,200h
+; Disable interrupts during vector table swap
+0823:0a18 cli
+
+@label swap_loop
+@mem ; [ds unknown]
+0823:0a19 mov ax,[si]
+; Swap word between IVT and buffer
+0823:0a1b xchg ax,es:[di]
+0823:0a1e xchg ax,[si]
+0823:0a20 inc si
+0823:0a21 inc si
+0823:0a22 inc di
+0823:0a23 inc di
+; Double decrement with LOOPNE (processes 256 words total)
+0823:0a24 dec cx
+@jmp 'swap_loop@1
+0823:0a25 loopne 0A19h
+
+; Re-enable interrupts
+0823:0a27 sti
+0823:0a28 pop ax
+0823:0a29 pop cx
+0823:0a2a pop di
+0823:0a2b pop si
+0823:0a2c pop es
+0823:0a2d pop ds
+0823:0a2e ret
+

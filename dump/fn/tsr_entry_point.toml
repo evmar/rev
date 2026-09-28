@@ -1,0 +1,74 @@
+ip = "0823:0ae2"
+len = 90
+name = "tsr_entry_point"
+desc = "Switches to an internal stack, executes a sequence of subroutines, and returns to the caller."
+details = "This function captures the caller's far return address and stack pointer from the stack, switches to a private local stack within the code segment, and conditionally executes setup and cleanup routines based on an internal state flag. After executing a pipeline of subroutines, it restores the caller's original SS:SP and performs an indirect far jump back to the caller."
+callees = ["dispatch_command@0823:0f5b", "hook_int15h@0823:084d", "pic_mask_all_irqs@0823:0923", "reset_int9_to_bios@0823:0804", "restore_int09_vector@0823:082e", "restore_int15_handler@0823:0879", "restore_pic_mask@0823:0936", "swap_ivt_vectors@0823:0a04", "swap_memory_with_ems@0823:0a97", "unknown:mem[0823:0000]=0"]
+
+---
+; Save caller far return address offset
+@mem 0823:007a
+0823:0ae2 pop word ptr cs:[7Ah]
+; Save caller far return address segment
+@mem 0823:007c
+0823:0ae7 pop word ptr cs:[7Ch]
+; Save caller SP
+@mem 0823:0014
+0823:0aec mov cs:[14h],sp
+; Save caller SS
+@mem 0823:0012
+0823:0af1 mov cs:[12h],ss
+; Switch to internal stack in CS at offset 0x005A
+0823:0af6 push cs
+0823:0af7 pop ss
+0823:0af8 mov sp,5Ah
+; Check internal status flag
+@mem 0823:01cb
+0823:0afb cmp byte ptr cs:[1CBh],0
+@jmp 'run_pipeline@2
+0823:0b01 je short 0B06h
+
+@jmp pic_mask_all_irqs@0823:0923
+0823:0b03 call 0923h
+
+@label run_pipeline
+@jmp swap_ivt_vectors@0823:0a04
+0823:0b06 call 0A04h
+@jmp reset_int9_to_bios@0823:0804
+0823:0b09 call 0804h
+@jmp hook_int15h@0823:084d
+0823:0b0c call 084Dh
+@jmp swap_memory_with_ems@0823:0a97
+0823:0b0f call 0A97h
+@jmp dispatch_command@0823:0f5b
+0823:0b12 call 0F5Bh
+@jmp swap_memory_with_ems@0823:0a97
+0823:0b15 call 0A97h
+@jmp restore_int15_handler@0823:0879
+0823:0b18 call 0879h
+@jmp restore_int09_vector@0823:082e
+0823:0b1b call 082Eh
+@jmp swap_ivt_vectors@0823:0a04
+0823:0b1e call 0A04h
+; Check internal status flag again before exit
+@mem 0823:01cb
+0823:0b21 cmp byte ptr cs:[1CBh],0
+@jmp 'restore_stack@4
+0823:0b27 je short 0B2Ch
+
+@jmp restore_pic_mask@0823:0936
+0823:0b29 call 0936h
+
+; Restore caller SS
+@label restore_stack
+@mem 0823:0012
+0823:0b2c push word ptr cs:[12h]
+0823:0b31 pop ss
+; Restore caller SP
+@mem 0823:0014
+0823:0b32 mov sp,cs:[14h]
+; Far jump to saved return address
+@jmp unknown:mem[0823:0000]=0
+@mem 0823:007a
+0823:0b37 jmp dword ptr cs:[7Ah]
+

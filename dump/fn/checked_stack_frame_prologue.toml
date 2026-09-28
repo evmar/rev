@@ -1,0 +1,124 @@
+ip = "0d72:5c2a"
+len = 4410
+name = "checked_stack_frame_prologue"
+desc = "Establish a BP frame and reserve AX local bytes, checking for stack underflow and the runtime stack limit."
+details = "Called with a near CALL: removes the continuation IP into CX, saves the old BP, sets BP to that saved word, and computes BX = BP - AX; if subtraction does not borrow and BX >= unsigned DS:[0792h], sets SP = BX and jumps to CX, leaving AX unchanged and BX/CX clobbered. On failure, constructs a far continuation and transfers to 0d72:6b88, which repeats the allocation check and either returns to that continuation, dispatches through the far handler at DS:[078Eh] (offset FFFFh means absent), or enters the default diagnostic/termination path with error code 0. On normal continuation [BP] holds the old BP and locals occupy [BP-AX,BP); the caller restores SP/BP in its own epilogue, and the apparent fallthrough beyond the indirect termination call at 6d39 is not part of the intended prologue flow (a separate function begins at 6d3e)."
+callers = ["pascal_string_equal@0d72:5570", "pascal_string_not_equal@0d72:55e0", "pascal_string_less_than@0d72:5615", "pascal_string_append_bytes@0d72:582a", "pascal_string_delete@0d72:588e", "pascal_string_insert_bytes@0d72:5909"]
+callees = ["0d72:6ecc", "0d72:6f1b", "unknown:mem", "unknown:reg"]
+
+[[params]]
+name = "local_bytes"
+value = "ax"
+type = "u16"
+desc = "Number of local stack bytes to reserve below the saved BP; no alignment adjustment is performed."
+
+---
+; Remove the near CALL continuation, then replace its stack slot with saved BP and establish the caller's frame.
+0d72:5c2a pop cx
+0d72:5c2b push bp
+0d72:5c2c mov bp,sp
+; Candidate SP = BP - requested local bytes (AX); unsigned borrow means stack offset wraparound.
+0d72:5c2e mov bx,sp
+0d72:5c30 sub bx,ax
+@jmp 'stack_allocation_failed@3
+0d72:5c32 jb short 5C3Eh
+
+; Require candidate SP >= runtime lower stack bound DS:[0792h]; equality is accepted.
+@mem ; [ds unknown]
+0d72:5c34 cmp bx,ds:[792h]
+@jmp 'stack_allocation_failed@3
+0d72:5c38 jb short 5C3Eh
+
+; Commit local allocation and jump to the near continuation in CX; saved BP remains for the caller's epilogue.
+0d72:5c3a mov sp,bx
+@jmp unknown:reg
+0d72:5c3c jmp cx
+
+; Convert continuation CX into a far return address CS:CX and tail-jump to the shared checked allocator.
+@label stack_allocation_failed
+0d72:5c3e push cs
+0d72:5c3f push cx
+@jmp '4
+0d72:5c40 jmp far ptr 0D72h:6B88h
+
+; Shared far-entry allocator pops continuation IP:CS into CX:DX and retries SP-AX with the same unsigned checks.
+0d72:6b88 pop cx
+0d72:6b89 pop dx
+0d72:6b8a mov bx,sp
+0d72:6b8c sub bx,ax
+@jmp 'dispatch_stack_overflow@7
+0d72:6b8e jb short 6B9Bh
+
+@mem ; [ds unknown]
+0d72:6b90 cmp bx,ds:[792h]
+@jmp 'dispatch_stack_overflow@7
+0d72:6b94 jb short 6B9Bh
+
+; Commit allocation, restore the far continuation, and RETF to it; net SP points at allocated locals.
+0d72:6b96 mov sp,bx
+0d72:6b98 push dx
+0d72:6b99 push cx
+0d72:6b9a retf
+
+; Check low word of far overflow-handler pointer DS:[078Eh]; FFFFh is the absent-handler sentinel. AX is overwritten here.
+@label dispatch_stack_overflow
+@mem ; [ds unknown]
+0d72:6b9b mov ax,ds:[78Eh]
+0d72:6b9e inc ax
+@jmp 'invoke_stack_overflow_handler@9
+0d72:6b9f jne short 6BA6h
+
+; No handler installed: select error code 0 and enter the default diagnostic/termination path.
+0d72:6ba1 xor ax,ax
+@jmp 'default_stack_overflow_error@10
+0d72:6ba3 jmp near ptr 6D29h
+
+; Push the far continuation and jump through DS:[078Eh]; recovery behavior depends on the installed handler.
+@label invoke_stack_overflow_handler
+0d72:6ba6 push dx
+0d72:6ba7 push cx
+@jmp unknown:mem
+@mem ; [ds unknown]
+0d72:6ba8 jmp dword ptr ds:[78Eh]
+
+; Save error code 0 across diagnostic-prefix helper 6ecc, then pass it to diagnostic output routine 6f1b.
+@label default_stack_overflow_error
+0d72:6d29 push ax
+@jmp 0d72:6ecc
+0d72:6d2a call far ptr 0D72h:6ECCh
+@jmp 0d72:6f1b
+0d72:6d2f call far ptr 0D72h:6F1Bh
+; Pass 00FFh to indirect runtime termination entry at CS:word DS:[0798h]; PUSH CS + near indirect CALL supplies a far return frame. Expected not to return.
+0d72:6d34 mov ax,0FFh
+0d72:6d37 push ax
+0d72:6d38 push cs
+@jmp unknown:mem
+@mem ; [ds unknown]
+0d72:6d39 call word ptr ds:[798h]
+; Apparent post-termination fallthrough is not reliable code for this function; independently decoded function 6d3e begins with PUSH SI / XOR SI,SI.
+@mem ; [ss unknown]
+0d72:6d3d add [bp+33h],dl
+0d72:6d40 idiv byte ptr [bx+di+42h]
+0d72:6d44 xor ah,ah
+0d72:6d46 cld
+
+0d72:6d47 lodsb
+0d72:6d48 xor ah,al
+@jmp '11
+0d72:6d4a loop 6D47h
+
+0d72:6d4c xor ah,55h
+@jmp '14
+0d72:6d4f je short 6D62h
+
+@jmp 0d72:6ecc
+0d72:6d51 call far ptr 0D72h:6ECCh
+0d72:6d56 mov ax,1
+0d72:6d59 push ax
+@jmp 0d72:6f1b
+0d72:6d5a call far ptr 0D72h:6F1Bh
+0d72:6d5f mov ax,1
+
+0d72:6d62 pop si
+0d72:6d63 retf
+

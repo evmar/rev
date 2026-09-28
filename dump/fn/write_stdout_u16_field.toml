@@ -1,0 +1,129 @@
+ip = "0d72:4b25"
+len = 135
+name = "write_stdout_u16_field"
+desc = "Format an unsigned 16-bit value in the selected radix and write a five-character field to stdout."
+details = "Copies a six-byte template from DS:20C7h when the radix word at DS:04EAh is 16, or DS:20CDh otherwise, into the shared buffer at DS:04ECh; the observed caller selects radix 10 or 16. For five positions from right to left, a nonzero value is divided unsigned by the radix, its remainder becomes an ASCII digit (uppercase A-F for hexadecimal), and the quotient replaces the stack-local argument; once zero, remaining positions retain their template bytes, so an input of zero prints the unchanged template field (exact padding/template contents are not established by this disassembly). Writes exactly five bytes from DS:04ECh through write_stdout_near_buffer, forwarding the hidden parent-frame argument, then RET 4 removes both argument words; no semantic return value is established, and the shared buffer makes this routine non-reentrant."
+callers = ["report_fatal_error_and_exit@0d72:4bac", "report_fatal_error_and_exit@0d72:4bac", "report_fatal_error_and_exit@0d72:4bac", "report_fatal_error_and_exit@0d72:4bac", "report_fatal_error_and_exit@0d72:4bac", "report_fatal_error_and_exit@0d72:4bac", "report_fatal_error_and_exit@0d72:4bac", "report_fatal_error_and_exit@0d72:4bac"]
+callees = ["write_stdout_near_buffer@0d72:4b0c"]
+
+[[params]]
+name = "parent_frame"
+value = "[sp+2]"
+type = "u16"
+desc = "Hidden static link / parent BP, forwarded to the output wrapper; [bp+4] after the prologue."
+
+[[params]]
+name = "value"
+value = "[sp+4]"
+type = "u16"
+desc = "Unsigned number to format; [bp+6] after the prologue, repeatedly overwritten with its quotient."
+
+[[params]]
+name = "data_segment"
+value = "ds"
+type = "u16"
+desc = "Segment containing radix at 04EAh, six-byte output buffer at 04ECh, and templates at 20C7h / 20CDh."
+
+---
+0d72:4b25 push bp
+0d72:4b26 mov bp,sp
+0d72:4b28 sub sp,2
+; Select initial field template using global radix DS:04EAh (observed values: 10 and 16).
+@mem ; [ds unknown]
+0d72:4b2c cmp word ptr ds:[4EAh],10h
+@jmp 'copy_nonhex_template@2
+0d72:4b31 jne short 4B41h
+
+; Copy six bytes from DS:20C7h to DS:04ECh for hexadecimal; ES becomes DS and DF is cleared.
+0d72:4b33 mov di,4ECh
+0d72:4b36 push ds
+0d72:4b37 pop es
+0d72:4b38 mov si,20C7h
+0d72:4b3b cld
+0d72:4b3c movsw
+0d72:4b3d movsw
+0d72:4b3e movsw
+@jmp 'initialize_digit_count@3
+0d72:4b3f jmp short 4B4Dh
+
+; Copy six bytes from DS:20CDh to DS:04ECh for other radices (caller uses decimal). Template contents are not visible here.
+@label copy_nonhex_template
+0d72:4b41 mov di,4ECh
+0d72:4b44 push ds
+0d72:4b45 pop es
+0d72:4b46 mov si,20CDh
+0d72:4b49 cld
+0d72:4b4a movsw
+0d72:4b4b movsw
+0d72:4b4c movsw
+
+; Process five character positions, from buffer[4] down to buffer[0]; sixth copied byte is not printed.
+@label initialize_digit_count
+@mem ; [ss unknown]
+0d72:4b4d mov word ptr [bp-2],5
+
+; If the remaining value is zero, retain this position's template byte; all five positions are still visited.
+@label format_next_position
+@mem ; [ss unknown]
+0d72:4b52 cmp word ptr [bp+6],0
+@jmp 'advance_position@8
+0d72:4b56 je short 4B8Fh
+
+; Unsigned remainder = value % radix; store low byte of remainder + '0' at DS:[04EBh + position].
+@mem ; [ss unknown]
+0d72:4b58 mov di,[bp-2]
+@mem ; [ss unknown]
+0d72:4b5b mov ax,[bp+6]
+0d72:4b5e xor dx,dx
+0d72:4b60 div word ptr ds:[4EAh]
+0d72:4b64 add dx,30h
+0d72:4b67 xor dh,dh
+@mem ; [ds unknown]
+0d72:4b69 mov [di+4EBh],dl
+; For digit bytes above '9', add 7 to obtain uppercase 'A' through 'F' in radix 16.
+@mem ; [ds unknown]
+0d72:4b6d cmp byte ptr [di+4EBh],39h
+@jmp 'advance_quotient@7
+0d72:4b72 jbe short 4B83h
+
+@mem ; [ds unknown]
+0d72:4b74 mov al,[di+4EBh]
+0d72:4b78 xor ah,ah
+0d72:4b7a add ax,7
+0d72:4b7d xor ah,ah
+@mem ; [ds unknown]
+0d72:4b7f mov [di+4EBh],al
+
+; Recompute unsigned quotient value / radix and store it back into this function's stack argument.
+@label advance_quotient
+@mem ; [ss unknown]
+0d72:4b83 mov ax,[bp+6]
+0d72:4b86 xor dx,dx
+0d72:4b88 div word ptr ds:[4EAh]
+@mem ; [ss unknown]
+0d72:4b8c mov [bp+6],ax
+
+; Move left one character; finish after exactly five positions.
+@label advance_position
+@mem ; [ss unknown]
+0d72:4b8f mov ax,[bp-2]
+0d72:4b92 dec ax
+@mem ; [ss unknown]
+0d72:4b93 mov [bp-2],ax
+@jmp 'format_next_position@4
+0d72:4b96 jne short 4B52h
+
+; Write exactly five bytes at DS:04ECh to stdout, forwarding the hidden parent-frame word; no newline is added here.
+0d72:4b98 mov ax,5
+0d72:4b9b push ax
+0d72:4b9c mov ax,4ECh
+0d72:4b9f push ax
+@mem ; [ss unknown]
+0d72:4ba0 push word ptr [bp+4]
+@jmp write_stdout_near_buffer@0d72:4b0c
+0d72:4ba3 call 4B0Ch
+0d72:4ba6 mov sp,bp
+0d72:4ba8 pop bp
+; Near return with callee cleanup of the hidden parent-frame word and unsigned value (4 bytes).
+0d72:4ba9 ret 4
+

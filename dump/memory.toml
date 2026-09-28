@@ -1,0 +1,244 @@
+[entries."0823:0000"]
+name = "heap_size_bytes"
+desc = "Total heap capacity in bytes, computed as the number of 16KB blocks multiplied by 0x4000 (16,384 bytes)."
+typ = "u32"
+
+[entries."0823:0002"]
+name = "heap_size_bytes_hi"
+desc = "High 16 bits of the total heap capacity in bytes (calculated as 16KB block count multiplied by 16384)"
+typ = "u16"
+
+[entries."0823:0009"]
+name = "heap_base_segment"
+desc = "Base segment address of the heap/buffer in conventional memory, located immediately following the program image"
+typ = "u16"
+
+[entries."0823:0012"]
+name = "saved_ss"
+desc = "Saved caller stack segment (SS) register across TSR switch to private stack"
+typ = "u16"
+
+[entries."0823:0014"]
+name = "saved_sp"
+desc = "Stores the caller's stack pointer (SP) register across execution of internal TSR routines, used to restore the original stack before returning."
+typ = "u16"
+
+[entries."0823:007a"]
+name = "saved_caller_far_return_addr"
+desc = "Saved 32-bit far return address (offset and segment) of the caller, popped upon entering the TSR entry point and jumped to upon exit"
+typ = "u32"
+
+[entries."0823:007c"]
+name = "saved_caller_cs"
+desc = "Saved segment of the caller's far return address, used with 0823:007A to return via far indirect jump `jmp dword ptr cs:[7Ah]`"
+typ = "u16"
+
+[entries."0823:007e"]
+name = "prev_int2f_seg"
+desc = "Saved segment of the previous INT 2Fh interrupt handler vector"
+typ = "u16"
+
+[entries."0823:0080"]
+name = "prev_int2f_offset"
+desc = "Offset of the original/previous INT 2Fh interrupt handler vector saved before hooking"
+typ = "u16"
+
+[entries."0823:0082"]
+name = "saved_int09_vector"
+desc = "Saved original INT 09h (keyboard ISR) interrupt vector (offset and segment)"
+typ = "u32"
+
+[entries."0823:0084"]
+name = "saved_int09_seg"
+desc = "Saved segment of the original INT 09h (keyboard ISR) interrupt vector"
+typ = "u16"
+
+[entries."0823:0086"]
+name = "orig_int15_handler"
+desc = "Original INT 15h (BIOS System Services) interrupt vector saved before hooking, containing offset and segment to be chained or restored"
+typ = "far_fn"
+
+[entries."0823:0088"]
+name = "orig_int15_seg"
+desc = "Saved segment of the original INT 15h interrupt handler (used with offset at 0823:0086 to store the far pointer)"
+typ = "u16"
+
+[entries."0823:008e"]
+name = "psp_segment"
+desc = "Segment address of the program's Program Segment Prefix (PSP)"
+typ = "u16"
+
+[entries."0823:0090"]
+name = "mcb_size_paragraphs"
+desc = "Size of the program's conventional DOS memory block/allocation in paragraphs (as read from MCB offset 03h; updated when EMS pages are copied or memory is resized/kept resident)"
+typ = "u16"
+
+[entries."0823:0092"]
+name = "heap_size_paragraphs"
+desc = "Size of the heap or conventional memory buffer in paragraphs (16-byte units)"
+typ = "u16"
+
+[entries."0823:009a"]
+name = "ems_page_count"
+desc = "Number of 16KB memory pages (blocks) calculated from available heap space, used for EMS page allocation and paging operations"
+typ = "u16"
+
+[entries."0823:009c"]
+name = "ems_page_frame_seg"
+desc = "EMS page frame segment address returned by INT 67h, AH=41h, used as the base segment for mapping and accessing expanded memory pages."
+typ = "u16"
+
+[entries."0823:009e"]
+name = "ems_handle"
+desc = "EMS handle returned by INT 67h, AH=43h representing the allocated expanded memory pages."
+typ = "u16"
+
+[entries."0823:00a9"]
+name = "block_end_seg"
+desc = "Segment address marking the upper boundary/end of the program's allocated DOS memory block"
+typ = "u16"
+
+[entries."0823:00ab"]
+name = "INSTALL_BANNER_MSG"
+desc = "DOS '$'-terminated banner and installation message displayed upon successful TSR installation, showing program name ('SmoothTalker (R), Version 3.5, male voice'), copyright, patent information, and status"
+typ = "[u8; 222]"
+
+[entries."0823:01aa"]
+name = "driver_name_arg"
+desc = "Buffer storing the driver name specified via the '/D' command-line switch"
+typ = "[u8; 8]"
+
+[entries."0823:01b2"]
+name = "cmdline_p_value"
+desc = "Parsed 16-bit value from command-line switch /P (typically an I/O port address or parameter), or 0 if not specified"
+typ = "u16"
+
+[entries."0823:01b9"]
+name = "driver_filename"
+desc = 'Default driver filename buffer initialized to "StandDac.drv\0", which can be overwritten by the filename specified with the /D command-line switch; also serves as the overlay filename string when loading the driver.'
+typ = "[u8; 13]"
+
+[entries."0823:01cb"]
+name = "ems_initialized"
+desc = "Boolean flag indicating whether Expanded Memory (EMS) is available and initialized"
+typ = "bool"
+
+[entries."0823:01cd"]
+name = "saved_pic_imr"
+desc = "Saved master 8259 PIC Interrupt Mask Register (IMR, I/O port 21h) value, used to preserve and restore hardware interrupt masks across critical sections"
+typ = "u8"
+
+[entries."0823:01d2"]
+name = "callback_offset"
+desc = "Offset of the callback routine (0AE2h) stored as the lower word of a far function pointer"
+typ = "u16"
+
+[entries."0823:01d4"]
+name = "callback_seg"
+desc = "Segment portion of far pointer (CS:01D2h) to callback or handler function (initialized to 0823h)"
+typ = "u16"
+
+[entries."0823:01d6"]
+name = "io_port_param"
+desc = "Copy of the 16-bit I/O port address or hexadecimal parameter parsed from the command-line '/P' option (initially stored at cs:[01B2h])"
+typ = "u16"
+
+[entries."0823:03f8"]
+name = "driver_func_arg"
+desc = "Initial or default command/function ID passed as an argument to the external overlay driver routine (0935h:3D66h) during command dispatch"
+typ = "u16"
+
+[entries."0823:0d8e"]
+name = "command_jump_table"
+desc = "Jump table of code offsets for driver API command handlers (commands 0 through 9), indexed by the command ID in dispatch_command"
+typ = "[u16; 10]"
+
+[entries."0823:0dbb"]
+name = "mem_alloc_hook"
+desc = "Far function pointer (hook/callback) for custom memory allocation or reallocation instead of standard DOS INT 21h AH=4Ah"
+typ = 'Option<extern "far" fn()>'
+
+[entries."0823:0dbd"]
+name = "mem_hook_seg"
+desc = "Segment of the far pointer callback for custom memory allocation/resizing; invoked instead of DOS INT 21h AH=4Ah when non-null"
+typ = "u16"
+
+[entries."0823:0dbf"]
+name = "cmd_0d_callback_ptr"
+desc = "Far pointer (offset at 0823:0dbf, segment at 0823:0dc1) passed via API command 0Dh, stored to register a custom callback or handler"
+typ = 'Option<extern "far-cdecl" fn()>'
+
+[entries."0823:0dc1"]
+name = "cmd_0d_param_seg"
+desc = "Segment component of a far pointer parameter unstacked and stored by driver API command 0Dh"
+typ = "u16"
+
+[entries."0823:0e51"]
+name = "saved_caller_ip"
+desc = "Saved caller return instruction pointer (IP) during driver command dispatch"
+typ = "u16"
+
+[entries."0823:0e53"]
+name = "saved_ds"
+desc = "Saved caller data segment (DS) register"
+typ = "u16"
+
+[entries."0823:0e55"]
+name = "saved_ss"
+desc = "Saved caller stack segment (SS) register"
+typ = "u16"
+
+[entries."0823:0e57"]
+name = "saved_caller_sp"
+desc = "Saved caller stack pointer (SP) preserved before switching to the internal driver stack"
+typ = "u16"
+
+[entries."0823:0e59"]
+name = "internal_stack_sp"
+desc = "Initial stack pointer (SP offset) for the internal driver stack"
+typ = "u16"
+
+[entries."0823:0e5f"]
+name = "saved_caller_ss"
+desc = "Caller's stack segment (SS) saved upon entry to the API dispatcher"
+typ = "u16"
+
+[entries."0823:0e61"]
+name = "saved_sp"
+desc = "Caller's stack pointer (SP) saved upon entering the driver command dispatcher"
+typ = "u16"
+
+[entries."0823:0e63"]
+name = "saved_caller_ip"
+desc = "Temporary storage for the caller's return instruction pointer (IP) offset while popping arguments from the stack during command dispatch"
+typ = "u16"
+
+[entries."0823:0e65"]
+name = "saved_ret_cs"
+desc = "Temporary storage for the caller's return code segment (CS) while unstacking far pointer arguments from the stack in commands 0Ch and 0Dh"
+typ = "u16"
+
+[entries."1483:0008"]
+name = "driver_overlay_segment"
+desc = "Base segment of the loaded driver overlay"
+typ = "u16"
+
+[entries."1483:000c"]
+name = "driver_overlay_segment"
+desc = "Base segment address of the loaded driver overlay"
+typ = "u16"
+
+[entries."1483:0010"]
+name = "driver_segment"
+desc = "Overlay/driver load segment or relocation factor stored in the sound/driver dispatch table"
+typ = "u16"
+
+[entries."1483:0014"]
+name = "overlay_segment_14h"
+desc = "Overlay/driver load segment address, written as part of an array/table of segment pointers at 1483:0008..0018"
+typ = "u16"
+
+[entries."1483:0018"]
+name = "driver_seg"
+desc = "Loaded driver/overlay segment address written to the driver communication or interface block at 1483h"
+typ = "u16"

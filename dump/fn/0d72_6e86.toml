@@ -1,0 +1,36 @@
+ip = "0d72:6e86"
+len = 45
+callers = ["0d72:6e28"]
+callees = ["unknown:mem"]
+
+---
+@mem ; [ds unknown]
+0d72:6e86 mov cx,ds:[1BB6h]
+@jmp '2
+0d72:6e8a jcxz 6E93h
+
+0d72:6e8c mov bx,2
+@jmp unknown:mem
+@mem ; [ds unknown]
+0d72:6e8f call dword ptr ds:[1BB4h]
+
+0d72:6e93 push ds
+0d72:6e94 lds dx,ds:[7F9h]
+0d72:6e98 mov ax,2500h
+0d72:6e9b int 21h
+0d72:6e9d pop ds
+@mem ; [ds unknown]
+0d72:6e9e cmp byte ptr ds:[83Ah],0
+@jmp '4
+0d72:6ea3 je short 6EB2h
+
+0d72:6ea5 push ds
+@mem ; [ds unknown]
+0d72:6ea6 mov al,ds:[83Bh]
+0d72:6ea9 lds dx,ds:[83Ch]
+0d72:6ead mov ah,25h
+0d72:6eaf int 21h
+0d72:6eb1 pop ds
+
+0d72:6eb2 ret
+

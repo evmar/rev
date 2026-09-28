@@ -1,0 +1,91 @@
+ip = "0d72:0159"
+len = 43
+name = "match_repeatable_class_10_context"
+desc = "Matches a repeatable pronunciation-rule context class identified by character-property bit 0x10."
+details = "Tests the current input byte through the character-property table at CS:4A9C. On a match it increments the caller's shared match count and advances SI by the signed scan stride; if the adjacent byte is in the same class and the next encoded rule token has property bit 0x01, it returns to the shared dispatcher to consume another byte, otherwise it records DI as the context backtracking marker."
+callees = ["unknown:reg"]
+
+[[params]]
+name = "input_cursor"
+value = "si"
+type = "*mut u8"
+desc = "Near pointer to the current input byte; advanced by scan_stride for each matching class-0x10 byte."
+
+[[params]]
+name = "rule_cursor"
+value = "di"
+type = "*const u8"
+desc = "Near code-segment pointer to the active encoded context token; may be saved as the backtracking marker."
+
+[[params]]
+name = "current_byte"
+value = "bl"
+type = "u8"
+desc = "Current input byte supplied by the shared context-operator dispatcher."
+
+[[params]]
+name = "adjacent_byte"
+value = "ch"
+type = "u8"
+desc = "Input byte one scan_stride beyond the current byte."
+
+[[params]]
+name = "scan_stride"
+value = "[bp+0Ch]"
+type = "i16"
+desc = "Signed input direction, normally -1 for left context or +1 for right context."
+
+---
+@mem ; [ds unknown]
+0d72:0140 mov cl,[si]
+@mem ; [ss unknown]
+0d72:0142 mov bx,[bp+0Ch]
+@mem ; [ds unknown]
+0d72:0145 mov ch,[bx+si]
+@mem ; [ss unknown]
+0d72:0147 mov al,[bp+1]
+0d72:014a shl al,1
+0d72:014c mov bl,al
+0d72:014e xor bh,bh
+@mem ; [bx unknown]
+0d72:0150 mov ax,cs:[bx+2EAh]
+0d72:0155 mov bl,cl
+@jmp unknown:reg
+0d72:0157 jmp ax
+
+; Reject unless the current input byte has character-property bit 0x10.
+@mem ; [bx unknown]
+0d72:0159 mov al,cs:[bx+4A9Ch]
+0d72:015e and al,10h
+@jmp 'return_to_rule_matcher@5
+0d72:0160 je short 0183h
+
+; Count this match and advance the input cursor in the active context-scan direction.
+@mem ; [ss unknown]
+0d72:0162 inc byte ptr [bp+3]
+@mem ; [ss unknown]
+0d72:0165 add si,[bp+0Ch]
+; Stop after one byte unless the adjacent input byte also belongs to class 0x10.
+0d72:0168 mov bl,ch
+@mem ; [bx unknown]
+0d72:016a mov al,cs:[bx+4A9Ch]
+0d72:016f and al,10h
+@jmp 'return_to_rule_matcher@5
+0d72:0171 je short 0183h
+
+; If the next encoded rule token has property bit 0x01, redispatch this operator to greedily consume another class member.
+@mem ; [di unknown]
+0d72:0173 mov bl,cs:[di+1]
+@mem ; [bx unknown]
+0d72:0177 mov al,cs:[bx+4A3Ch]
+0d72:017c and al,1
+@jmp '0
+0d72:017e jne short 0140h
+
+; Save the current rule cursor as the caller's context backtracking marker.
+@mem ; [ss unknown]
+0d72:0180 mov [bp+0Eh],di
+
+@label return_to_rule_matcher
+0d72:0183 ret
+

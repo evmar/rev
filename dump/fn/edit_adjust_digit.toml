@@ -1,0 +1,245 @@
+ip = "0935:0c4c"
+len = 307
+name = "edit_adjust_digit"
+desc = "Adjusts a single-digit numeric field (0-9) in an input buffer, updating the display string and cursor."
+details = "Calculates a new digit value by adding the delta parameter to a base offset, clamping the result to the range [0, 9]. If the value changed, it formats the digit to ASCII ('0'-'9'), optionally removes an existing digit from the buffer, inserts the new character via a string manipulation routine, and updates cursor/length offsets in the context structure."
+callers = ["apply_prosody_intonation@0935:0d7f"]
+callees = ["pascal_string_delete@0d72:588e", "pascal_string_insert_bytes@0d72:5909", "set_contains@0d72:5452"]
+
+[[params]]
+name = "ctx"
+value = "[bp+4]"
+type = "*mut u8"
+desc = "Pointer to the input/editor context structure"
+
+[[params]]
+name = "delta"
+value = "[bp+6]"
+type = "i16"
+desc = "Delta to adjust the numeric digit by"
+
+---
+0935:0c4c push bp
+0935:0c4d mov bp,sp
+0935:0c4f sub sp,0Eh
+@mem ; [ss unknown]
+0935:0c53 mov di,[bp+4]
+; Add base value at [di-0Ch] to delta
+@mem ; [ds unknown]
+0935:0c56 mov ax,[di-0Ch]
+@mem ; [ss unknown]
+0935:0c59 add [bp+6],ax
+; Clamp digit to range [0, 9]
+@mem ; [ss unknown]
+0935:0c5c cmp word ptr [bp+6],0
+@jmp 'check_upper_bound@2
+0935:0c60 jge short 0C67h
+
+@mem ; [ss unknown]
+0935:0c62 mov word ptr [bp+6],0
+
+@label check_upper_bound
+@mem ; [ss unknown]
+0935:0c67 cmp word ptr [bp+6],9
+@jmp 'check_changed@4
+0935:0c6b jle short 0C72h
+
+@mem ; [ss unknown]
+0935:0c6d mov word ptr [bp+6],9
+
+@label check_changed
+@mem ; [ss unknown]
+0935:0c72 mov di,[bp+4]
+; Exit if digit value did not change
+@mem ; [ds unknown]
+0935:0c75 mov ax,[di-12h]
+@mem ; [ss unknown]
+0935:0c78 cmp ax,[bp+6]
+@jmp 'format_digit@6
+0935:0c7b jne short 0C80h
+
+@jmp 'exit@18
+0935:0c7d jmp near ptr 0D79h
+
+@label format_digit
+@mem ; [ds unknown]
+0935:0c80 mov al,ds:[1CCBh]
+@mem ; [ss unknown]
+0935:0c83 mov [bp-2],al
+; Convert digit to ASCII ('0' - '9')
+@mem ; [ss unknown]
+0935:0c86 mov ax,[bp+6]
+0935:0c89 add ax,30h
+0935:0c8c xor ah,ah
+@mem ; [ss unknown]
+0935:0c8e mov [bp-2],al
+@mem ; [ss unknown]
+0935:0c91 mov di,[bp+4]
+0935:0c94 mov dx,di
+; es:di points to the text buffer
+0935:0c96 les di,[di+6]
+@mem ; [es unknown]
+0935:0c99 mov al,es:[di]
+0935:0c9c xor ah,ah
+0935:0c9e cmp ax,0FEh
+@jmp 'check_length@8
+0935:0ca1 jl short 0CA6h
+
+@jmp 'save_digit@17
+0935:0ca3 jmp near ptr 0D70h
+
+@label check_length
+@mem ; [ss unknown]
+0935:0ca6 mov si,[bp+4]
+@mem ; [ds unknown]
+0935:0ca9 cmp word ptr [si-10h],1
+@jmp 'check_prev_char@10
+0935:0cad jg short 0CB2h
+
+@jmp 'insert_digit@16
+0935:0caf jmp near ptr 0D41h
+
+@label check_prev_char
+0935:0cb2 mov cx,si
+@mem ; [ds unknown]
+0935:0cb4 mov si,[si-10h]
+0935:0cb7 mov ax,si
+0935:0cb9 dec si
+0935:0cba mov cx,ax
+0935:0cbc mov bx,si
+; Check if previous character belongs to character class at ds:0170h
+@mem ; [es unknown]
+0935:0cbe mov al,es:[bx+di]
+0935:0cc1 xor ah,ah
+0935:0cc3 push ax
+0935:0cc4 mov ax,1Fh
+0935:0cc7 push ax
+0935:0cc8 mov ax,170h
+0935:0ccb push ds
+0935:0ccc push ax
+@mem ; [ss unknown]
+0935:0ccd mov [bp-0Ah],di
+@mem ; [ss unknown]
+0935:0cd0 mov [bp-8],es
+@mem ; [ss unknown]
+0935:0cd3 mov [bp-0Ch],dx
+@mem ; [ss unknown]
+0935:0cd6 mov [bp-0Eh],cx
+@jmp set_contains@0d72:5452
+0935:0cd9 call far ptr 0D72h:5452h
+0935:0cde shr ax,1
+@jmp 'insert_digit@16
+0935:0ce0 jae short 0D41h
+
+@mem ; [ss unknown]
+0935:0ce2 mov byte ptr [bp-6],1
+@mem ; [ss unknown]
+0935:0ce6 cmp word ptr [bp-0Eh],2
+@jmp 'test_delete_flag@14
+0935:0cea jle short 0D10h
+
+@mem ; [ss unknown]
+0935:0cec mov di,[bp-0Eh]
+0935:0cef dec di
+0935:0cf0 dec di
+0935:0cf1 les bx,[bp-0Ah]
+@mem ; [es unknown]
+0935:0cf4 mov al,es:[bx+di]
+0935:0cf7 xor ah,ah
+0935:0cf9 push ax
+0935:0cfa mov ax,0Bh
+0935:0cfd push ax
+0935:0cfe mov ax,1CCCh
+0935:0d01 push ds
+0935:0d02 push ax
+@jmp set_contains@0d72:5452
+0935:0d03 call far ptr 0D72h:5452h
+0935:0d08 shr ax,1
+@jmp 'test_delete_flag@14
+0935:0d0a jae short 0D10h
+
+@mem ; [ss unknown]
+0935:0d0c mov byte ptr [bp-6],0
+
+@label test_delete_flag
+@mem ; [ss unknown]
+0935:0d10 test byte ptr [bp-6],1
+@jmp 'insert_digit@16
+0935:0d14 je short 0D41h
+
+; Delete previous character from buffer
+0935:0d16 mov ax,0FFh
+0935:0d19 push ax
+@mem ; [ss unknown]
+0935:0d1a mov di,[bp+4]
+0935:0d1d mov dx,di
+0935:0d1f les di,[di+6]
+0935:0d22 push es
+0935:0d23 push di
+@mem ; [ss unknown]
+0935:0d24 mov di,[bp+4]
+@mem ; [ds unknown]
+0935:0d27 mov ax,[di-10h]
+0935:0d2a dec ax
+0935:0d2b push ax
+0935:0d2c mov ax,1
+0935:0d2f push ax
+@jmp pascal_string_delete@0d72:588e
+0935:0d30 call far ptr 0D72h:588Eh
+; Decrement buffer length/cursor
+@mem ; [ss unknown]
+0935:0d35 mov di,[bp+4]
+@mem ; [ds unknown]
+0935:0d38 dec word ptr [di-10h]
+@mem ; [ss unknown]
+0935:0d3b mov di,[bp+4]
+@mem ; [ds unknown]
+0935:0d3e dec word ptr [di-16h]
+
+; Insert new ASCII digit into buffer
+@label insert_digit
+0935:0d41 mov ax,1
+0935:0d44 push ax
+@mem ; [ss unknown]
+0935:0d45 lea ax,[bp-2]
+0935:0d48 push ds
+0935:0d49 push ax
+0935:0d4a mov ax,0FFh
+0935:0d4d push ax
+@mem ; [ss unknown]
+0935:0d4e mov di,[bp+4]
+0935:0d51 mov dx,di
+0935:0d53 les di,[di+6]
+0935:0d56 push es
+0935:0d57 push di
+@mem ; [ss unknown]
+0935:0d58 mov di,[bp+4]
+@mem ; [ds unknown]
+0935:0d5b mov ax,[di-10h]
+0935:0d5e push ax
+@jmp pascal_string_insert_bytes@0d72:5909
+0935:0d5f call far ptr 0D72h:5909h
+; Increment buffer length/cursor
+@mem ; [ss unknown]
+0935:0d64 mov di,[bp+4]
+@mem ; [ds unknown]
+0935:0d67 inc word ptr [di-10h]
+@mem ; [ss unknown]
+0935:0d6a mov di,[bp+4]
+@mem ; [ds unknown]
+0935:0d6d inc word ptr [di-16h]
+
+@label save_digit
+@mem ; [ss unknown]
+0935:0d70 mov di,[bp+4]
+; Store updated digit value
+@mem ; [ss unknown]
+0935:0d73 mov ax,[bp+6]
+@mem ; [ds unknown]
+0935:0d76 mov [di-12h],ax
+
+@label exit
+0935:0d79 mov sp,bp
+0935:0d7b pop bp
+0935:0d7c ret 4
+

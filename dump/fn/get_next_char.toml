@@ -1,0 +1,96 @@
+ip = "0935:11a0"
+len = 112
+name = "get_next_char"
+desc = "Reads and preprocesses the next character from a length-prefixed string."
+details = "Fetches the character at global index ds:[160h] from a length-prefixed string located at offset 0Ch in the provided structure. Clamps control characters under ASCII 0x20 to spaces, checks the character against a filter table at ds:1CDCh, optionally transforms it via an auxiliary routine, and increments the global character offset before returning."
+callers = ["read_filtered_token@0935:1261", "parse_date_or_time@0935:21f1", "parse_date_or_time@0935:21f1", "parse_date_or_time@0935:21f1", "parse_date_or_time@0935:21f1", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "dispatch_action_by_state@0935:30a1", "dispatch_command_input@0935:3cc9", "dispatch_command_input@0935:3cc9", "process_transaction_loop@0935:3d66"]
+callees = ["ascii_to_glyph_index@0935:0063", "set_contains@0d72:5452"]
+
+[[params]]
+name = "struct_ptr"
+value = "[bp+4]"
+type = "u16"
+desc = "Near pointer to structure containing far string reference at offset 0x0C"
+
+---
+0935:11a0 push bp
+0935:11a1 mov bp,sp
+0935:11a3 sub sp,0
+@mem ; [ss unknown]
+0935:11a7 mov di,[bp+4]
+0935:11aa mov dx,di
+; Load far pointer to string from struct offset 0x0C
+0935:11ac les di,[di+0Ch]
+; Get string length from prefix byte
+@mem ; [es unknown]
+0935:11af mov al,es:[di]
+0935:11b2 xor ah,ah
+; Check if current index has exceeded length
+@mem ; [ds unknown]
+0935:11b4 cmp ax,ds:[160h]
+@jmp 'read_char@2
+0935:11b8 jge short 11C1h
+
+; End of string: write null byte to buffer
+@mem ; [ds unknown]
+0935:11ba mov byte ptr ds:[164h],0
+@jmp 'advance_and_exit@6
+0935:11bf jmp short 1206h
+
+@label read_char
+@mem ; [ss unknown]
+0935:11c1 mov bx,[bp+4]
+0935:11c4 mov dx,bx
+0935:11c6 les bx,[bx+0Ch]
+@mem ; [ds unknown]
+0935:11c9 mov di,ds:[160h]
+; Read character at current string index
+@mem ; [es unknown]
+0935:11cd mov al,es:[bx+di]
+@mem ; [ds unknown]
+0935:11d0 mov ds:[164h],al
+@mem ; [ds unknown]
+0935:11d3 cmp byte ptr ds:[164h],20h
+@jmp 'check_char@4
+0935:11d8 jae short 11DFh
+
+; Clamp control characters to ASCII space (0x20)
+@mem ; [ds unknown]
+0935:11da mov byte ptr ds:[164h],20h
+
+@label check_char
+@mem ; [ds unknown]
+0935:11df mov al,ds:[164h]
+0935:11e2 xor ah,ah
+0935:11e4 push ax
+0935:11e5 mov ax,0Fh
+0935:11e8 push ax
+0935:11e9 mov ax,1CDCh
+0935:11ec push ds
+0935:11ed push ax
+; Check character against lookup table at ds:1CDCh
+@jmp set_contains@0d72:5452
+0935:11ee call far ptr 0D72h:5452h
+0935:11f3 shr ax,1
+@jmp 'advance_and_exit@6
+0935:11f5 jae short 1206h
+
+@mem ; [ds unknown]
+0935:11f7 push word ptr ds:[164h]
+; Transform character via helper routine
+@jmp ascii_to_glyph_index@0935:0063
+0935:11fb call 0063h
+@mem ; [ds unknown]
+0935:11fe mov ds:[164h],al
+; Clear state flag
+@mem ; [ds unknown]
+0935:1201 mov byte ptr ds:[50h],0
+
+; Increment character index
+@label advance_and_exit
+@mem ; [ds unknown]
+0935:1206 inc word ptr ds:[160h]
+0935:120a mov sp,bp
+0935:120c pop bp
+0935:120d ret 2
+

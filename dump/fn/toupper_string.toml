@@ -1,0 +1,50 @@
+ip = "0823:0b54"
+len = 22
+name = "toupper_string"
+desc = "Converts a buffer of characters to uppercase in-place"
+details = "Iterates through `cx` characters starting at `ds:di`. Any ASCII lowercase letter between 'a' and 'z' is converted to uppercase by clearing bit 5 (`and al, 5Fh`). Register state of `di` and `cx` is preserved."
+callers = ["parse_cmdline@0823:0be7"]
+
+[[params]]
+name = "str"
+value = "di"
+type = "*mut u8"
+desc = "Pointer to character buffer"
+
+[[params]]
+name = "len"
+value = "cx"
+type = "u16"
+desc = "Number of characters to process"
+
+---
+0823:0b54 push di
+0823:0b55 push cx
+
+@label next_char
+@mem ; [ds unknown]
+0823:0b56 mov al,[di]
+; Check if character is >= 'a'
+0823:0b58 cmp al,61h
+@jmp 'store_char@4
+0823:0b5a jb short 0B62h
+
+; Check if character is <= 'z'
+0823:0b5c cmp al,7Ah
+@jmp 'store_char@4
+0823:0b5e ja short 0B62h
+
+; Convert lowercase to uppercase
+0823:0b60 and al,5Fh
+
+@label store_char
+@mem ; [ds unknown]
+0823:0b62 mov [di],al
+0823:0b64 inc di
+@jmp 'next_char@1
+0823:0b65 loop 0B56h
+
+0823:0b67 pop cx
+0823:0b68 pop di
+0823:0b69 ret
+

@@ -1,0 +1,148 @@
+ip = "0d72:604f"
+len = 143
+name = "set_union_into_buffer"
+desc = "Forms the union of two byte-backed sets in a 32-byte destination buffer."
+details = "Clears all 32 destination bytes, copies bytes 0 through base_last_index from the base set, then ORs bytes 0 through or_last_index from the other set into the destination. Both lengths are inclusive last byte indices; the routine returns the destination's near offset in AX. Callers must provide a 32-byte destination and source ranges matching the supplied indices."
+callers = ["read_filtered_token@0935:1261"]
+callees = ["checked_stack_frame_prologue_3@0d72:64c8", "register_outermost_stack_frame@0d72:4fcc", "unregister_outermost_stack_frame@0d72:5004"]
+
+[[params]]
+name = "dest"
+value = "[bp+6]"
+type = "*mut u8"
+desc = "Near pointer to the 32-byte destination set in DS."
+
+[[params]]
+name = "or_set"
+value = "[bp+8]"
+type = "*const u8"
+desc = "Far pointer to the set whose bytes are ORed into the destination."
+
+[[params]]
+name = "or_last_index"
+value = "[bp+0Ch]"
+type = "u16"
+desc = "Inclusive last byte index to read from or_set."
+
+[[params]]
+name = "base_set"
+value = "[bp+0Eh]"
+type = "*const u8"
+desc = "Far pointer to the set copied into the destination first."
+
+[[params]]
+name = "base_last_index"
+value = "[bp+12h]"
+type = "u16"
+desc = "Inclusive last byte index to read from base_set."
+
+[ret]
+name = "dest"
+value = "ax"
+type = "*mut u8"
+desc = "Near pointer to the destination set in DS."
+
+---
+0d72:604f mov ax,4
+@jmp checked_stack_frame_prologue_3@0d72:64c8
+0d72:6052 call 64C8h
+0d72:6055 push di
+0d72:6056 push si
+0d72:6057 mov ax,10h
+0d72:605a push ax
+@jmp register_outermost_stack_frame@0d72:4fcc
+0d72:605b call far ptr 0D72h:4FCCh
+; Clear all 32 bytes of the destination set.
+@mem ; [ss unknown]
+0d72:6060 mov word ptr [bp-2],0
+
+@label clear_next_byte
+@mem ; [ss unknown]
+0d72:6065 mov di,[bp-2]
+@mem ; [ss unknown]
+0d72:6068 add di,[bp+6]
+@mem ; [ds unknown]
+0d72:606b mov byte ptr [di],0
+@mem ; [ss unknown]
+0d72:606e mov ax,[bp-2]
+0d72:6071 inc ax
+@mem ; [ss unknown]
+0d72:6072 mov [bp-2],ax
+0d72:6075 cmp ax,20h
+@jmp 'clear_next_byte@1
+0d72:6078 jne short 6065h
+
+; Copy base_set[0..=base_last_index] into the cleared destination.
+@mem ; [ss unknown]
+0d72:607a mov ax,[bp+12h]
+@mem ; [ss unknown]
+0d72:607d mov [bp-4],ax
+@mem ; [ss unknown]
+0d72:6080 mov word ptr [bp-2],0
+
+@label copy_next_byte
+@mem ; [ss unknown]
+0d72:6085 mov di,[bp+6]
+@mem ; [ss unknown]
+0d72:6088 add di,[bp-2]
+@mem ; [ss unknown]
+0d72:608b mov si,[bp-2]
+0d72:608e les bx,[bp+0Eh]
+@mem ; [es unknown]
+0d72:6091 mov al,es:[bx+si]
+@mem ; [ds unknown]
+0d72:6094 mov [di],al
+@mem ; [ss unknown]
+0d72:6096 mov ax,[bp-2]
+0d72:6099 inc ax
+@mem ; [ss unknown]
+0d72:609a mov [bp-2],ax
+0d72:609d dec ax
+@mem ; [ss unknown]
+0d72:609e cmp ax,[bp-4]
+@jmp 'copy_next_byte@3
+0d72:60a1 jne short 6085h
+
+; OR or_set[0..=or_last_index] into the destination.
+@mem ; [ss unknown]
+0d72:60a3 mov ax,[bp+0Ch]
+@mem ; [ss unknown]
+0d72:60a6 mov [bp-4],ax
+@mem ; [ss unknown]
+0d72:60a9 mov word ptr [bp-2],0
+
+@label or_next_byte
+@mem ; [ss unknown]
+0d72:60ae mov di,[bp+6]
+@mem ; [ss unknown]
+0d72:60b1 add di,[bp-2]
+@mem ; [ds unknown]
+0d72:60b4 mov al,[di]
+@mem ; [ss unknown]
+0d72:60b6 mov si,[bp-2]
+0d72:60b9 les bx,[bp+8]
+0d72:60bc or al,es:[bx+si]
+@mem ; [ds unknown]
+0d72:60bf mov [di],al
+@mem ; [ss unknown]
+0d72:60c1 mov ax,[bp-2]
+0d72:60c4 inc ax
+@mem ; [ss unknown]
+0d72:60c5 mov [bp-2],ax
+0d72:60c8 dec ax
+@mem ; [ss unknown]
+0d72:60c9 cmp ax,[bp-4]
+@jmp 'or_next_byte@5
+0d72:60cc jne short 60AEh
+
+@jmp unregister_outermost_stack_frame@0d72:5004
+0d72:60ce call far ptr 0D72h:5004h
+; Return the near destination pointer in AX; discard 14 bytes of arguments.
+@mem ; [ss unknown]
+0d72:60d3 mov ax,[bp+6]
+0d72:60d6 pop si
+0d72:60d7 pop di
+0d72:60d8 mov sp,bp
+0d72:60da pop bp
+0d72:60db retf 0Eh
+

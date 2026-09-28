@@ -1,0 +1,76 @@
+ip = "0d72:0184"
+len = 37
+name = "match_class_01_context_with_reverse_qu"
+desc = "Matches one pronunciation-context character with property bit 0x01, treating reverse-scanned QU as one logical match."
+details = "Tests the current input byte through the character-property table at CS:4A9C. A normal class match increments the caller's shared match count and advances SI by scan_stride; when scanning backward, an otherwise-unmatched U preceded by Q is accepted as a QU digraph, advances SI by two strides, and still increments the count only once."
+
+[[params]]
+name = "input_cursor"
+value = "si"
+type = "*mut u8"
+desc = "Near pointer to the current input byte; advanced by one matching character or by both bytes of reverse-scanned QU."
+
+[[params]]
+name = "current_byte"
+value = "bl"
+type = "u8"
+desc = "Current input byte used to index the character-property table."
+
+[[params]]
+name = "current_input_byte"
+value = "cl"
+type = "u8"
+desc = "Current input byte, tested as U in the reverse QU special case."
+
+[[params]]
+name = "adjacent_byte"
+value = "ch"
+type = "u8"
+desc = "Input byte one scan_stride away, tested as Q in the reverse QU special case."
+
+[[params]]
+name = "scan_stride"
+value = "[bp+0Ch]"
+type = "i16"
+desc = "Signed input scan direction, normally -1 for left context or +1 for right context."
+
+---
+; Accept the current byte directly when its character-property entry has bit 0x01 set.
+@mem ; [bx unknown]
+0d72:0184 mov al,cs:[bx+4A9Ch]
+0d72:0189 and al,1
+@jmp 'try_reverse_qu@3
+0d72:018b je short 0194h
+
+; Count one logical context match and advance the input cursor by one scan step.
+@label record_logical_match
+@mem ; [ss unknown]
+0d72:018d inc byte ptr [bp+3]
+@mem ; [ss unknown]
+0d72:0190 add si,[bp+0Ch]
+
+@label return_to_rule_matcher
+0d72:0193 ret
+
+; The QU exception applies only to reverse scans (scan_stride != +1).
+@label try_reverse_qu
+@mem ; [ss unknown]
+0d72:0194 cmp word ptr [bp+0Ch],1
+@jmp 'return_to_rule_matcher@2
+0d72:0198 je short 0193h
+
+; When scanning backward from U with Q in the adjacent slot, accept QU as one logical class member.
+0d72:019a cmp ch,51h
+@jmp 'return_to_rule_matcher@2
+0d72:019d jne short 0193h
+
+0d72:019f cmp cl,55h
+@jmp 'return_to_rule_matcher@2
+0d72:01a2 jne short 0193h
+
+; Skip the Q first, then use the common match path to skip U and increment the count once.
+@mem ; [ss unknown]
+0d72:01a4 add si,[bp+0Ch]
+@jmp 'record_logical_match@1
+0d72:01a7 jmp short 018Dh
+

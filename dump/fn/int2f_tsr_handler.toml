@@ -1,0 +1,135 @@
+ip = "0823:0898"
+len = 139
+name = "int2f_tsr_handler"
+desc = "TSR interrupt 2Fh (multiplex) handler supporting identification, reset, and uninstallation"
+details = "Handles custom INT 2Fh subfunctions for a TSR. Subfunction 0FBFBh returns an internal table pointer in ES:BX; 0FB00h clears an internal 22-byte state buffer; 0FBFFh verifies interrupt chaining, unhooks INT 2Fh, releases allocated TSR memory (and optional EMS pages), and restores the caller's PSP. Unhandled functions are passed down the previous INT 2Fh chain."
+
+[[params]]
+name = "func_ax"
+value = "ax"
+type = "u16"
+desc = "Multiplex function request code (0FBFBh, 0FBFFh, or 0FB00h)"
+
+[ret]
+name = "status"
+value = "ax"
+type = "u16"
+desc = "0 on success; 0FFFBh on uninstall failure; ES:BX pointer for get info"
+
+---
+; Check for function FBFBh: get info / table pointer
+0823:0898 cmp ax,0FBFBh
+@jmp 'fn_get_info@4
+0823:089b je short 08A9h
+
+; Check for function FBFFh: uninstall TSR
+0823:089d cmp ax,0FBFFh
+@jmp 'fn_uninstall@6
+0823:08a0 je short 08C6h
+
+; Check for function FB00h: clear state buffer
+0823:08a2 cmp ax,0FB00h
+@jmp 'fn_clear_buffer@5
+0823:08a5 je short 08B1h
+
+; Chain to previous INT 2Fh handler if not handled
+@jmp 'chain_old_handler@12
+0823:08a7 jmp short 0918h
+
+@label fn_get_info
+0823:08a9 push cs
+0823:08aa pop es
+; Return ES:BX pointing to TSR data structure
+0823:08ab mov bx,1CEh
+0823:08ae sub ax,ax
+0823:08b0 iret
+
+@label fn_clear_buffer
+0823:08b1 push es
+0823:08b2 push ax
+0823:08b3 push cx
+0823:08b4 push di
+0823:08b5 push cs
+0823:08b6 pop es
+0823:08b7 sub ax,ax
+; Clear 11 words (22 bytes) in TSR data area
+0823:08b9 mov di,1D8h
+0823:08bc mov cx,0Bh
+0823:08bf rep stosw
+0823:08c1 pop di
+0823:08c2 pop cx
+0823:08c3 pop ax
+0823:08c4 pop es
+0823:08c5 iret
+
+@label fn_uninstall
+0823:08c6 push cs
+0823:08c7 pop dx
+; Get current INT 2Fh vector to verify no other TSR hooked over it
+0823:08c8 mov ax,352Fh
+0823:08cb int 21h
+0823:08cd push es
+0823:08ce pop ax
+; Ensure ES matches CS; abort uninstall if hooked by another TSR
+0823:08cf cmp ax,dx
+@jmp 'uninstall_fail@10
+0823:08d1 jne short 0914h
+
+; Restore original INT 2Fh vector from stored segment:offset
+@mem 0823:007e
+0823:08d3 mov dx,cs:[7Eh]
+0823:08d8 push ds
+0823:08d9 mov ds,dx
+@mem 0823:0080
+0823:08db mov dx,cs:[80h]
+0823:08e0 mov ax,252Fh
+0823:08e3 int 21h
+; Save current PSP and switch to TSR PSP before deallocating
+0823:08e5 mov ah,51h
+0823:08e7 int 21h
+0823:08e9 push bx
+@mem 0823:008e
+0823:08ea mov bx,cs:[8Eh]
+0823:08ef mov ah,50h
+0823:08f1 int 21h
+0823:08f3 mov es,bx
+; Free TSR DOS memory block
+0823:08f5 mov ah,49h
+0823:08f7 int 21h
+; Check if EMS memory was allocated
+@mem 0823:01cb
+0823:08f9 cmp byte ptr cs:[1CBh],0
+@jmp 'uninstall_restore_psp@9
+0823:08ff je short 090Ah
+
+@mem 0823:009e
+0823:0901 mov dx,cs:[9Eh]
+; INT 67h AH=45h: Release EMS handle and pages
+0823:0906 mov ah,45h
+0823:0908 int 67h
+
+@label uninstall_restore_psp
+0823:090a pop bx
+; Restore original caller PSP
+0823:090b mov ah,50h
+0823:090d int 21h
+0823:090f sub ax,ax
+0823:0911 pop ds
+@jmp 'uninstall_done@11
+0823:0912 jmp short 0917h
+
+; Return error code FFFBh (cannot uninstall)
+@label uninstall_fail
+0823:0914 mov ax,0FFFBh
+
+@label uninstall_done
+0823:0917 iret
+
+; Simulate far jump to previous INT 2Fh handler
+@label chain_old_handler
+@mem 0823:007e
+0823:0918 push word ptr cs:[7Eh]
+@mem 0823:0080
+0823:091d push word ptr cs:[80h]
+0823:0922 retf
+

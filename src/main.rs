@@ -17,6 +17,7 @@ mod web;
 #[argh(subcommand)]
 enum Command {
     Init(cmd::init::Args),
+    Dump(cmd::dump::Args),
     Func(cmd::func::Args),
     Crawl(crawl::Args),
     RoundTrip(cmd::roundtrip::Args),
@@ -36,7 +37,7 @@ struct Args {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn main() -> anyhow::Result<()> {
     let Args { project, cmd } = argh::from_env::<Args>();
     match cmd {
         Command::Web(args) => {
@@ -45,6 +46,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             Ok(())
         }
         Command::Init(args) => cmd::init::init(project, args),
+        Command::Dump(args) => {
+            let db = DB::load(project)?;
+            cmd::dump::dump(&db, args)
+        }
         Command::Func(args) => {
             let mut db = DB::load(project)?;
             cmd::func::run(&mut db, args)?;

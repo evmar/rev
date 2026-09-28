@@ -1,0 +1,73 @@
+ip = "0d72:5452"
+len = 48
+name = "set_contains"
+desc = "Tests whether an unsigned element belongs to an MSB-first packed bit set."
+details = "Computes byte_index = element >> 3 and returns 0 if it exceeds the inclusive last-byte index. Otherwise returns 1 exactly when set[byte_index] & (0x80 >> (element & 7)) is nonzero; callers use this helper for character-set membership. The set is passed as a 16:16 far pointer, and RETF 8 removes the eight bytes of arguments."
+callers = ["is_not_sentence_end@0935:0b91", "is_not_sentence_end@0935:0b91", "edit_adjust_digit@0935:0c4c", "edit_adjust_digit@0935:0c4c", "apply_prosody_intonation@0935:0d7f", "apply_prosody_intonation@0935:0d7f", "apply_prosody_intonation@0935:0d7f", "get_next_char@0935:11a0", "read_filtered_token@0935:1261", "read_filtered_token@0935:1261", "parse_and_emit_token@0935:12fc", "parse_and_emit_token@0935:12fc", "parse_and_emit_token@0935:12fc", "parse_and_emit_token@0935:12fc", "parse_trailing_int@0935:1db1", "parse_trailing_int@0935:1db1", "parse_trailing_int@0935:1db1", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "dispatch_command_input@0935:3cc9", "dispatch_command_input@0935:3cc9"]
+
+[[params]]
+name = "set"
+value = "[sp+4]"
+type = "*const u8"
+desc = "16:16 far pointer to packed set bytes (offset at entry SP+4, segment at SP+6; BP+6 after prologue)."
+
+[[params]]
+name = "last_byte_index"
+value = "[sp+8]"
+type = "u16"
+desc = "Inclusive maximum valid byte index in the set (BP+0Ah after prologue), not a byte count."
+
+[[params]]
+name = "element"
+value = "[sp+10]"
+type = "u16"
+desc = "Unsigned zero-based element number to test (BP+0Ch after prologue)."
+
+[ret]
+name = "present"
+value = "ax"
+type = "u16"
+desc = "1 when the element's bit is set; 0 when clear or outside the supplied byte bound."
+
+---
+0d72:5452 push bp
+0d72:5453 mov bp,sp
+; Compute unsigned byte index = element >> 3.
+@mem ; [ss unknown]
+0d72:5455 mov si,[bp+0Ch]
+0d72:5458 shr si,1
+0d72:545a shr si,1
+0d72:545c shr si,1
+; Reject byte indices greater than the inclusive bound; equality is valid.
+@mem ; [ss unknown]
+0d72:545e cmp si,[bp+0Ah]
+@jmp 'not_present@2
+0d72:5461 ja short 547Ah
+
+; Load far set pointer and address set[byte_index].
+0d72:5463 les bx,[bp+6]
+0d72:5466 add si,bx
+; CL = (element & 7) + 1, selecting bits from most significant to least significant.
+@mem ; [ss unknown]
+0d72:5468 mov cx,[bp+0Ch]
+0d72:546b and cl,7
+0d72:546e inc cl
+; Shift selected bit into carry: CF = (set[byte_index] >> (7 - (element & 7))) & 1.
+@mem ; [es unknown]
+0d72:5470 mov ch,es:[si]
+0d72:5473 shl ch,cl
+; Default AX to 1 without changing carry; keep it if selected bit was set.
+0d72:5475 mov ax,1
+@jmp 'return_result@3
+0d72:5478 jb short 547Ch
+
+; Out of range or bit clear: return 0.
+@label not_present
+0d72:547a xor ax,ax
+
+@label return_result
+0d72:547c mov sp,bp
+0d72:547e pop bp
+; Far return, callee discards 8 argument bytes.
+0d72:547f retf 8
+

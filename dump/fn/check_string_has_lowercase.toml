@@ -1,0 +1,79 @@
+ip = "0935:1210"
+len = 81
+name = "check_string_has_lowercase"
+desc = "Checks if a Pascal string contains lowercase ASCII characters and sets a global flag."
+details = "Loads a far pointer to a Pascal-style string located at offset +0Ch of the input structure. Iterates through the characters from index 1 to the string length, checking if any character is between 'a' and 'z'. If a lowercase character is found, it sets the global byte at ds:0052h to 1."
+callers = ["process_transaction_loop@0935:3d66"]
+
+[[params]]
+name = "str_record"
+value = "[bp+4]"
+type = "*const u8"
+desc = "Near pointer to structure containing a far pointer to a Pascal string at offset 0x0C"
+
+---
+0935:1210 push bp
+0935:1211 mov bp,sp
+0935:1213 sub sp,4
+@mem ; [ss unknown]
+0935:1217 mov di,[bp+4]
+0935:121a mov dx,di
+; Load far pointer to Pascal string from struct offset 0x0C
+0935:121c les di,[di+0Ch]
+; Read string length prefix byte
+@mem ; [es unknown]
+0935:121f mov al,es:[di]
+0935:1222 xor ah,ah
+@mem ; [ss unknown]
+0935:1224 mov [bp-4],ax
+@mem ; [ss unknown]
+0935:1227 cmp word ptr [bp-4],1
+; Exit if string is empty
+@jmp 'exit@6
+0935:122b jl short 125Bh
+
+; Initialize 1-based character index
+@mem ; [ss unknown]
+0935:122d mov word ptr [bp-2],1
+
+@label check_char_loop
+@mem ; [ss unknown]
+0935:1232 mov bx,[bp+4]
+0935:1235 mov dx,bx
+0935:1237 les bx,[bx+0Ch]
+@mem ; [ss unknown]
+0935:123a mov di,[bp-2]
+; Check if character >= 'a'
+@mem ; [es unknown]
+0935:123d cmp byte ptr es:[bx+di],61h
+@jmp 'advance_index@5
+0935:1241 jb short 124Eh
+
+; Check if character <= 'z'
+@mem ; [es unknown]
+0935:1243 cmp byte ptr es:[bx+di],7Ah
+@jmp 'advance_index@5
+0935:1247 ja short 124Eh
+
+; Set global flag indicating lowercase character found
+@mem ; [ds unknown]
+0935:1249 mov byte ptr ds:[52h],1
+
+@label advance_index
+@mem ; [ss unknown]
+0935:124e mov ax,[bp-2]
+0935:1251 inc ax
+@mem ; [ss unknown]
+0935:1252 mov [bp-2],ax
+0935:1255 dec ax
+; Compare index with string length and loop if not finished
+@mem ; [ss unknown]
+0935:1256 cmp ax,[bp-4]
+@jmp 'check_char_loop@2
+0935:1259 jne short 1232h
+
+@label exit
+0935:125b mov sp,bp
+0935:125d pop bp
+0935:125e ret 2
+

@@ -1,0 +1,17 @@
+ip = "0d72:02aa"
+len = 16
+
+---
+@mem ; [bx unknown]
+0d72:02aa mov al,cs:[bx+4A9Ch]
+0d72:02af cmp al,30h
+@jmp '2
+0d72:02b1 jne short 02B9h
+
+@mem ; [ss unknown]
+0d72:02b3 inc byte ptr [bp+3]
+@mem ; [ss unknown]
+0d72:02b6 add si,[bp+0Ch]
+
+0d72:02b9 ret
+

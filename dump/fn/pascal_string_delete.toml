@@ -1,0 +1,126 @@
+ip = "0d72:588e"
+len = 123
+name = "pascal_string_delete"
+desc = "Delete a character range from a far Pascal string in place, shifting the remaining suffix left."
+details = "Arguments at entry are count ([sp+4]), 1-based position ([sp+6]), string offset/segment ([sp+8]/[sp+0Ah]), and an unused capacity word ([sp+0Ch], callers pass 255); the string's first byte is its length. Checks unsigned 16-bit (position + count - 1) against the original length and calls fatal-error helper 0d72:5ca6 if greater, then stores the low byte of (length - count) and copies new_length - position + 1 bytes forward from string + position + count to string + position; no terminator is copied or cleared. The check does not independently validate position >= 1 or arithmetic overflow, so invalid inputs can pass it; the routine reserves eight local bytes, registers/unregisters its runtime stack frame, preserves SI/DI/BP and DS, has no defined return value, and discards ten argument bytes with RETF 0Ah."
+callers = ["edit_adjust_digit@0935:0c4c", "apply_prosody_intonation@0935:0d7f", "apply_prosody_intonation@0935:0d7f", "apply_prosody_intonation@0935:0d7f", "apply_prosody_intonation@0935:0d7f", "path_append_component@0935:109f", "parse_and_emit_token@0935:12fc"]
+callees = ["checked_stack_frame_prologue@0d72:5c2a", "copy_far_bytes_forward@0d72:507e", "register_outermost_stack_frame@0d72:4fcc", "report_pascal_string_bounds_error@0d72:5ca6", "unregister_outermost_stack_frame@0d72:5004"]
+
+[[params]]
+name = "count"
+value = "[sp+4]"
+type = "u16"
+desc = "Number of characters to delete."
+
+[[params]]
+name = "position"
+value = "[sp+6]"
+type = "u16"
+desc = "1-based position of the first character to delete."
+
+[[params]]
+name = "string_offset"
+value = "[sp+8]"
+type = "u16"
+desc = "Offset of the mutable Pascal string, pointing to its length byte."
+
+[[params]]
+name = "string_segment"
+value = "[sp+0Ah]"
+type = "u16"
+desc = "Segment of the mutable Pascal string."
+
+[[params]]
+name = "capacity"
+value = "[sp+0Ch]"
+type = "u16"
+desc = "Unused string capacity argument; observed callers pass 255."
+
+---
+; Allocate an 8-byte local frame through the checked prologue helper; resulting BP+6 is count.
+0d72:588e mov ax,8
+@jmp checked_stack_frame_prologue@0d72:5c2a
+0d72:5891 call 5C2Ah
+0d72:5894 push di
+0d72:5895 push si
+; Register the runtime frame with size 12 (8 local bytes plus saved DI/SI).
+0d72:5896 mov ax,0Ch
+0d72:5899 push ax
+@jmp register_outermost_stack_frame@0d72:4fcc
+0d72:589a call far ptr 0D72h:4FCCh
+; DX = (count + position - 1) modulo 65536: last character index to delete.
+@mem ; [ss unknown]
+0d72:589f mov ax,[bp+6]
+@mem ; [ss unknown]
+0d72:58a2 add ax,[bp+8]
+0d72:58a5 dec ax
+0d72:58a6 mov dx,ax
+; Load the Pascal string length and compare the last deletion index using an unsigned comparison.
+0d72:58a8 les di,[bp+0Ah]
+@mem ; [es unknown]
+0d72:58ab mov al,es:[di]
+0d72:58ae xor ah,ah
+0d72:58b0 cmp dx,ax
+@jmp 'delete_range@2
+0d72:58b2 jbe short 58B9h
+
+; Deletion extends beyond the original length: invoke fatal string-range error helper.
+@jmp report_pascal_string_bounds_error@0d72:5ca6
+0d72:58b4 call far ptr 0D72h:5CA6h
+
+; Set length byte to (old_length - count) modulo 256.
+@label delete_range
+0d72:58b9 les di,[bp+0Ah]
+@mem ; [es unknown]
+0d72:58bc mov al,es:[di]
+0d72:58bf xor ah,ah
+@mem ; [ss unknown]
+0d72:58c1 sub ax,[bp+6]
+0d72:58c4 xor ah,ah
+@mem ; [es unknown]
+0d72:58c6 mov es:[di],al
+; Build and push source far pointer string + position + count (suffix after deleted range).
+@mem ; [ss unknown]
+0d72:58c9 mov di,[bp+6]
+@mem ; [ss unknown]
+0d72:58cc add di,[bp+8]
+0d72:58cf les si,[bp+0Ah]
+0d72:58d2 add si,di
+@mem ; [ss unknown]
+0d72:58d4 mov [bp-4],si
+@mem ; [ss unknown]
+0d72:58d7 mov [bp-2],es
+0d72:58da push es
+0d72:58db push si
+; Build and push destination far pointer string + position (start of deleted range).
+0d72:58dc les di,[bp+0Ah]
+@mem ; [ss unknown]
+0d72:58df add di,[bp+8]
+@mem ; [ss unknown]
+0d72:58e2 mov [bp-8],di
+@mem ; [ss unknown]
+0d72:58e5 mov [bp-6],es
+0d72:58e8 push es
+0d72:58e9 push di
+; Copy count = new_length - position + 1, i.e. suffix bytes only; deleting through the end copies zero bytes.
+0d72:58ea les di,[bp+0Ah]
+@mem ; [es unknown]
+0d72:58ed mov al,es:[di]
+0d72:58f0 xor ah,ah
+@mem ; [ss unknown]
+0d72:58f2 sub ax,[bp+8]
+0d72:58f5 inc ax
+0d72:58f6 push ax
+; Shift suffix left using forward copy, safe for overlap with valid deletion arguments.
+@jmp copy_far_bytes_forward@0d72:507e
+0d72:58f7 call far ptr 0D72h:507Eh
+; Unregister runtime frame and restore saved registers.
+@jmp unregister_outermost_stack_frame@0d72:5004
+0d72:58fc call far ptr 0D72h:5004h
+0d72:5901 pop si
+0d72:5902 pop di
+0d72:5903 mov sp,bp
+0d72:5905 pop bp
+; Far return; discard count, position, string offset/segment, and unused capacity (10 bytes).
+0d72:5906 retf 0Ah
+

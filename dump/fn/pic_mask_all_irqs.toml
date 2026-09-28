@@ -1,0 +1,30 @@
+ip = "0823:0923"
+len = 19
+name = "pic_mask_all_irqs"
+desc = "masks all master PIC hardware interrupts and saves the previous mask"
+details = "Reads the master 8259 PIC Interrupt Mask Register (IMR) from port 21h and saves it to CS:[01CDh]. It then writes 0FFh to port 21h to mask all IRQs (0-7), using short jumps for I/O delay, and restores interrupts via STI before returning."
+callers = ["tsr_entry_point@0823:0ae2"]
+
+---
+0823:0923 cli
+0823:0924 push ax
+; read current master PIC interrupt mask register (IMR)
+0823:0925 in al,21h
+; I/O port delay
+@jmp '1
+0823:0927 jmp short 0929h
+
+; save previous PIC mask
+@mem 0823:01cd
+0823:0929 mov cs:[1CDh],al
+; mask all IRQ lines (IRQ0-IRQ7)
+0823:092d mov al,0FFh
+0823:092f out 21h,al
+; I/O port delay
+@jmp '2
+0823:0931 jmp short 0933h
+
+0823:0933 pop ax
+0823:0934 sti
+0823:0935 ret
+

@@ -1,0 +1,45 @@
+ip = "0d72:5004"
+len = 28
+name = "unregister_outermost_stack_frame"
+desc = "Clears the registered runtime stack-frame marker when the owning frame exits."
+details = "Pairs with register_outermost_stack_frame at 0d72:4fcc: computes boundary = ((entry BP & 0xFFFE) + 2) modulo 65536 and clears DS:0602h if boundary >= the saved marker using an unsigned comparison. A deeper nested caller whose boundary is below the marker leaves it unchanged; an already-zero marker remains zero, and saved context words DS:0604h..0608h are not modified. Takes no stack arguments and returns with RETF, preserving BP and clobbering AX, BX and arithmetic flags; AX contains the computed boundary but is not an established return value."
+callers = ["report_fatal_error_and_exit@0d72:4bac", "pascal_string_equal@0d72:5570", "pascal_string_not_equal@0d72:55e0", "pascal_string_less_than@0d72:5615", "pascal_string_append_bytes@0d72:582a", "pascal_string_delete@0d72:588e", "pascal_string_insert_bytes@0d72:5909", "report_pascal_string_bounds_error@0d72:5ca6", "set_union_into_buffer@0d72:604f"]
+
+[[params]]
+name = "caller_frame_pointer"
+value = "bp"
+type = "u16"
+desc = "Implicit caller stack-frame offset in SS; bit 0 is masked off before comparing the caller's frame boundary with the registered marker."
+
+[[params]]
+name = "data_segment"
+value = "ds"
+type = "u16"
+desc = "Runtime data segment containing the registered stack marker at offset 0602h."
+
+---
+0d72:5004 push bp
+0d72:5005 mov bp,sp
+; Read entry BP from the saved word at SS:[BP], obtaining the caller's frame pointer.
+@mem ; [ss unknown]
+0d72:5007 mov bx,[bp]
+; Clear the caller BP low bit and compute its frame boundary: AX = (caller_BP & FFFEh) + 2 (16-bit).
+0d72:500a and bx,0FFFEh
+@mem ; [ds unknown]
+0d72:500d lea ax,[bx+2]
+; Unsigned comparison with DS:0602h: preserve the outer registration if this caller's boundary is below its marker (nested frame).
+@mem ; [ds unknown]
+0d72:5010 cmp ax,ds:[602h]
+@jmp 'return_after_frame_check@2
+0d72:5014 jb short 501Ch
+
+; Caller boundary has reached or passed the registered marker: invalidate it. Saved diagnostic words at 0604h..0608h remain intact.
+@mem ; [ds unknown]
+0d72:5016 mov word ptr ds:[602h],0
+
+; Restore BP and return far without removing arguments; AX/BX are scratch values.
+@label return_after_frame_check
+0d72:501c mov sp,bp
+0d72:501e pop bp
+0d72:501f retf
+

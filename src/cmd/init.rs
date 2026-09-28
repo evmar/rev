@@ -11,7 +11,7 @@ pub struct Args {
     exe: String,
 }
 
-pub fn init(project_path: PathBuf, args: Args) -> Result<(), Box<dyn std::error::Error>> {
+pub fn init(project_path: PathBuf, args: Args) -> anyhow::Result<()> {
     let mut db = DB::default();
     db.project_path = project_path;
     db.exe.filename = args.exe;

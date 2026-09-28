@@ -1,0 +1,21 @@
+ip = "0d72:67ff"
+len = 23
+callers = ["write_stdout_far_buffer_chunked@0d72:66cc", "0d72:673a"]
+callees = ["0d72:687b"]
+
+---
+0d72:67ff push bp
+0d72:6800 mov bp,sp
+@mem ; [ss unknown]
+0d72:6802 mov cx,[bp+6]
+@mem ; [ss unknown]
+0d72:6805 mov dx,[bp+8]
+@mem ; [ss unknown]
+0d72:6808 mov bx,[bp+0Ah]
+0d72:680b mov ah,40h
+@jmp 0d72:687b
+0d72:680d call 687Bh
+0d72:6810 mov sp,bp
+0d72:6812 pop bp
+0d72:6813 retf 6
+

@@ -1,0 +1,55 @@
+ip = "0823:0b6a"
+len = 29
+name = "parse_hex_digit"
+desc = "Converts an ASCII hexadecimal character to its numeric value (0-15)"
+details = "This routine takes an ASCII character in AL and checks if it falls within the ranges '0'-'9' or uppercase 'A'-'F'. If valid, it converts the character to its 4-bit numeric value (0-15) in AL and returns AH = 0. If the input is not a valid uppercase hex digit, AH is set to 1 to signal an error."
+callers = ["parse_cmdline_p_switch@0823:0bb2"]
+
+[[params]]
+name = "c"
+value = "al"
+type = "char"
+desc = "ASCII character to convert"
+
+[ret]
+name = "result"
+value = "ax"
+type = "u16"
+desc = "On success, AH=0 and AL contains 0-15; on error, AH=1"
+
+---
+; Initialize AH to 0 (default success) and check if AL is a decimal digit ('0'-'9')
+0823:0b6a xor ah,ah
+0823:0b6c cmp al,30h
+@jmp '3
+0823:0b6e jb short 0B78h
+
+0823:0b70 cmp al,39h
+@jmp '3
+0823:0b72 ja short 0B78h
+
+; Convert '0'-'9' to 0-9 and return
+0823:0b74 sub al,30h
+@jmp '7
+0823:0b76 jmp short 0B86h
+
+; Check if AL is an uppercase hex letter ('A'-'F')
+0823:0b78 cmp al,41h
+@jmp '6
+0823:0b7a jb short 0B84h
+
+0823:0b7c cmp al,46h
+@jmp '6
+0823:0b7e ja short 0B84h
+
+; Convert 'A'-'F' to 10-15 and return
+0823:0b80 sub al,37h
+@jmp '7
+0823:0b82 jmp short 0B86h
+
+; Character is not a valid hex digit; set AH to 1 to indicate error
+0823:0b84 mov ah,1
+0823:0b86 ret
+
+0823:0b86 ret
+

@@ -1,0 +1,33 @@
+ip = "0d72:0286"
+len = 36
+
+---
+0d72:0286 cmp bl,48h
+@jmp '4
+0d72:0289 jne short 029Ch
+
+0d72:028b cmp ch,43h
+@jmp '3
+0d72:028e je short 0295h
+
+0d72:0290 cmp ch,53h
+@jmp '6
+0d72:0293 jne short 02A9h
+
+0d72:0295 sub si,2
+@mem ; [ss unknown]
+0d72:0298 inc byte ptr [bp+3]
+0d72:029b ret
+
+@mem ; [bx unknown]
+0d72:029c mov al,cs:[bx+4A9Ch]
+0d72:02a1 and al,2
+@jmp '6
+0d72:02a3 je short 02A9h
+
+0d72:02a5 dec si
+@mem ; [ss unknown]
+0d72:02a6 inc byte ptr [bp+3]
+
+0d72:02a9 ret
+

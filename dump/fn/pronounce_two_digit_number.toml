@@ -1,0 +1,97 @@
+ip = "0935:1e4e"
+len = 121
+name = "pronounce_two_digit_number"
+desc = "Formats a value as two decimal digits and emits its cardinal-number pronunciation."
+details = "Copies a two-character Pascal-string template into the caller's scratch buffer, replaces the ones digit and (for values of 10 or more) the tens digit, then passes the resulting zero-padded digit string to tts_pronounce_number in mode 1. The parser uses this helper to speak date and time fields such as month, day, hour, minute, and second."
+callers = ["parse_date_or_time@0935:21f1", "parse_date_or_time@0935:21f1", "parse_date_or_time@0935:21f1", "parse_date_or_time@0935:21f1", "parse_date_or_time@0935:21f1"]
+callees = ["pascal_string_copy_bounded@0d72:538c", "tts_pronounce_number@0935:1742"]
+
+[[params]]
+name = "ctx"
+value = "[bp+4]"
+type = "*mut u8"
+desc = "Parser/pronunciation context; scratch Pascal string is at ctx-0x106 and the output handle is reached through ctx+4"
+
+[[params]]
+name = "value"
+value = "[bp+6]"
+type = "i16"
+desc = "Nonnegative date or time field to format as two decimal digits"
+
+---
+0935:1e4e push bp
+0935:1e4f mov bp,sp
+0935:1e51 sub sp,2
+@mem ; [ss unknown]
+0935:1e55 mov di,[bp+4]
+; Initialize ctx[-0x106] from the two-digit Pascal-string template (including its leading-zero digit).
+0935:1e58 mov dx,di
+@mem ; [ds unknown]
+0935:1e5a lea di,[di-106h]
+0935:1e5e push ss
+0935:1e5f pop es
+0935:1e60 mov si,1DBEh
+0935:1e63 mov cx,3
+0935:1e66 mov ax,ds
+@mem ; [ss unknown]
+0935:1e68 mov [bp-2],dx
+@jmp pascal_string_copy_bounded@0d72:538c
+0935:1e6b call far ptr 0D72h:538Ch
+; Only replace the template's tens digit when value is at least 10; smaller values retain the leading zero.
+@mem ; [ss unknown]
+0935:1e70 cmp word ptr [bp+6],0Ah
+@jmp 'write_ones_digit@2
+0935:1e74 jl short 1E8Bh
+
+@mem ; [ss unknown]
+0935:1e76 mov di,[bp+4]
+0935:1e79 mov cx,0Ah
+; Compute value / 10 and store its ASCII tens digit.
+@mem ; [ss unknown]
+0935:1e7c mov ax,[bp+6]
+0935:1e7f cwd
+0935:1e80 idiv cx
+0935:1e82 add ax,30h
+0935:1e85 xor ah,ah
+@mem ; [ds unknown]
+0935:1e87 mov [di-105h],al
+
+; Compute value % 10 and store its ASCII ones digit.
+@label write_ones_digit
+0935:1e8b mov cx,0Ah
+@mem ; [ss unknown]
+0935:1e8e mov ax,[bp+6]
+0935:1e91 cwd
+0935:1e92 idiv cx
+@mem ; [ss unknown]
+0935:1e94 mov [bp+6],dx
+@mem ; [ss unknown]
+0935:1e97 mov di,[bp+4]
+@mem ; [ss unknown]
+0935:1e9a mov ax,[bp+6]
+0935:1e9d add ax,30h
+0935:1ea0 xor ah,ah
+@mem ; [ds unknown]
+0935:1ea2 mov [di-104h],al
+; Pronounce the completed two-digit Pascal string in cardinal-number mode (mode 1).
+0935:1ea6 mov ax,1
+0935:1ea9 push ax
+@mem ; [ss unknown]
+0935:1eaa mov di,[bp+4]
+@mem ; [ds unknown]
+0935:1ead lea ax,[di-106h]
+0935:1eb1 push ax
+@mem ; [ss unknown]
+0935:1eb2 mov [bp-2],di
+@mem ; [ss unknown]
+0935:1eb5 mov bx,[bp+4]
+@mem ; [ds unknown]
+0935:1eb8 mov bx,[bx+4]
+@mem ; [ds unknown]
+0935:1ebb push word ptr [bx+4]
+@jmp tts_pronounce_number@0935:1742
+0935:1ebe call 1742h
+0935:1ec1 mov sp,bp
+0935:1ec3 pop bp
+0935:1ec4 ret 4
+

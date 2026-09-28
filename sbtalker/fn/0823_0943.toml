@@ -1,0 +1,36 @@
+ip = "0823:0943"
+len = 64
+name = "init_heap_bounds"
+desc = "Initializes memory management variables and heap size"
+details = "Calculates the base segment for the heap by adding the program's paragraph size to its load segment. It determines available paragraphs up to the stack segment, rounds the capacity to 16KB blocks, and records the segment base, paragraph count, block count, and 32-bit total byte capacity into header variables in the code segment."
+blocks = ["0823:0943"]
+
+[annotations."0823:0947"]
+comment = "Calculate end of program segment (CS + paragraph size of program image)"
+
+[annotations."0823:0954"]
+comment = "Store heap base segment at cs:[0x0009]"
+memory = "0823:0009"
+
+[annotations."0823:0958"]
+comment = "Calculate available paragraphs between heap base and stack (plus 0x180 paragraphs)"
+
+[annotations."0823:0960"]
+comment = "Store available paragraphs at cs:[0x0092]"
+memory = "0823:0092"
+
+[annotations."0823:0965"]
+comment = "Convert paragraphs to 16KB blocks (shr 10, rounded up)"
+
+[annotations."0823:096c"]
+comment = "Store block count at cs:[0x009A]"
+memory = "0823:009a"
+
+[annotations."0823:0970"]
+comment = "Compute total heap size in bytes (blocks * 0x4000) and store 32-bit result at cs:[0x0000]"
+
+[annotations."0823:0975"]
+memory = "0823:0000"
+
+[annotations."0823:0979"]
+memory = "0823:0002"

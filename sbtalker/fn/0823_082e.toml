@@ -1,0 +1,26 @@
+ip = "0823:082e"
+len = 31
+name = "restore_int09_vector"
+desc = "restores the INT 09h (keyboard) interrupt vector"
+details = "Disables interrupts and updates the interrupt vector table entry for INT 09h (at 0000:0024h) using the offset and segment values stored in the code segment at cs:[0082h] and cs:[0084h]. Re-enables interrupts and restores modified registers before returning."
+blocks = ["0823:082e"]
+
+[annotations."0823:0834"]
+comment = "Point ES to interrupt vector table (segment 0)"
+
+[annotations."0823:0836"]
+comment = "Offset 0x24 corresponds to INT 09h vector (0x09 * 4)"
+
+[annotations."0823:0839"]
+comment = "Restore INT 09h offset from cs:[0082h]"
+memory = "0823:0082"
+
+[annotations."0823:083d"]
+memory = "[es unknown]"
+
+[annotations."0823:0840"]
+comment = "Restore INT 09h segment from cs:[0084h]"
+memory = "0823:0084"
+
+[annotations."0823:0844"]
+memory = "[es unknown]"

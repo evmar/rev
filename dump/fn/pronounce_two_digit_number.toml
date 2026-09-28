@@ -3,8 +3,6 @@ len = 121
 name = "pronounce_two_digit_number"
 desc = "Formats a value as two decimal digits and emits its cardinal-number pronunciation."
 details = "Copies a two-character Pascal-string template into the caller's scratch buffer, replaces the ones digit and (for values of 10 or more) the tens digit, then passes the resulting zero-padded digit string to tts_pronounce_number in mode 1. The parser uses this helper to speak date and time fields such as month, day, hour, minute, and second."
-callers = ["parse_date_or_time@0935:21f1", "parse_date_or_time@0935:21f1", "parse_date_or_time@0935:21f1", "parse_date_or_time@0935:21f1", "parse_date_or_time@0935:21f1"]
-callees = ["pascal_string_copy_bounded@0d72:538c", "tts_pronounce_number@0935:1742"]
 
 [[params]]
 name = "ctx"

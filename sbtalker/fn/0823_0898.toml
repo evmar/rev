@@ -1,0 +1,117 @@
+ip = "0823:0898"
+len = 139
+name = "int2f_tsr_handler"
+desc = "TSR interrupt 2Fh (multiplex) handler supporting identification, reset, and uninstallation"
+details = "Handles custom INT 2Fh subfunctions for a TSR. Subfunction 0FBFBh returns an internal table pointer in ES:BX; 0FB00h clears an internal 22-byte state buffer; 0FBFFh verifies interrupt chaining, unhooks INT 2Fh, releases allocated TSR memory (and optional EMS pages), and restores the caller's PSP. Unhandled functions are passed down the previous INT 2Fh chain."
+blocks = ["0823:0898", "0823:089d", "0823:08a2", "0823:08a7", "0823:08a9", "0823:08b1", "0823:08c6", "0823:08d3", "0823:0901", "0823:090a", "0823:0914", "0823:0917", "0823:0918"]
+
+[[params]]
+name = "func_ax"
+value = "ax"
+type = "u16"
+desc = "Multiplex function request code (0FBFBh, 0FBFFh, or 0FB00h)"
+
+[ret]
+name = "status"
+value = "ax"
+type = "u16"
+desc = "0 on success; 0FFFBh on uninstall failure; ES:BX pointer for get info"
+
+[annotations."0823:0898"]
+comment = "Check for function FBFBh: get info / table pointer"
+
+[annotations."0823:089b"]
+jmp = "'fn_get_info@4"
+
+[annotations."0823:089d"]
+comment = "Check for function FBFFh: uninstall TSR"
+
+[annotations."0823:08a0"]
+jmp = "'fn_uninstall@6"
+
+[annotations."0823:08a2"]
+comment = "Check for function FB00h: clear state buffer"
+
+[annotations."0823:08a5"]
+jmp = "'fn_clear_buffer@5"
+
+[annotations."0823:08a7"]
+comment = "Chain to previous INT 2Fh handler if not handled"
+jmp = "'chain_old_handler@12"
+
+[annotations."0823:08a9"]
+label = "fn_get_info"
+
+[annotations."0823:08ab"]
+comment = "Return ES:BX pointing to TSR data structure"
+
+[annotations."0823:08b1"]
+label = "fn_clear_buffer"
+
+[annotations."0823:08b9"]
+comment = "Clear 11 words (22 bytes) in TSR data area"
+
+[annotations."0823:08c6"]
+label = "fn_uninstall"
+
+[annotations."0823:08c8"]
+comment = "Get current INT 2Fh vector to verify no other TSR hooked over it"
+
+[annotations."0823:08cf"]
+comment = "Ensure ES matches CS; abort uninstall if hooked by another TSR"
+
+[annotations."0823:08d1"]
+jmp = "'uninstall_fail@10"
+
+[annotations."0823:08d3"]
+comment = "Restore original INT 2Fh vector from stored segment:offset"
+memory = "0823:007e"
+
+[annotations."0823:08db"]
+memory = "0823:0080"
+
+[annotations."0823:08e5"]
+comment = "Save current PSP and switch to TSR PSP before deallocating"
+
+[annotations."0823:08ea"]
+memory = "0823:008e"
+
+[annotations."0823:08f5"]
+comment = "Free TSR DOS memory block"
+
+[annotations."0823:08f9"]
+comment = "Check if EMS memory was allocated"
+memory = "0823:01cb"
+
+[annotations."0823:08ff"]
+jmp = "'uninstall_restore_psp@9"
+
+[annotations."0823:0901"]
+memory = "0823:009e"
+
+[annotations."0823:0906"]
+comment = "INT 67h AH=45h: Release EMS handle and pages"
+
+[annotations."0823:090a"]
+label = "uninstall_restore_psp"
+
+[annotations."0823:090b"]
+comment = "Restore original caller PSP"
+
+[annotations."0823:0912"]
+jmp = "'uninstall_done@11"
+
+[annotations."0823:0914"]
+comment = "Return error code FFFBh (cannot uninstall)"
+label = "uninstall_fail"
+
+[annotations."0823:0917"]
+label = "uninstall_done"
+
+[annotations."0823:0918"]
+comment = "Simulate far jump to previous INT 2Fh handler"
+label = "chain_old_handler"
+memory = "0823:007e"
+
+[annotations."0823:091d"]
+memory = "0823:0080"

@@ -1,0 +1,625 @@
+ip = "0935:12fc"
+len = 1027
+name = "parse_and_emit_token"
+desc = "Parses and processes a token or identifier from the input context"
+details = "Extracts a Pascal string token using a helper, strips any trailing matched characters, and queries a symbol table. If defined, it emits a formatted representation of the symbol; otherwise, it handles prefixes, special characters (such as periods, quotes, or table-driven character classes), and dispatches token records to an emitter routine."
+blocks = ["0935:12fc", "0935:1364", "0935:1369", "0935:139c", "0935:13c1", "0935:13e1", "0935:1409", "0935:140f", "0935:1416", "0935:141d", "0935:1423", "0935:1426", "0935:142d", "0935:1430", "0935:1474", "0935:149a", "0935:14a4", "0935:14bc", "0935:14f6", "0935:1514", "0935:151b", "0935:1539", "0935:153c", "0935:154a", "0935:154d", "0935:1552", "0935:1563", "0935:1590", "0935:15a1", "0935:15c2", "0935:15d3", "0935:15d6", "0935:15df", "0935:15e2", "0935:1605", "0935:1608", "0935:1665", "0935:1687", "0935:16a7", "0935:16a9", "0935:16e8", "0935:16f6", "0935:16f9"]
+
+[[params]]
+name = "ctx"
+value = "[bp+4]"
+type = "*mut u8"
+desc = "Pointer to parser/context state structure containing string buffers and output handle"
+
+[annotations."0935:1303"]
+memory = "[ds unknown]"
+
+[annotations."0935:1308"]
+memory = "[ds unknown]"
+
+[annotations."0935:130d"]
+memory = "[ss unknown]"
+
+[annotations."0935:1310"]
+comment = "Allocate/point to 256-byte Pascal string buffer at di - 100h"
+memory = "[ds unknown]"
+
+[annotations."0935:1333"]
+memory = "[ss unknown]"
+
+[annotations."0935:1337"]
+memory = "[ss unknown]"
+
+[annotations."0935:133a"]
+comment = "Extract or read token into string buffer"
+jmp = "read_filtered_token@0935:1261"
+
+[annotations."0935:133d"]
+memory = "[ss unknown]"
+
+[annotations."0935:1340"]
+comment = "Read string length byte into bp-4"
+memory = "[ds unknown]"
+
+[annotations."0935:1346"]
+memory = "[ss unknown]"
+
+[annotations."0935:1349"]
+memory = "[ss unknown]"
+
+[annotations."0935:134c"]
+memory = "[ds unknown]"
+
+[annotations."0935:1357"]
+memory = "[ss unknown]"
+
+[annotations."0935:135b"]
+jmp = "pascal_string_equal@0d72:5570"
+
+[annotations."0935:1362"]
+jmp = "'trim_trailing_loop@2"
+
+[annotations."0935:1364"]
+memory = "[ds unknown]"
+
+[annotations."0935:1369"]
+comment = "Trim trailing characters matching character set at 1D08h"
+label = "trim_trailing_loop"
+memory = "[ss unknown]"
+
+[annotations."0935:136c"]
+memory = "[ss unknown]"
+
+[annotations."0935:136f"]
+memory = "[ds unknown]"
+
+[annotations."0935:1377"]
+memory = "[ds unknown]"
+
+[annotations."0935:1387"]
+memory = "[ss unknown]"
+
+[annotations."0935:138b"]
+memory = "[ss unknown]"
+
+[annotations."0935:138f"]
+memory = "[ss unknown]"
+
+[annotations."0935:1393"]
+comment = "Test set membership (in set 1D08h)"
+jmp = "set_contains@0d72:5452"
+
+[annotations."0935:139a"]
+jmp = "'symbol_lookup@4"
+
+[annotations."0935:139c"]
+memory = "[ss unknown]"
+
+[annotations."0935:13a0"]
+memory = "[ds unknown]"
+
+[annotations."0935:13a8"]
+memory = "[ss unknown]"
+
+[annotations."0935:13ac"]
+memory = "[ss unknown]"
+
+[annotations."0935:13b3"]
+comment = "Delete trailing character from Pascal string"
+jmp = "pascal_string_delete@0d72:588e"
+
+[annotations."0935:13b8"]
+memory = "[ss unknown]"
+
+[annotations."0935:13bb"]
+memory = "[ds unknown]"
+
+[annotations."0935:13bf"]
+jmp = "'trim_trailing_loop@2"
+
+[annotations."0935:13c1"]
+label = "symbol_lookup"
+memory = "[ds unknown]"
+
+[annotations."0935:13c6"]
+memory = "[ss unknown]"
+
+[annotations."0935:13c9"]
+memory = "[ds unknown]"
+
+[annotations."0935:13ce"]
+memory = "[ss unknown]"
+
+[annotations."0935:13d2"]
+comment = "Look up symbol in dictionary/symbol table"
+jmp = "bst_find_value@0935:0080"
+
+[annotations."0935:13d5"]
+memory = "[ss unknown]"
+
+[annotations."0935:13d8"]
+memory = "[ss unknown]"
+
+[annotations."0935:13db"]
+comment = "Check if symbol found (pointer != NULL)"
+memory = "[ss unknown]"
+
+[annotations."0935:13df"]
+jmp = "'symbol_not_found@6"
+
+[annotations."0935:13f8"]
+jmp = "copy_words_to_stack@0d72:53b0"
+
+[annotations."0935:13fd"]
+memory = "[ss unknown]"
+
+[annotations."0935:1400"]
+memory = "[ds unknown]"
+
+[annotations."0935:1403"]
+comment = "Emit found symbol using emitter routine"
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:1406"]
+jmp = "'epilogue@42"
+
+[annotations."0935:1409"]
+label = "symbol_not_found"
+memory = "[ss unknown]"
+
+[annotations."0935:140d"]
+jmp = "'8"
+
+[annotations."0935:140f"]
+memory = "[ds unknown]"
+
+[annotations."0935:1414"]
+jmp = "'9"
+
+[annotations."0935:1416"]
+memory = "[ds unknown]"
+
+[annotations."0935:141b"]
+jmp = "'format_and_emit_token@13"
+
+[annotations."0935:141d"]
+memory = "[ss unknown]"
+
+[annotations."0935:1421"]
+jmp = "'11"
+
+[annotations."0935:1423"]
+jmp = "'scan_token_chars@22"
+
+[annotations."0935:1426"]
+memory = "[ds unknown]"
+
+[annotations."0935:142b"]
+jmp = "'format_and_emit_token@13"
+
+[annotations."0935:142d"]
+jmp = "'scan_token_chars@22"
+
+[annotations."0935:1430"]
+label = "format_and_emit_token"
+memory = "[ss unknown]"
+
+[annotations."0935:1435"]
+memory = "[ss unknown]"
+
+[annotations."0935:1447"]
+memory = "[ss unknown]"
+
+[annotations."0935:144a"]
+memory = "[ds unknown]"
+
+[annotations."0935:1450"]
+memory = "[ss unknown]"
+
+[annotations."0935:1455"]
+memory = "[ss unknown]"
+
+[annotations."0935:1459"]
+comment = "Insert character into string"
+jmp = "pascal_string_insert_bytes@0d72:5909"
+
+[annotations."0935:145e"]
+memory = "[ss unknown]"
+
+[annotations."0935:1461"]
+memory = "[ds unknown]"
+
+[annotations."0935:1469"]
+memory = "[es unknown]"
+
+[annotations."0935:146e"]
+memory = "[ds unknown]"
+
+[annotations."0935:1472"]
+jmp = "'17"
+
+[annotations."0935:1474"]
+memory = "[ds unknown]"
+
+[annotations."0935:1478"]
+memory = "[es unknown]"
+
+[annotations."0935:147b"]
+memory = "[ds unknown]"
+
+[annotations."0935:147e"]
+memory = "[ds unknown]"
+
+[annotations."0935:148d"]
+memory = "[ss unknown]"
+
+[annotations."0935:1491"]
+jmp = "set_contains@0d72:5452"
+
+[annotations."0935:1498"]
+jmp = "'store_converted_char@16"
+
+[annotations."0935:149a"]
+memory = "[ds unknown]"
+
+[annotations."0935:149e"]
+comment = "Convert character case"
+jmp = "ascii_to_glyph_index@0935:0063"
+
+[annotations."0935:14a1"]
+memory = "[ds unknown]"
+
+[annotations."0935:14a4"]
+label = "store_converted_char"
+memory = "[ss unknown]"
+
+[annotations."0935:14a7"]
+memory = "[ss unknown]"
+
+[annotations."0935:14aa"]
+memory = "[ds unknown]"
+
+[annotations."0935:14b1"]
+memory = "[ds unknown]"
+
+[annotations."0935:14b7"]
+memory = "[ds unknown]"
+
+[annotations."0935:14ba"]
+memory = "[ds unknown]"
+
+[annotations."0935:14bc"]
+memory = "[ss unknown]"
+
+[annotations."0935:14bf"]
+memory = "[ds unknown]"
+
+[annotations."0935:14c5"]
+memory = "[ss unknown]"
+
+[annotations."0935:14cb"]
+memory = "[ss unknown]"
+
+[annotations."0935:14cf"]
+jmp = "apply_pronunciation_rules@0d72:0010"
+
+[annotations."0935:14d4"]
+memory = "[ss unknown]"
+
+[annotations."0935:14e6"]
+memory = "[ss unknown]"
+
+[annotations."0935:14e9"]
+memory = "[ds unknown]"
+
+[annotations."0935:14ec"]
+comment = "Emit processed token string"
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:14ef"]
+memory = "[ss unknown]"
+
+[annotations."0935:14f4"]
+jmp = "'19"
+
+[annotations."0935:1507"]
+memory = "[ds unknown]"
+
+[annotations."0935:150b"]
+memory = "[ss unknown]"
+
+[annotations."0935:150e"]
+memory = "[ds unknown]"
+
+[annotations."0935:1511"]
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:1514"]
+memory = "[ss unknown]"
+
+[annotations."0935:1519"]
+jmp = "'21"
+
+[annotations."0935:152c"]
+memory = "[ds unknown]"
+
+[annotations."0935:1530"]
+memory = "[ss unknown]"
+
+[annotations."0935:1533"]
+memory = "[ds unknown]"
+
+[annotations."0935:1536"]
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:1539"]
+jmp = "'epilogue@42"
+
+[annotations."0935:153c"]
+label = "scan_token_chars"
+memory = "[ss unknown]"
+
+[annotations."0935:153f"]
+memory = "[ss unknown]"
+
+[annotations."0935:1543"]
+memory = "[ss unknown]"
+
+[annotations."0935:1548"]
+jmp = "'init_char_loop@24"
+
+[annotations."0935:154a"]
+jmp = "'epilogue@42"
+
+[annotations."0935:154d"]
+label = "init_char_loop"
+memory = "[ss unknown]"
+
+[annotations."0935:1552"]
+comment = "Iterate each character in token string"
+label = "char_loop_body"
+memory = "[ss unknown]"
+
+[annotations."0935:1555"]
+memory = "[ss unknown]"
+
+[annotations."0935:1558"]
+memory = "[ds unknown]"
+
+[annotations."0935:155e"]
+comment = "Check for 'W' (0x57)"
+memory = "[ds unknown]"
+
+[annotations."0935:1561"]
+jmp = "'check_dot_char@27"
+
+[annotations."0935:1584"]
+memory = "[ss unknown]"
+
+[annotations."0935:1587"]
+memory = "[ds unknown]"
+
+[annotations."0935:158a"]
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:158d"]
+jmp = "'advance_char_loop@40"
+
+[annotations."0935:1590"]
+label = "check_dot_char"
+memory = "[ss unknown]"
+
+[annotations."0935:1593"]
+memory = "[ss unknown]"
+
+[annotations."0935:1596"]
+memory = "[ds unknown]"
+
+[annotations."0935:159c"]
+comment = "Check for '.' (0x2E)"
+memory = "[ds unknown]"
+
+[annotations."0935:159f"]
+jmp = "'check_quote_char@29"
+
+[annotations."0935:15b2"]
+memory = "[ds unknown]"
+
+[annotations."0935:15b6"]
+memory = "[ss unknown]"
+
+[annotations."0935:15b9"]
+memory = "[ds unknown]"
+
+[annotations."0935:15bc"]
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:15bf"]
+jmp = "'advance_char_loop@40"
+
+[annotations."0935:15c2"]
+label = "check_quote_char"
+memory = "[ss unknown]"
+
+[annotations."0935:15c5"]
+memory = "[ss unknown]"
+
+[annotations."0935:15c8"]
+memory = "[ds unknown]"
+
+[annotations."0935:15ce"]
+comment = '''Check for quote '\'' (0x27)'''
+memory = "[ds unknown]"
+
+[annotations."0935:15d1"]
+jmp = "'31"
+
+[annotations."0935:15d3"]
+jmp = "'handle_table_char@39"
+
+[annotations."0935:15d6"]
+memory = "[ss unknown]"
+
+[annotations."0935:15da"]
+memory = "[ss unknown]"
+
+[annotations."0935:15dd"]
+jmp = "'33"
+
+[annotations."0935:15df"]
+jmp = "'38"
+
+[annotations."0935:15e2"]
+memory = "[ss unknown]"
+
+[annotations."0935:15e5"]
+memory = "[ss unknown]"
+
+[annotations."0935:15e8"]
+memory = "[ds unknown]"
+
+[annotations."0935:15ee"]
+memory = "[ds unknown]"
+
+[annotations."0935:15fc"]
+jmp = "set_contains@0d72:5452"
+
+[annotations."0935:1603"]
+jmp = "'handle_quoted_token@35"
+
+[annotations."0935:1605"]
+jmp = "'38"
+
+[annotations."0935:1608"]
+label = "handle_quoted_token"
+memory = "[ss unknown]"
+
+[annotations."0935:160b"]
+memory = "[ss unknown]"
+
+[annotations."0935:160e"]
+memory = "[ds unknown]"
+
+[annotations."0935:1614"]
+memory = "[ds unknown]"
+
+[annotations."0935:161b"]
+comment = "Index into 6-byte entry lookup table at offset 0xAA"
+
+[annotations."0935:1622"]
+memory = "[ss unknown]"
+
+[annotations."0935:1627"]
+memory = "[ds unknown]"
+
+[annotations."0935:1632"]
+memory = "[ss unknown]"
+
+[annotations."0935:1636"]
+jmp = "pascal_string_copy_bounded@0d72:538c"
+
+[annotations."0935:163b"]
+memory = "[ss unknown]"
+
+[annotations."0935:163e"]
+memory = "[ss unknown]"
+
+[annotations."0935:1641"]
+memory = "[ds unknown]"
+
+[annotations."0935:1648"]
+memory = "[ds unknown]"
+
+[annotations."0935:164e"]
+memory = "[ds unknown]"
+
+[annotations."0935:165c"]
+jmp = "set_contains@0d72:5452"
+
+[annotations."0935:1663"]
+jmp = "'emit_quoted_suffix@37"
+
+[annotations."0935:1676"]
+memory = "[ds unknown]"
+
+[annotations."0935:167a"]
+memory = "[ds unknown]"
+
+[annotations."0935:167e"]
+memory = "[ss unknown]"
+
+[annotations."0935:1681"]
+memory = "[ds unknown]"
+
+[annotations."0935:1684"]
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:1687"]
+label = "emit_quoted_suffix"
+
+[annotations."0935:1698"]
+memory = "[ds unknown]"
+
+[annotations."0935:169c"]
+memory = "[ss unknown]"
+
+[annotations."0935:169f"]
+memory = "[ds unknown]"
+
+[annotations."0935:16a2"]
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:16a5"]
+jmp = "'epilogue@42"
+
+[annotations."0935:16a7"]
+jmp = "'advance_char_loop@40"
+
+[annotations."0935:16a9"]
+label = "handle_table_char"
+
+[annotations."0935:16ba"]
+memory = "[ss unknown]"
+
+[annotations."0935:16bd"]
+memory = "[ss unknown]"
+
+[annotations."0935:16c0"]
+memory = "[ds unknown]"
+
+[annotations."0935:16c6"]
+memory = "[ds unknown]"
+
+[annotations."0935:16cd"]
+comment = "Calculate offset into 6-byte symbol definition table at 0xAA"
+
+[annotations."0935:16dc"]
+comment = "Copy 6-byte record onto stack and emit"
+
+[annotations."0935:16df"]
+memory = "[ss unknown]"
+
+[annotations."0935:16e2"]
+memory = "[ds unknown]"
+
+[annotations."0935:16e5"]
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:16e8"]
+label = "advance_char_loop"
+memory = "[ss unknown]"
+
+[annotations."0935:16ec"]
+memory = "[ss unknown]"
+
+[annotations."0935:16f0"]
+memory = "[ss unknown]"
+
+[annotations."0935:16f4"]
+jmp = "'epilogue@42"
+
+[annotations."0935:16f6"]
+jmp = "'char_loop_body@25"
+
+[annotations."0935:16f9"]
+label = "epilogue"

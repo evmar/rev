@@ -3,7 +3,6 @@ len = 22
 name = "toupper_string"
 desc = "Converts a buffer of characters to uppercase in-place"
 details = "Iterates through `cx` characters starting at `ds:di`. Any ASCII lowercase letter between 'a' and 'z' is converted to uppercase by clearing bit 5 (`and al, 5Fh`). Register state of `di` and `cx` is preserved."
-callers = ["parse_cmdline@0823:0be7"]
 
 [[params]]
 name = "str"

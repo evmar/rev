@@ -1,0 +1,9 @@
+ip = "0d72:01e0"
+len = 1
+name = "immediate_return"
+desc = "Returns immediately without changing registers, flags, or memory."
+details = "This one-instruction near-return entry point performs no work when called directly. The same RET is also the successful exit of the overlapping character-context routines at 0D72:01C7 and 0D72:01D0, but entry at 0D72:01E0 has no observable effect beyond normal near-call return-stack handling."
+blocks = ["0d72:01e0"]
+
+[annotations."0d72:01e0"]
+comment = "No-op entry point; return immediately to the near caller."

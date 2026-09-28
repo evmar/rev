@@ -3,7 +3,6 @@ len = 71
 name = "pascal_string_copy_slice"
 desc = "Copies a 1-based slice of a length-prefixed Pascal string into another Pascal string buffer"
 details = "Stores count in destination[0], then copies count bytes from source[index..] into destination[1..]. Source and destination are near pointers addressed through DS and SS respectively; the routine performs no source-length or destination-capacity checks, and copies no payload bytes when signed count is less than 1."
-callers = ["tts_pronounce_number@0935:1742", "tts_pronounce_number@0935:1742"]
 
 [[params]]
 name = "count"

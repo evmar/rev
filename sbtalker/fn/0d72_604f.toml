@@ -1,0 +1,154 @@
+ip = "0d72:604f"
+len = 143
+name = "set_union_into_buffer"
+desc = "Forms the union of two byte-backed sets in a 32-byte destination buffer."
+details = "Clears all 32 destination bytes, copies bytes 0 through base_last_index from the base set, then ORs bytes 0 through or_last_index from the other set into the destination. Both lengths are inclusive last byte indices; the routine returns the destination's near offset in AX. Callers must provide a 32-byte destination and source ranges matching the supplied indices."
+blocks = ["0d72:604f", "0d72:6065", "0d72:607a", "0d72:6085", "0d72:60a3", "0d72:60ae", "0d72:60ce"]
+
+[[params]]
+name = "dest"
+value = "[bp+6]"
+type = "*mut u8"
+desc = "Near pointer to the 32-byte destination set in DS."
+
+[[params]]
+name = "or_set"
+value = "[bp+8]"
+type = "*const u8"
+desc = "Far pointer to the set whose bytes are ORed into the destination."
+
+[[params]]
+name = "or_last_index"
+value = "[bp+0Ch]"
+type = "u16"
+desc = "Inclusive last byte index to read from or_set."
+
+[[params]]
+name = "base_set"
+value = "[bp+0Eh]"
+type = "*const u8"
+desc = "Far pointer to the set copied into the destination first."
+
+[[params]]
+name = "base_last_index"
+value = "[bp+12h]"
+type = "u16"
+desc = "Inclusive last byte index to read from base_set."
+
+[ret]
+name = "dest"
+value = "ax"
+type = "*mut u8"
+desc = "Near pointer to the destination set in DS."
+
+[annotations."0d72:6052"]
+jmp = "checked_stack_frame_prologue_3@0d72:64c8"
+
+[annotations."0d72:605b"]
+jmp = "register_outermost_stack_frame@0d72:4fcc"
+
+[annotations."0d72:6060"]
+comment = "Clear all 32 bytes of the destination set."
+memory = "[ss unknown]"
+
+[annotations."0d72:6065"]
+label = "clear_next_byte"
+memory = "[ss unknown]"
+
+[annotations."0d72:6068"]
+memory = "[ss unknown]"
+
+[annotations."0d72:606b"]
+memory = "[ds unknown]"
+
+[annotations."0d72:606e"]
+memory = "[ss unknown]"
+
+[annotations."0d72:6072"]
+memory = "[ss unknown]"
+
+[annotations."0d72:6078"]
+jmp = "'clear_next_byte@1"
+
+[annotations."0d72:607a"]
+comment = "Copy base_set[0..=base_last_index] into the cleared destination."
+memory = "[ss unknown]"
+
+[annotations."0d72:607d"]
+memory = "[ss unknown]"
+
+[annotations."0d72:6080"]
+memory = "[ss unknown]"
+
+[annotations."0d72:6085"]
+label = "copy_next_byte"
+memory = "[ss unknown]"
+
+[annotations."0d72:6088"]
+memory = "[ss unknown]"
+
+[annotations."0d72:608b"]
+memory = "[ss unknown]"
+
+[annotations."0d72:6091"]
+memory = "[es unknown]"
+
+[annotations."0d72:6094"]
+memory = "[ds unknown]"
+
+[annotations."0d72:6096"]
+memory = "[ss unknown]"
+
+[annotations."0d72:609a"]
+memory = "[ss unknown]"
+
+[annotations."0d72:609e"]
+memory = "[ss unknown]"
+
+[annotations."0d72:60a1"]
+jmp = "'copy_next_byte@3"
+
+[annotations."0d72:60a3"]
+comment = "OR or_set[0..=or_last_index] into the destination."
+memory = "[ss unknown]"
+
+[annotations."0d72:60a6"]
+memory = "[ss unknown]"
+
+[annotations."0d72:60a9"]
+memory = "[ss unknown]"
+
+[annotations."0d72:60ae"]
+label = "or_next_byte"
+memory = "[ss unknown]"
+
+[annotations."0d72:60b1"]
+memory = "[ss unknown]"
+
+[annotations."0d72:60b4"]
+memory = "[ds unknown]"
+
+[annotations."0d72:60b6"]
+memory = "[ss unknown]"
+
+[annotations."0d72:60bf"]
+memory = "[ds unknown]"
+
+[annotations."0d72:60c1"]
+memory = "[ss unknown]"
+
+[annotations."0d72:60c5"]
+memory = "[ss unknown]"
+
+[annotations."0d72:60c9"]
+memory = "[ss unknown]"
+
+[annotations."0d72:60cc"]
+jmp = "'or_next_byte@5"
+
+[annotations."0d72:60ce"]
+jmp = "unregister_outermost_stack_frame@0d72:5004"
+
+[annotations."0d72:60d3"]
+comment = "Return the near destination pointer in AX; discard 14 bytes of arguments."
+memory = "[ss unknown]"

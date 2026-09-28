@@ -47,8 +47,8 @@ async fn main() -> anyhow::Result<()> {
         }
         Command::Init(args) => cmd::init::init(project, args),
         Command::Dump(args) => {
-            let db = DB::load(project)?;
-            cmd::dump::dump(&db, args)
+            let mut db = DB::load(project)?;
+            cmd::dump::dump(&mut db, args)
         }
         Command::Func(args) => {
             let mut db = DB::load(project)?;

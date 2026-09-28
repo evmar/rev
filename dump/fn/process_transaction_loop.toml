@@ -3,8 +3,6 @@ len = 174
 name = "process_transaction_loop"
 desc = "Initializes and executes an event/transaction processing loop, then finalizes state and returns an adjusted identifier."
 details = "Updates an 8-byte state table record indexed by ds:[166h] with configuration bytes, sets up a 256-byte buffer via far call, and enters a polling loop (calling subroutines to service tasks until ds:[4Ch] remains 3 or ds:[60h] becomes nonzero). Finally, it runs a completion callback passing the far buffer pointer and returns ds:[160h] decremented by 2."
-callers = ["exec_and_restore_context@0823:0fdc"]
-callees = ["apply_prosody_intonation@0935:0d7f", "check_string_has_lowercase@0935:1210", "dispatch_command_input@0935:3cc9", "get_next_char@0935:11a0", "pascal_string_copy_bounded@0d72:538c"]
 
 [[params]]
 name = "initial_id"

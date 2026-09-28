@@ -1,0 +1,68 @@
+ip = "0935:1f63"
+len = 654
+name = "append_spoken_month_name"
+desc = "Appends the pronunciation fragment for a numeric month (1-12) to the date parser's speech output."
+details = "Dispatches on the supplied month number through a 12-entry jump table, constructs the corresponding prebuilt Pascal-string pronunciation fragment on the stack, and passes it to path_append_component. The output record is obtained by following nested fields from the caller frame/context; month values below 1 fall through to the first case, while validated callers supply only 1 through 12."
+blocks = ["0935:1f63", "0935:1f70", "0935:21c4", "0935:21c9", "0935:21cc", "0935:21eb"]
+
+[[params]]
+name = "caller_frame"
+value = "[bp+4]"
+type = "*mut u8"
+desc = "Pointer to the calling parser frame/context used to locate the speech output record"
+
+[[params]]
+name = "month"
+value = "[bp+6]"
+type = "u16"
+desc = "Numeric month selector, normally in the range 1 through 12"
+
+[annotations."0935:1f6a"]
+comment = "Load numeric month selector and dispatch to its pronunciation fragment"
+memory = "[ss unknown]"
+
+[annotations."0935:1f6d"]
+jmp = "'dispatch_month@2"
+
+[annotations."0935:1f70"]
+comment = "Build the precomputed January pronunciation Pascal string on the stack"
+label = "emit_january"
+
+[annotations."0935:1f91"]
+comment = "Follow the caller context to the speech output record and append the month fragment"
+memory = "[ss unknown]"
+
+[annotations."0935:1f94"]
+memory = "[ds unknown]"
+
+[annotations."0935:1f97"]
+memory = "[ds unknown]"
+
+[annotations."0935:1f9a"]
+memory = "[ds unknown]"
+
+[annotations."0935:1f9d"]
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:1fa0"]
+jmp = "'exit@5"
+
+[annotations."0935:21c4"]
+comment = "Convert the 1-based month number to a zero-based jump-table index"
+label = "dispatch_month"
+
+[annotations."0935:21c7"]
+jmp = "'4"
+
+[annotations."0935:21c9"]
+jmp = "'emit_january@1"
+
+[annotations."0935:21cc"]
+comment = "Dispatch through the table of month-specific emitters"
+
+[annotations."0935:21ce"]
+jmp = "unknown:mem"
+memory = "[bx unknown]"
+
+[annotations."0935:21eb"]
+label = "exit"

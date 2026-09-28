@@ -3,8 +3,6 @@ len = 156
 name = "pascal_string_insert_bytes"
 desc = "Insert raw bytes at a one-based position in a length-prefixed Pascal string."
 details = "For normal arguments (1 <= position <= length+1 and length+count <= capacity <= 255), shifts length-position+1 suffix bytes upward by count using a backward copy, copies count raw source bytes into the gap, and updates the destination's leading length byte; position length+1 appends and no NUL terminator is written. Calls the fatal-error helper at 0d72:5ca6 if the signed 16-bit length+count comparison exceeds capacity or position exceeds length+1, but does not check position >= 1, nonnegative count/capacity, arithmetic overflow, or the 255-byte representation limit; pointer offsets wrap within their segments and source aliasing is not generally safe because the suffix is shifted before the forward source copy. Uses 12 bytes of locals and runtime frame registration, preserves SI/DI/BP/DS, returns no defined value, and RETF 0Eh removes seven argument words."
-callers = ["edit_adjust_digit@0935:0c4c", "path_append_component@0935:109f", "path_append_component@0935:109f", "read_filtered_token@0935:1261", "parse_and_emit_token@0935:12fc"]
-callees = ["checked_stack_frame_prologue@0d72:5c2a", "copy_far_bytes_backward@0d72:50a4", "copy_far_bytes_forward@0d72:507e", "register_outermost_stack_frame@0d72:4fcc", "report_pascal_string_bounds_error@0d72:5ca6", "unregister_outermost_stack_frame@0d72:5004"]
 
 [[params]]
 name = "position"

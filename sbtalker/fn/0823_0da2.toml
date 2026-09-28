@@ -1,0 +1,23 @@
+ip = "0823:0da2"
+len = 17
+name = "switch_to_internal_stack"
+desc = "Switches stack segment to DS and stack pointer to an internal stack"
+details = "Saves the caller's current stack pointer to a code-segment variable, switches SS to match DS, and sets SP to a preconfigured internal stack offset. Transfers the caller's return address to the new stack so the subsequent ret returns normally while running on the new stack."
+blocks = ["0823:0da2"]
+
+[annotations."0823:0da2"]
+comment = "Read return address into CX without altering original stack"
+
+[annotations."0823:0da6"]
+comment = "Save caller's SP"
+memory = "0823:0e57"
+
+[annotations."0823:0daa"]
+comment = "Set SS = DS"
+
+[annotations."0823:0dac"]
+comment = "Set SP to internal stack top"
+memory = "0823:0e59"
+
+[annotations."0823:0db1"]
+comment = "Place return address on the new stack"

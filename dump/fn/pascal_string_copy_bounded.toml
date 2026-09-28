@@ -3,7 +3,6 @@ len = 36
 name = "pascal_string_copy_bounded"
 desc = "Copies a length-prefixed Pascal string to a destination buffer, truncating to its capacity minus the length byte."
 details = "Reads the source length byte at AX:SI, computes n = min(source_length, (CX - 1) modulo 65536), stores n at ES:DI, and copies n payload bytes without adding a NUL terminator. CX is the total destination capacity including the length byte (normally 1..256); zero is not checked and underflows to 65535, causing the entire source string to be copied. Preserves DS, ES and BP; leaves AX equal to the original source length, CX zero, SI and DI advanced by n+1, and DF clear, using a forward word copy followed by an optional odd byte (not safe for arbitrary overlap)."
-callers = ["bst_find_value@0935:0080", "path_append_component@0935:109f", "parse_and_emit_token@0935:12fc", "tts_pronounce_number@0935:1742", "tts_pronounce_number@0935:1742", "pronounce_two_digit_number@0935:1e4e", "parse_date_or_time@0935:21f1", "dispatch_action_by_state@0935:30a1", "process_transaction_loop@0935:3d66"]
 
 [[params]]
 name = "source_segment"

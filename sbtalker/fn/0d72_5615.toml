@@ -1,0 +1,143 @@
+ip = "0d72:5615"
+len = 137
+name = "pascal_string_less_than"
+desc = "Tests whether the first Pascal string is lexicographically less than the second, using unsigned byte comparisons."
+details = "Accepts two far pointers to byte-length-prefixed strings: lhs at [bp+0Ah] and rhs at [bp+6]. Initializes the result to lhs.length < rhs.length, then compares bytes 1 through min(lhs.length, rhs.length); the first unequal byte replaces the result with lhs[i] < rhs[i], so equal strings return false and a proper prefix sorts first. Returns the Boolean in AL (AH is unspecified because only the low byte of the result local is initialized), preserves SI/DI/BP, and removes eight argument bytes with RETF 8; stack allocation and outermost-frame registration use runtime helpers."
+blocks = ["0d72:5615", "0d72:5637", "0d72:5638", "0d72:564b", "0d72:5651", "0d72:565d", "0d72:5662", "0d72:5673", "0d72:567b", "0d72:567c", "0d72:5681", "0d72:568e"]
+
+[[params]]
+name = "lhs"
+value = "[sp+8]"
+type = "*const u8"
+desc = "Far pointer (offset then segment) to the first Pascal string; byte 0 is length, followed by that many data bytes. Located at [bp+0Ah] after prologue; pushed first."
+
+[[params]]
+name = "rhs"
+value = "[sp+4]"
+type = "*const u8"
+desc = "Far pointer (offset then segment) to the second Pascal string, with the same byte-length-prefixed representation. Located at [bp+6] after prologue; pushed second."
+
+[ret]
+name = "less"
+value = "al"
+type = "u8"
+desc = "1 if lhs is lexicographically less than rhs, otherwise 0. Comparisons are unsigned and case-sensitive; AH is unspecified."
+
+[annotations."0d72:5615"]
+comment = "Allocate an 8-byte local frame via the runtime stack-check/prologue helper."
+
+[annotations."0d72:5618"]
+jmp = "checked_stack_frame_prologue@0d72:5c2a"
+
+[annotations."0d72:561d"]
+comment = "Register runtime frame with argument 0Ah; SI and DI have been saved."
+
+[annotations."0d72:5621"]
+jmp = "register_outermost_stack_frame@0d72:4fcc"
+
+[annotations."0d72:5626"]
+comment = "Load lhs length and compare it unsigned against rhs length."
+
+[annotations."0d72:5629"]
+memory = "[es unknown]"
+
+[annotations."0d72:562f"]
+memory = "[es unknown]"
+
+[annotations."0d72:5635"]
+jmp = "'save_length_comparison@2"
+
+[annotations."0d72:5638"]
+comment = "Default Boolean result [bp-2] = lhs.length < rhs.length; retained if all compared bytes match."
+label = "save_length_comparison"
+memory = "[ss unknown]"
+
+[annotations."0d72:563b"]
+comment = "Save lhs length in DL and initialize [bp-6] to the zero-extended rhs length."
+
+[annotations."0d72:563d"]
+memory = "[es unknown]"
+
+[annotations."0d72:5642"]
+memory = "[ss unknown]"
+
+[annotations."0d72:5645"]
+comment = "If lhs is shorter, replace [bp-6] with its length, yielding min(lhs.length, rhs.length)."
+memory = "[ss unknown]"
+
+[annotations."0d72:5649"]
+jmp = "'set_comparison_limit@4"
+
+[annotations."0d72:564e"]
+memory = "[ss unknown]"
+
+[annotations."0d72:5651"]
+comment = "Save the loop limit at [bp-8]; skip data comparison when either string is empty."
+label = "set_comparison_limit"
+memory = "[ss unknown]"
+
+[annotations."0d72:5654"]
+memory = "[ss unknown]"
+
+[annotations."0d72:5657"]
+memory = "[ss unknown]"
+
+[annotations."0d72:565b"]
+jmp = "'return_result@11"
+
+[annotations."0d72:565d"]
+comment = "Initialize 1-based data-byte index [bp-4]."
+memory = "[ss unknown]"
+
+[annotations."0d72:5662"]
+comment = "Compare lhs[index] against rhs[index]; equal bytes continue the loop."
+label = "compare_next_byte"
+memory = "[ss unknown]"
+
+[annotations."0d72:5668"]
+memory = "[es unknown]"
+
+[annotations."0d72:566e"]
+memory = "[es unknown]"
+
+[annotations."0d72:5671"]
+jmp = "'advance_index@10"
+
+[annotations."0d72:5673"]
+comment = "First mismatch determines ordering: result = unsigned lhs[index] < rhs[index]."
+memory = "[es unknown]"
+
+[annotations."0d72:5679"]
+jmp = "'save_byte_comparison@9"
+
+[annotations."0d72:567c"]
+label = "save_byte_comparison"
+memory = "[ss unknown]"
+
+[annotations."0d72:567f"]
+jmp = "'return_result@11"
+
+[annotations."0d72:5681"]
+comment = "Increment index and continue unless the just-compared index reached the minimum length."
+label = "advance_index"
+memory = "[ss unknown]"
+
+[annotations."0d72:5685"]
+memory = "[ss unknown]"
+
+[annotations."0d72:5689"]
+memory = "[ss unknown]"
+
+[annotations."0d72:568c"]
+jmp = "'compare_next_byte@6"
+
+[annotations."0d72:568e"]
+comment = "Unregister runtime frame and return result. Word load into AX also reads the uninitialized byte [bp-1], so only AL is defined."
+label = "return_result"
+jmp = "unregister_outermost_stack_frame@0d72:5004"
+
+[annotations."0d72:5693"]
+memory = "[ss unknown]"
+
+[annotations."0d72:569b"]
+comment = "Far return, callee discards both four-byte pointer arguments."

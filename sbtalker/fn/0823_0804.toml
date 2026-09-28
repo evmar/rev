@@ -1,0 +1,33 @@
+ip = "0823:0804"
+len = 42
+name = "reset_int9_to_bios"
+desc = "Hooks or resets interrupt vector 09h (keyboard ISR) to the ROM BIOS default handler"
+details = "Saves the current interrupt 09h vector (located at 0000:0024h) into code-segment storage at cs:[0082h] and cs:[0084h]. It then updates the vector to point directly to the standard IBM PC ROM BIOS keyboard interrupt service routine at F000:E987h."
+blocks = ["0823:0804"]
+
+[annotations."0823:080a"]
+comment = "Point ES to the Interrupt Vector Table at 0000:0000h"
+
+[annotations."0823:080c"]
+comment = "Vector for INT 09h (09h * 4 = 24h)"
+
+[annotations."0823:080f"]
+memory = "[es unknown]"
+
+[annotations."0823:0812"]
+comment = "Save existing INT 09h offset"
+memory = "0823:0082"
+
+[annotations."0823:0816"]
+memory = "[es unknown]"
+
+[annotations."0823:081a"]
+comment = "Save existing INT 09h segment"
+memory = "0823:0084"
+
+[annotations."0823:081e"]
+comment = "Set INT 09h vector to default BIOS keyboard ISR (F000:E987h)"
+memory = "[es unknown]"
+
+[annotations."0823:0823"]
+memory = "[es unknown]"

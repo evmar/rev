@@ -3,7 +3,6 @@ len = 29
 name = "parse_hex_digit"
 desc = "Converts an ASCII hexadecimal character to its numeric value (0-15)"
 details = "This routine takes an ASCII character in AL and checks if it falls within the ranges '0'-'9' or uppercase 'A'-'F'. If valid, it converts the character to its 4-bit numeric value (0-15) in AL and returns AH = 0. If the input is not a valid uppercase hex digit, AH is set to 1 to signal an error."
-callers = ["parse_cmdline_p_switch@0823:0bb2"]
 
 [[params]]
 name = "c"
@@ -49,7 +48,6 @@ desc = "On success, AH=0 and AL contains 0-15; on error, AH=1"
 
 ; Character is not a valid hex digit; set AH to 1 to indicate error
 0823:0b84 mov ah,1
-0823:0b86 ret
 
 0823:0b86 ret
 

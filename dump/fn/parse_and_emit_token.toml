@@ -3,8 +3,6 @@ len = 1027
 name = "parse_and_emit_token"
 desc = "Parses and processes a token or identifier from the input context"
 details = "Extracts a Pascal string token using a helper, strips any trailing matched characters, and queries a symbol table. If defined, it emits a formatted representation of the symbol; otherwise, it handles prefixes, special characters (such as periods, quotes, or table-driven character classes), and dispatches token records to an emitter routine."
-callers = ["dispatch_command_input@0935:3cc9"]
-callees = ["apply_pronunciation_rules@0d72:0010", "ascii_to_glyph_index@0935:0063", "bst_find_value@0935:0080", "copy_words_to_stack@0d72:53b0", "pascal_string_copy_bounded@0d72:538c", "pascal_string_delete@0d72:588e", "pascal_string_equal@0d72:5570", "pascal_string_insert_bytes@0d72:5909", "path_append_component@0935:109f", "read_filtered_token@0935:1261", "set_contains@0d72:5452"]
 
 [[params]]
 name = "ctx"

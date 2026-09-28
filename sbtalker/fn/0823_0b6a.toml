@@ -1,0 +1,51 @@
+ip = "0823:0b6a"
+len = 29
+name = "parse_hex_digit"
+desc = "Converts an ASCII hexadecimal character to its numeric value (0-15)"
+details = "This routine takes an ASCII character in AL and checks if it falls within the ranges '0'-'9' or uppercase 'A'-'F'. If valid, it converts the character to its 4-bit numeric value (0-15) in AL and returns AH = 0. If the input is not a valid uppercase hex digit, AH is set to 1 to signal an error."
+blocks = ["0823:0b6a", "0823:0b70", "0823:0b74", "0823:0b78", "0823:0b7c", "0823:0b80", "0823:0b84", "0823:0b86"]
+
+[[params]]
+name = "c"
+value = "al"
+type = "char"
+desc = "ASCII character to convert"
+
+[ret]
+name = "result"
+value = "ax"
+type = "u16"
+desc = "On success, AH=0 and AL contains 0-15; on error, AH=1"
+
+[annotations."0823:0b6a"]
+comment = "Initialize AH to 0 (default success) and check if AL is a decimal digit ('0'-'9')"
+
+[annotations."0823:0b6e"]
+jmp = "'3"
+
+[annotations."0823:0b72"]
+jmp = "'3"
+
+[annotations."0823:0b74"]
+comment = "Convert '0'-'9' to 0-9 and return"
+
+[annotations."0823:0b76"]
+jmp = "'7"
+
+[annotations."0823:0b78"]
+comment = "Check if AL is an uppercase hex letter ('A'-'F')"
+
+[annotations."0823:0b7a"]
+jmp = "'6"
+
+[annotations."0823:0b7e"]
+jmp = "'6"
+
+[annotations."0823:0b80"]
+comment = "Convert 'A'-'F' to 10-15 and return"
+
+[annotations."0823:0b82"]
+jmp = "'7"
+
+[annotations."0823:0b84"]
+comment = "Character is not a valid hex digit; set AH to 1 to indicate error"

@@ -1,0 +1,44 @@
+ip = "0823:0b54"
+len = 22
+name = "toupper_string"
+desc = "Converts a buffer of characters to uppercase in-place"
+details = "Iterates through `cx` characters starting at `ds:di`. Any ASCII lowercase letter between 'a' and 'z' is converted to uppercase by clearing bit 5 (`and al, 5Fh`). Register state of `di` and `cx` is preserved."
+blocks = ["0823:0b54", "0823:0b56", "0823:0b5c", "0823:0b60", "0823:0b62", "0823:0b67"]
+
+[[params]]
+name = "str"
+value = "di"
+type = "*mut u8"
+desc = "Pointer to character buffer"
+
+[[params]]
+name = "len"
+value = "cx"
+type = "u16"
+desc = "Number of characters to process"
+
+[annotations."0823:0b56"]
+label = "next_char"
+memory = "[ds unknown]"
+
+[annotations."0823:0b58"]
+comment = "Check if character is >= 'a'"
+
+[annotations."0823:0b5a"]
+jmp = "'store_char@4"
+
+[annotations."0823:0b5c"]
+comment = "Check if character is <= 'z'"
+
+[annotations."0823:0b5e"]
+jmp = "'store_char@4"
+
+[annotations."0823:0b60"]
+comment = "Convert lowercase to uppercase"
+
+[annotations."0823:0b62"]
+label = "store_char"
+memory = "[ds unknown]"
+
+[annotations."0823:0b65"]
+jmp = "'next_char@1"

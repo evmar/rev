@@ -1,0 +1,29 @@
+ip = "0823:0879"
+len = 31
+name = "restore_int15_handler"
+desc = "restores or sets the INT 15h interrupt vector"
+details = "Disables interrupts and updates the Interrupt Vector Table entry for INT 15h (at 0000:0054h) using the far pointer stored at cs:[0086h]. Interrupts are re-enabled before returning."
+blocks = ["0823:0879"]
+
+[annotations."0823:0879"]
+comment = "disable interrupts during IVT update"
+
+[annotations."0823:087f"]
+comment = "ES = 0000h (Interrupt Vector Table segment)"
+
+[annotations."0823:0881"]
+comment = "vector offset for INT 15h (15h * 4 = 54h)"
+
+[annotations."0823:0884"]
+memory = "0823:0086"
+
+[annotations."0823:0888"]
+comment = "write INT 15h offset"
+memory = "[es unknown]"
+
+[annotations."0823:088b"]
+memory = "0823:0088"
+
+[annotations."0823:088f"]
+comment = "write INT 15h segment"
+memory = "[es unknown]"

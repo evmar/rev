@@ -3,8 +3,6 @@ len = 143
 name = "set_union_into_buffer"
 desc = "Forms the union of two byte-backed sets in a 32-byte destination buffer."
 details = "Clears all 32 destination bytes, copies bytes 0 through base_last_index from the base set, then ORs bytes 0 through or_last_index from the other set into the destination. Both lengths are inclusive last byte indices; the routine returns the destination's near offset in AX. Callers must provide a 32-byte destination and source ranges matching the supplied indices."
-callers = ["read_filtered_token@0935:1261"]
-callees = ["checked_stack_frame_prologue_3@0d72:64c8", "register_outermost_stack_frame@0d72:4fcc", "unregister_outermost_stack_frame@0d72:5004"]
 
 [[params]]
 name = "dest"

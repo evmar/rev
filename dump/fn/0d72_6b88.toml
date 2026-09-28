@@ -1,7 +1,5 @@
 ip = "0d72:6b88"
 len = 476
-callers = ["copy_words_to_stack@0d72:53b0"]
-callees = ["0d72:6ecc", "0d72:6f1b", "unknown:mem"]
 
 ---
 0d72:6b88 pop cx

@@ -1,0 +1,87 @@
+ip = "0823:0ae2"
+len = 90
+name = "tsr_entry_point"
+desc = "Switches to an internal stack, executes a sequence of subroutines, and returns to the caller."
+details = "This function captures the caller's far return address and stack pointer from the stack, switches to a private local stack within the code segment, and conditionally executes setup and cleanup routines based on an internal state flag. After executing a pipeline of subroutines, it restores the caller's original SS:SP and performs an indirect far jump back to the caller."
+blocks = ["0823:0ae2", "0823:0b03", "0823:0b06", "0823:0b29", "0823:0b2c"]
+
+[annotations."0823:0ae2"]
+comment = "Save caller far return address offset"
+memory = "0823:007a"
+
+[annotations."0823:0ae7"]
+comment = "Save caller far return address segment"
+memory = "0823:007c"
+
+[annotations."0823:0aec"]
+comment = "Save caller SP"
+memory = "0823:0014"
+
+[annotations."0823:0af1"]
+comment = "Save caller SS"
+memory = "0823:0012"
+
+[annotations."0823:0af6"]
+comment = "Switch to internal stack in CS at offset 0x005A"
+
+[annotations."0823:0afb"]
+comment = "Check internal status flag"
+memory = "0823:01cb"
+
+[annotations."0823:0b01"]
+jmp = "'run_pipeline@2"
+
+[annotations."0823:0b03"]
+jmp = "pic_mask_all_irqs@0823:0923"
+
+[annotations."0823:0b06"]
+label = "run_pipeline"
+jmp = "swap_ivt_vectors@0823:0a04"
+
+[annotations."0823:0b09"]
+jmp = "reset_int9_to_bios@0823:0804"
+
+[annotations."0823:0b0c"]
+jmp = "hook_int15h@0823:084d"
+
+[annotations."0823:0b0f"]
+jmp = "swap_memory_with_ems@0823:0a97"
+
+[annotations."0823:0b12"]
+jmp = "dispatch_command@0823:0f5b"
+
+[annotations."0823:0b15"]
+jmp = "swap_memory_with_ems@0823:0a97"
+
+[annotations."0823:0b18"]
+jmp = "restore_int15_handler@0823:0879"
+
+[annotations."0823:0b1b"]
+jmp = "restore_int09_vector@0823:082e"
+
+[annotations."0823:0b1e"]
+jmp = "swap_ivt_vectors@0823:0a04"
+
+[annotations."0823:0b21"]
+comment = "Check internal status flag again before exit"
+memory = "0823:01cb"
+
+[annotations."0823:0b27"]
+jmp = "'restore_stack@4"
+
+[annotations."0823:0b29"]
+jmp = "restore_pic_mask@0823:0936"
+
+[annotations."0823:0b2c"]
+comment = "Restore caller SS"
+label = "restore_stack"
+memory = "0823:0012"
+
+[annotations."0823:0b32"]
+comment = "Restore caller SP"
+memory = "0823:0014"
+
+[annotations."0823:0b37"]
+comment = "Far jump to saved return address"
+jmp = "unknown:mem[0823:0000]=0"
+memory = "0823:007a"

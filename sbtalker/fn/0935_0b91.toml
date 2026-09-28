@@ -1,0 +1,161 @@
+ip = "0935:0b91"
+len = 187
+name = "is_not_sentence_end"
+desc = "Tests whether a period at a given string index does NOT terminate a sentence"
+details = "Inspects a Pascal-style string at a specified 1-based index. If the character is not a period ('.') or is out of bounds, the function returns 1. If it is a period, it checks whether it marks a sentence boundary: either followed immediately by a terminator/control character (from a set at ds:1CB4h), or followed by optional closing punctuation (from a set at ds:1CC4h) and then a space plus a non-space character. If either sentence-ending condition is met, it returns 0; otherwise it returns 1."
+blocks = ["0935:0b91", "0935:0ba9", "0935:0bac", "0935:0bb5", "0935:0bb8", "0935:0bd1", "0935:0bd7", "0935:0be4", "0935:0c02", "0935:0c07", "0935:0c17", "0935:0c23", "0935:0c2c", "0935:0c39", "0935:0c3d"]
+
+[[params]]
+name = "pos"
+value = "[bp+4]"
+type = "u16"
+desc = "1-based character index into the Pascal string"
+
+[[params]]
+name = "str"
+value = "[bp+6]"
+type = "*const [u8]"
+desc = "Far pointer to Pascal string (length-prefixed byte buffer)"
+
+[ret]
+name = "result"
+value = "ax"
+type = "u16"
+desc = "0 if the character at pos is a period ending a sentence; 1 if not a sentence end or not a period"
+
+[annotations."0935:0b98"]
+comment = "Default result = 1 (not a sentence end / continue)"
+memory = "[ss unknown]"
+
+[annotations."0935:0b9f"]
+comment = "Load string length from Pascal length byte"
+memory = "[es unknown]"
+
+[annotations."0935:0ba4"]
+comment = "Ensure pos < string length"
+memory = "[ss unknown]"
+
+[annotations."0935:0ba7"]
+jmp = "'check_period@2"
+
+[annotations."0935:0ba9"]
+jmp = "'exit_return@14"
+
+[annotations."0935:0bac"]
+label = "check_period"
+memory = "[ss unknown]"
+
+[annotations."0935:0baf"]
+comment = "Check if character at pos is '.' (0x2E)"
+memory = "[es unknown]"
+
+[annotations."0935:0bb3"]
+jmp = "'test_next_char_set1@4"
+
+[annotations."0935:0bb5"]
+jmp = "'exit_return@14"
+
+[annotations."0935:0bb8"]
+label = "test_next_char_set1"
+
+[annotations."0935:0bb9"]
+memory = "[es unknown]"
+
+[annotations."0935:0bbe"]
+comment = "Test if char after '.' is in terminator set at ds:1CB4h"
+
+[annotations."0935:0bc8"]
+jmp = "set_contains@0d72:5452"
+
+[annotations."0935:0bcf"]
+comment = "If in set, sentence ends here -> set result to 0"
+jmp = "'skip_closing_punct_loop@6"
+
+[annotations."0935:0bd1"]
+memory = "[ss unknown]"
+
+[annotations."0935:0bd5"]
+jmp = "'exit_return@14"
+
+[annotations."0935:0bd7"]
+comment = "Loop to skip closing punctuation characters in set at ds:1CC4h"
+label = "skip_closing_punct_loop"
+
+[annotations."0935:0bda"]
+memory = "[es unknown]"
+
+[annotations."0935:0bdf"]
+memory = "[ss unknown]"
+
+[annotations."0935:0be2"]
+jmp = "'check_space_and_word@9"
+
+[annotations."0935:0be4"]
+memory = "[ss unknown]"
+
+[annotations."0935:0bea"]
+memory = "[es unknown]"
+
+[annotations."0935:0bf9"]
+jmp = "set_contains@0d72:5452"
+
+[annotations."0935:0c00"]
+jmp = "'check_space_and_word@9"
+
+[annotations."0935:0c02"]
+memory = "[ss unknown]"
+
+[annotations."0935:0c05"]
+jmp = "'skip_closing_punct_loop@6"
+
+[annotations."0935:0c07"]
+label = "check_space_and_word"
+
+[annotations."0935:0c0a"]
+memory = "[es unknown]"
+
+[annotations."0935:0c0f"]
+memory = "[ss unknown]"
+
+[annotations."0935:0c15"]
+jmp = "'exit_return@14"
+
+[annotations."0935:0c17"]
+memory = "[ss unknown]"
+
+[annotations."0935:0c1d"]
+comment = "Check if next character is a space (' ')"
+memory = "[es unknown]"
+
+[annotations."0935:0c21"]
+jmp = "'exit_return@14"
+
+[annotations."0935:0c23"]
+memory = "[ss unknown]"
+
+[annotations."0935:0c2a"]
+jmp = "'exit_return@14"
+
+[annotations."0935:0c2c"]
+memory = "[ss unknown]"
+
+[annotations."0935:0c33"]
+comment = "Check if following character is non-whitespace (> ' ')"
+memory = "[es unknown]"
+
+[annotations."0935:0c37"]
+jmp = "'exit_return@14"
+
+[annotations."0935:0c39"]
+comment = "Sentence end followed by new word -> result = 0"
+memory = "[ss unknown]"
+
+[annotations."0935:0c3d"]
+label = "exit_return"
+memory = "[ss unknown]"
+
+[annotations."0935:0c40"]
+memory = "[ss unknown]"
+
+[annotations."0935:0c43"]
+memory = "[ss unknown]"

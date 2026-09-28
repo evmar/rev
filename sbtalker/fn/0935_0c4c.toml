@@ -1,0 +1,240 @@
+ip = "0935:0c4c"
+len = 307
+name = "edit_adjust_digit"
+desc = "Adjusts a single-digit numeric field (0-9) in an input buffer, updating the display string and cursor."
+details = "Calculates a new digit value by adding the delta parameter to a base offset, clamping the result to the range [0, 9]. If the value changed, it formats the digit to ASCII ('0'-'9'), optionally removes an existing digit from the buffer, inserts the new character via a string manipulation routine, and updates cursor/length offsets in the context structure."
+blocks = ["0935:0c4c", "0935:0c62", "0935:0c67", "0935:0c6d", "0935:0c72", "0935:0c7d", "0935:0c80", "0935:0ca3", "0935:0ca6", "0935:0caf", "0935:0cb2", "0935:0ce2", "0935:0cec", "0935:0d0c", "0935:0d10", "0935:0d16", "0935:0d41", "0935:0d70", "0935:0d79"]
+
+[[params]]
+name = "ctx"
+value = "[bp+4]"
+type = "*mut u8"
+desc = "Pointer to the input/editor context structure"
+
+[[params]]
+name = "delta"
+value = "[bp+6]"
+type = "i16"
+desc = "Delta to adjust the numeric digit by"
+
+[annotations."0935:0c53"]
+memory = "[ss unknown]"
+
+[annotations."0935:0c56"]
+comment = "Add base value at [di-0Ch] to delta"
+memory = "[ds unknown]"
+
+[annotations."0935:0c59"]
+memory = "[ss unknown]"
+
+[annotations."0935:0c5c"]
+comment = "Clamp digit to range [0, 9]"
+memory = "[ss unknown]"
+
+[annotations."0935:0c60"]
+jmp = "'check_upper_bound@2"
+
+[annotations."0935:0c62"]
+memory = "[ss unknown]"
+
+[annotations."0935:0c67"]
+label = "check_upper_bound"
+memory = "[ss unknown]"
+
+[annotations."0935:0c6b"]
+jmp = "'check_changed@4"
+
+[annotations."0935:0c6d"]
+memory = "[ss unknown]"
+
+[annotations."0935:0c72"]
+label = "check_changed"
+memory = "[ss unknown]"
+
+[annotations."0935:0c75"]
+comment = "Exit if digit value did not change"
+memory = "[ds unknown]"
+
+[annotations."0935:0c78"]
+memory = "[ss unknown]"
+
+[annotations."0935:0c7b"]
+jmp = "'format_digit@6"
+
+[annotations."0935:0c7d"]
+jmp = "'exit@18"
+
+[annotations."0935:0c80"]
+label = "format_digit"
+memory = "[ds unknown]"
+
+[annotations."0935:0c83"]
+memory = "[ss unknown]"
+
+[annotations."0935:0c86"]
+comment = "Convert digit to ASCII ('0' - '9')"
+memory = "[ss unknown]"
+
+[annotations."0935:0c8e"]
+memory = "[ss unknown]"
+
+[annotations."0935:0c91"]
+memory = "[ss unknown]"
+
+[annotations."0935:0c96"]
+comment = "es:di points to the text buffer"
+
+[annotations."0935:0c99"]
+memory = "[es unknown]"
+
+[annotations."0935:0ca1"]
+jmp = "'check_length@8"
+
+[annotations."0935:0ca3"]
+jmp = "'save_digit@17"
+
+[annotations."0935:0ca6"]
+label = "check_length"
+memory = "[ss unknown]"
+
+[annotations."0935:0ca9"]
+memory = "[ds unknown]"
+
+[annotations."0935:0cad"]
+jmp = "'check_prev_char@10"
+
+[annotations."0935:0caf"]
+jmp = "'insert_digit@16"
+
+[annotations."0935:0cb2"]
+label = "check_prev_char"
+
+[annotations."0935:0cb4"]
+memory = "[ds unknown]"
+
+[annotations."0935:0cbe"]
+comment = "Check if previous character belongs to character class at ds:0170h"
+memory = "[es unknown]"
+
+[annotations."0935:0ccd"]
+memory = "[ss unknown]"
+
+[annotations."0935:0cd0"]
+memory = "[ss unknown]"
+
+[annotations."0935:0cd3"]
+memory = "[ss unknown]"
+
+[annotations."0935:0cd6"]
+memory = "[ss unknown]"
+
+[annotations."0935:0cd9"]
+jmp = "set_contains@0d72:5452"
+
+[annotations."0935:0ce0"]
+jmp = "'insert_digit@16"
+
+[annotations."0935:0ce2"]
+memory = "[ss unknown]"
+
+[annotations."0935:0ce6"]
+memory = "[ss unknown]"
+
+[annotations."0935:0cea"]
+jmp = "'test_delete_flag@14"
+
+[annotations."0935:0cec"]
+memory = "[ss unknown]"
+
+[annotations."0935:0cf4"]
+memory = "[es unknown]"
+
+[annotations."0935:0d03"]
+jmp = "set_contains@0d72:5452"
+
+[annotations."0935:0d0a"]
+jmp = "'test_delete_flag@14"
+
+[annotations."0935:0d0c"]
+memory = "[ss unknown]"
+
+[annotations."0935:0d10"]
+label = "test_delete_flag"
+memory = "[ss unknown]"
+
+[annotations."0935:0d14"]
+jmp = "'insert_digit@16"
+
+[annotations."0935:0d16"]
+comment = "Delete previous character from buffer"
+
+[annotations."0935:0d1a"]
+memory = "[ss unknown]"
+
+[annotations."0935:0d24"]
+memory = "[ss unknown]"
+
+[annotations."0935:0d27"]
+memory = "[ds unknown]"
+
+[annotations."0935:0d30"]
+jmp = "pascal_string_delete@0d72:588e"
+
+[annotations."0935:0d35"]
+comment = "Decrement buffer length/cursor"
+memory = "[ss unknown]"
+
+[annotations."0935:0d38"]
+memory = "[ds unknown]"
+
+[annotations."0935:0d3b"]
+memory = "[ss unknown]"
+
+[annotations."0935:0d3e"]
+memory = "[ds unknown]"
+
+[annotations."0935:0d41"]
+comment = "Insert new ASCII digit into buffer"
+label = "insert_digit"
+
+[annotations."0935:0d45"]
+memory = "[ss unknown]"
+
+[annotations."0935:0d4e"]
+memory = "[ss unknown]"
+
+[annotations."0935:0d58"]
+memory = "[ss unknown]"
+
+[annotations."0935:0d5b"]
+memory = "[ds unknown]"
+
+[annotations."0935:0d5f"]
+jmp = "pascal_string_insert_bytes@0d72:5909"
+
+[annotations."0935:0d64"]
+comment = "Increment buffer length/cursor"
+memory = "[ss unknown]"
+
+[annotations."0935:0d67"]
+memory = "[ds unknown]"
+
+[annotations."0935:0d6a"]
+memory = "[ss unknown]"
+
+[annotations."0935:0d6d"]
+memory = "[ds unknown]"
+
+[annotations."0935:0d70"]
+label = "save_digit"
+memory = "[ss unknown]"
+
+[annotations."0935:0d73"]
+comment = "Store updated digit value"
+memory = "[ss unknown]"
+
+[annotations."0935:0d76"]
+memory = "[ds unknown]"
+
+[annotations."0935:0d79"]
+label = "exit"

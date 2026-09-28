@@ -1,0 +1,29 @@
+ip = "0d72:5ca6"
+len = 48
+name = "report_pascal_string_bounds_error"
+desc = "Report a fatal Pascal string bounds error and terminate the DOS process."
+details = "Called when append, delete, or insert detects an invalid Pascal string length or position. Establishes a checked BP frame with no local storage, registers the frame, then calls the fatal diagnostic routine with a DS-relative length-prefixed message at 216Ch, diagnostic number 0867h (2151), zero optional detail, and an unused first argument 0027h. The diagnostic routine normally terminates the process; the remaining frame cleanup and far return are nominal fallthrough only. The message's literal text has not been established from this function."
+blocks = ["0d72:5ca6"]
+
+[annotations."0d72:5ca6"]
+comment = "Request zero local bytes from the checked stack-frame prologue at 5FFDh; it establishes BP and checks the runtime stack limit."
+
+[annotations."0d72:5ca9"]
+jmp = "checked_stack_frame_prologue_copy@0d72:5ffd"
+
+[annotations."0d72:5cac"]
+comment = "Save DI and SI, then register this runtime frame with span 2."
+
+[annotations."0d72:5cb2"]
+jmp = "register_outermost_stack_frame@0d72:4fcc"
+
+[annotations."0d72:5cb7"]
+comment = "Push fatal-diagnostic arguments right to left: unused 0027h, DS-relative Pascal-message offset 216Ch, diagnostic number 0867h (2151), and zero optional detail."
+
+[annotations."0d72:5cc6"]
+comment = "Print the fatal diagnostic and terminate the DOS process; normal execution should not return."
+jmp = "report_fatal_error_and_exit@0d72:4bac"
+
+[annotations."0d72:5ccb"]
+comment = "Nominal return path if the fatal routine unexpectedly returns: unregister frame, restore SI/DI/BP, and RETF to caller."
+jmp = "unregister_outermost_stack_frame@0d72:5004"

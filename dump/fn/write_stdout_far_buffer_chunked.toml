@@ -3,8 +3,6 @@ len = 110
 name = "write_stdout_far_buffer_chunked"
 desc = "Write a far buffer to stdout in chunks of up to 85 bytes via an internal staging buffer."
 details = "Iterates over a far byte buffer, copying chunks of at most 55h (85) bytes into the fixed staging buffer at DS:0724h via copy_far_bytes_forward, and writes each chunk to file handle 1 (standard output) via DOS INT 21h AH=40h. If a write call returns an error (AX < 0), or when the remaining length reaches 0 (or exceeds 7FFFh due to underflow/completion), the loop terminates. Returns far, discarding 6 bytes of stack parameters."
-callers = ["write_stdout_near_buffer@0d72:4b0c"]
-callees = ["0d72:676b", "0d72:67ff", "copy_far_bytes_forward@0d72:507e"]
 
 [[params]]
 name = "buf_offset"
@@ -45,7 +43,7 @@ desc = "Return code / write result from last chunk (or 0 if count was 0)"
 @label loop_chunk
 @mem ; [ss unknown]
 0d72:66d9 cmp word ptr [bp+0Ah],55h
-@jmp 'set_chunk_max@3
+@jmp '3
 0d72:66dd ja short 66E7h
 
 ; Chunk size [bp-4] = remaining count (<= 85).
@@ -53,7 +51,7 @@ desc = "Return code / write result from last chunk (or 0 if count was 0)"
 0d72:66df mov ax,[bp+0Ah]
 @mem ; [ss unknown]
 0d72:66e2 mov [bp-4],ax
-@jmp 'do_copy_and_write@4
+@jmp '4
 0d72:66e5 jmp short 66ECh
 
 ; Chunk size [bp-4] = 85 (0x55).
@@ -93,10 +91,10 @@ desc = "Return code / write result from last chunk (or 0 if count was 0)"
 0d72:6712 call far ptr 0D72h:67FFh
 ; If write returned error (AX < 0 / 0xFFFF), exit loop.
 0d72:6717 or ax,ax
-@jmp 'next_chunk@6
+@jmp '6
 0d72:6719 jge short 671Dh
 
-@jmp 'exit@8
+@jmp '8
 0d72:671b jmp short 6732h
 
 ; Advance bytes_transferred by 85 (0x55).
@@ -109,13 +107,13 @@ desc = "Return code / write result from last chunk (or 0 if count was 0)"
 ; If remaining bytes == 0, done.
 @mem ; [ss unknown]
 0d72:6725 cmp word ptr [bp+0Ah],0
-@jmp 'exit@8
+@jmp '8
 0d72:6729 je short 6732h
 
 ; Loop while remaining bytes <= 7FFFh (positive count).
 @mem ; [ss unknown]
 0d72:672b cmp word ptr [bp+0Ah],7FFFh
-@jmp 'loop_chunk@1
+@jmp '1
 0d72:6730 jbe short 66D9h
 
 ; Restore registers and stack frame.

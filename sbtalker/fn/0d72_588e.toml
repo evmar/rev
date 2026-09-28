@@ -1,0 +1,126 @@
+ip = "0d72:588e"
+len = 123
+name = "pascal_string_delete"
+desc = "Delete a character range from a far Pascal string in place, shifting the remaining suffix left."
+details = "Arguments at entry are count ([sp+4]), 1-based position ([sp+6]), string offset/segment ([sp+8]/[sp+0Ah]), and an unused capacity word ([sp+0Ch], callers pass 255); the string's first byte is its length. Checks unsigned 16-bit (position + count - 1) against the original length and calls fatal-error helper 0d72:5ca6 if greater, then stores the low byte of (length - count) and copies new_length - position + 1 bytes forward from string + position + count to string + position; no terminator is copied or cleared. The check does not independently validate position >= 1 or arithmetic overflow, so invalid inputs can pass it; the routine reserves eight local bytes, registers/unregisters its runtime stack frame, preserves SI/DI/BP and DS, has no defined return value, and discards ten argument bytes with RETF 0Ah."
+blocks = ["0d72:588e", "0d72:58b4", "0d72:58b9"]
+
+[[params]]
+name = "count"
+value = "[sp+4]"
+type = "u16"
+desc = "Number of characters to delete."
+
+[[params]]
+name = "position"
+value = "[sp+6]"
+type = "u16"
+desc = "1-based position of the first character to delete."
+
+[[params]]
+name = "string_offset"
+value = "[sp+8]"
+type = "u16"
+desc = "Offset of the mutable Pascal string, pointing to its length byte."
+
+[[params]]
+name = "string_segment"
+value = "[sp+0Ah]"
+type = "u16"
+desc = "Segment of the mutable Pascal string."
+
+[[params]]
+name = "capacity"
+value = "[sp+0Ch]"
+type = "u16"
+desc = "Unused string capacity argument; observed callers pass 255."
+
+[annotations."0d72:588e"]
+comment = "Allocate an 8-byte local frame through the checked prologue helper; resulting BP+6 is count."
+
+[annotations."0d72:5891"]
+jmp = "checked_stack_frame_prologue@0d72:5c2a"
+
+[annotations."0d72:5896"]
+comment = "Register the runtime frame with size 12 (8 local bytes plus saved DI/SI)."
+
+[annotations."0d72:589a"]
+jmp = "register_outermost_stack_frame@0d72:4fcc"
+
+[annotations."0d72:589f"]
+comment = "DX = (count + position - 1) modulo 65536: last character index to delete."
+memory = "[ss unknown]"
+
+[annotations."0d72:58a2"]
+memory = "[ss unknown]"
+
+[annotations."0d72:58a8"]
+comment = "Load the Pascal string length and compare the last deletion index using an unsigned comparison."
+
+[annotations."0d72:58ab"]
+memory = "[es unknown]"
+
+[annotations."0d72:58b2"]
+jmp = "'delete_range@2"
+
+[annotations."0d72:58b4"]
+comment = "Deletion extends beyond the original length: invoke fatal string-range error helper."
+jmp = "report_pascal_string_bounds_error@0d72:5ca6"
+
+[annotations."0d72:58b9"]
+comment = "Set length byte to (old_length - count) modulo 256."
+label = "delete_range"
+
+[annotations."0d72:58bc"]
+memory = "[es unknown]"
+
+[annotations."0d72:58c1"]
+memory = "[ss unknown]"
+
+[annotations."0d72:58c6"]
+memory = "[es unknown]"
+
+[annotations."0d72:58c9"]
+comment = "Build and push source far pointer string + position + count (suffix after deleted range)."
+memory = "[ss unknown]"
+
+[annotations."0d72:58cc"]
+memory = "[ss unknown]"
+
+[annotations."0d72:58d4"]
+memory = "[ss unknown]"
+
+[annotations."0d72:58d7"]
+memory = "[ss unknown]"
+
+[annotations."0d72:58dc"]
+comment = "Build and push destination far pointer string + position (start of deleted range)."
+
+[annotations."0d72:58df"]
+memory = "[ss unknown]"
+
+[annotations."0d72:58e2"]
+memory = "[ss unknown]"
+
+[annotations."0d72:58e5"]
+memory = "[ss unknown]"
+
+[annotations."0d72:58ea"]
+comment = "Copy count = new_length - position + 1, i.e. suffix bytes only; deleting through the end copies zero bytes."
+
+[annotations."0d72:58ed"]
+memory = "[es unknown]"
+
+[annotations."0d72:58f2"]
+memory = "[ss unknown]"
+
+[annotations."0d72:58f7"]
+comment = "Shift suffix left using forward copy, safe for overlap with valid deletion arguments."
+jmp = "copy_far_bytes_forward@0d72:507e"
+
+[annotations."0d72:58fc"]
+comment = "Unregister runtime frame and restore saved registers."
+jmp = "unregister_outermost_stack_frame@0d72:5004"
+
+[annotations."0d72:5906"]
+comment = "Far return; discard count, position, string offset/segment, and unused capacity (10 bytes)."

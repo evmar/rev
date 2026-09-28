@@ -1,0 +1,125 @@
+ip = "0935:3cc9"
+len = 157
+name = "dispatch_command_input"
+desc = "Processes keyboard input or menu commands and dispatches corresponding handlers"
+details = "Saves previous state byte from ds:[4Ch] to ds:[4Ah] and handles spacebar input (0x20) in a loop by copying message buffer data to stack and redrawing. Once non-space input is received, it checks membership in two character lookup sets via helper at 0D72:5452 to dispatch to specific action routines, or updates ds:[4Ch] if input is null."
+blocks = ["0935:3cc9", "0935:3cdd", "0935:3ce8", "0935:3cef", "0935:3d12", "0935:3d2a", "0935:3d30", "0935:3d48", "0935:3d4e", "0935:3d55", "0935:3d5c", "0935:3d60"]
+
+[[params]]
+name = "context_id"
+value = "[bp+4]"
+type = "u16"
+desc = "Context handle or window identifier passed to input polling and display subroutines"
+
+[annotations."0935:3cd0"]
+comment = "Backup state flag"
+memory = "[ds unknown]"
+
+[annotations."0935:3cd3"]
+memory = "[ds unknown]"
+
+[annotations."0935:3cd6"]
+comment = "Check if active input character is space"
+memory = "[ds unknown]"
+
+[annotations."0935:3cdb"]
+jmp = "'space_loop@2"
+
+[annotations."0935:3cdd"]
+memory = "[ds unknown]"
+
+[annotations."0935:3ce2"]
+memory = "[ss unknown]"
+
+[annotations."0935:3ce5"]
+comment = "Poll next input character"
+jmp = "get_next_char@0935:11a0"
+
+[annotations."0935:3ce8"]
+label = "space_loop"
+memory = "[ds unknown]"
+
+[annotations."0935:3ced"]
+jmp = "'check_first_set@4"
+
+[annotations."0935:3cf5"]
+comment = "Allocate 254 bytes on stack"
+
+[annotations."0935:3cfe"]
+comment = "Copy prompt buffer to stack"
+
+[annotations."0935:3d00"]
+memory = "[ds unknown]"
+
+[annotations."0935:3d04"]
+memory = "[ss unknown]"
+
+[annotations."0935:3d07"]
+comment = "Render prompt/message"
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:3d0a"]
+memory = "[ss unknown]"
+
+[annotations."0935:3d0d"]
+jmp = "get_next_char@0935:11a0"
+
+[annotations."0935:3d10"]
+jmp = "'space_loop@2"
+
+[annotations."0935:3d12"]
+label = "check_first_set"
+memory = "[ds unknown]"
+
+[annotations."0935:3d21"]
+comment = "Check if character is in table at 20B2h (length 11)"
+jmp = "set_contains@0d72:5452"
+
+[annotations."0935:3d28"]
+jmp = "'check_second_set@6"
+
+[annotations."0935:3d2b"]
+jmp = "parse_and_emit_token@0935:12fc"
+
+[annotations."0935:3d2e"]
+jmp = "'epilogue@11"
+
+[annotations."0935:3d30"]
+label = "check_second_set"
+memory = "[ds unknown]"
+
+[annotations."0935:3d3f"]
+comment = "Check if character is in table at 0170h (length 31)"
+jmp = "set_contains@0d72:5452"
+
+[annotations."0935:3d46"]
+jmp = "'check_null_input@8"
+
+[annotations."0935:3d49"]
+jmp = "parse_argument_switches@0935:23ed"
+
+[annotations."0935:3d4c"]
+jmp = "'epilogue@11"
+
+[annotations."0935:3d4e"]
+comment = "Check for null terminator or exit condition"
+label = "check_null_input"
+memory = "[ds unknown]"
+
+[annotations."0935:3d53"]
+jmp = "'handle_default@10"
+
+[annotations."0935:3d55"]
+memory = "[ds unknown]"
+
+[annotations."0935:3d5a"]
+jmp = "'epilogue@11"
+
+[annotations."0935:3d5c"]
+label = "handle_default"
+
+[annotations."0935:3d5d"]
+jmp = "dispatch_action_by_state@0935:30a1"
+
+[annotations."0935:3d60"]
+label = "epilogue"

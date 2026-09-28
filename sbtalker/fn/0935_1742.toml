@@ -1,0 +1,857 @@
+ip = "0935:1742"
+len = 1647
+name = "tts_pronounce_number"
+desc = "Converts a numeric digit string into speech tokens (cardinal, ordinal, or digit-by-digit)"
+details = "Processes a Pascal-style string of ASCII digits and synthesizes speech by decomposing numbers into magnitude groups (thousands, hundreds, tens, and units). Supports individual digit spelling (mode 0), cardinal pronunciation (mode 1), ordinal forms (mode 2, with phonetic adjustments such as changing 'v' to 'f' for 'twelfth'), and 4-digit year/grouped pronunciations (mode 3). Generated speech frame packets are queued via call 109Fh."
+blocks = ["0935:1742", "0935:174f", "0935:1761", "0935:1766", "0935:17af", "0935:17b2", "0935:17b8", "0935:17ea", "0935:17f9", "0935:1805", "0935:1808", "0935:1814", "0935:1821", "0935:1831", "0935:1834", "0935:183b", "0935:183e", "0935:1845", "0935:1848", "0935:184e", "0935:1851", "0935:1858", "0935:185b", "0935:1864", "0935:1865", "0935:186e", "0935:186f", "0935:1875", "0935:1878", "0935:18b7", "0935:18b8", "0935:18c1", "0935:18c2", "0935:18cd", "0935:18ce", "0935:18d4", "0935:1900", "0935:1920", "0935:1923", "0935:1940", "0935:1963", "0935:1966", "0935:197b", "0935:19a7", "0935:1a0b", "0935:1a4a", "0935:1a4d", "0935:1a53", "0935:1a56", "0935:1a5c", "0935:1a5f", "0935:1a7a", "0935:1ad6", "0935:1adb", "0935:1ae1", "0935:1ae4", "0935:1b0d", "0935:1b4f", "0935:1b55", "0935:1b58", "0935:1b5e", "0935:1bba", "0935:1bec", "0935:1bf2", "0935:1c0b", "0935:1c19", "0935:1c3b", "0935:1c42", "0935:1c47", "0935:1c4d", "0935:1c50", "0935:1c6d", "0935:1c6e", "0935:1c76", "0935:1c77", "0935:1c9a", "0935:1c9d", "0935:1ca3", "0935:1ca9", "0935:1cdd", "0935:1d15", "0935:1d37", "0935:1d39", "0935:1d3f", "0935:1d5b", "0935:1d63", "0935:1d89", "0935:1dab"]
+
+[[params]]
+name = "ctx"
+value = "[bp+4]"
+type = "*mut u8"
+desc = "Pointer to TTS sound synthesis context / channel state"
+
+[[params]]
+name = "num_str"
+value = "[bp+6]"
+type = "*const u8"
+desc = "Pointer to length-prefixed ASCII digit string (Pascal string)"
+
+[[params]]
+name = "mode"
+value = "[bp+8]"
+type = "u16"
+desc = "Pronunciation mode: 0 = digits, 1 = cardinal, 2 = ordinal, 3 = year/auto"
+
+[annotations."0935:1749"]
+comment = "Check mode == 0 (spell each digit individually)"
+memory = "[ss unknown]"
+
+[annotations."0935:174d"]
+jmp = "'check_mode_3@5"
+
+[annotations."0935:174f"]
+memory = "[ss unknown]"
+
+[annotations."0935:1752"]
+memory = "[ds unknown]"
+
+[annotations."0935:1756"]
+memory = "[ss unknown]"
+
+[annotations."0935:175a"]
+memory = "[ss unknown]"
+
+[annotations."0935:175f"]
+jmp = "'4"
+
+[annotations."0935:1761"]
+memory = "[ss unknown]"
+
+[annotations."0935:1766"]
+label = "spell_digit_loop"
+
+[annotations."0935:1777"]
+memory = "[ss unknown]"
+
+[annotations."0935:177a"]
+memory = "[ss unknown]"
+
+[annotations."0935:177d"]
+memory = "[ds unknown]"
+
+[annotations."0935:1781"]
+comment = "Index into digit phoneme table: digit * 10 + 0x128"
+
+[annotations."0935:1798"]
+memory = "[ss unknown]"
+
+[annotations."0935:179b"]
+memory = "[ds unknown]"
+
+[annotations."0935:179e"]
+comment = "Dispatch speech token to audio engine"
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:17a1"]
+memory = "[ss unknown]"
+
+[annotations."0935:17a5"]
+memory = "[ss unknown]"
+
+[annotations."0935:17a9"]
+memory = "[ss unknown]"
+
+[annotations."0935:17ad"]
+jmp = "'spell_digit_loop@3"
+
+[annotations."0935:17af"]
+jmp = "'epilogue_exit@87"
+
+[annotations."0935:17b2"]
+comment = "Check mode == 3 (compound number / year formatting)"
+label = "check_mode_3"
+memory = "[ss unknown]"
+
+[annotations."0935:17b6"]
+jmp = "'check_length_overflow@10"
+
+[annotations."0935:17b8"]
+memory = "[ss unknown]"
+
+[annotations."0935:17bb"]
+memory = "[ss unknown]"
+
+[annotations."0935:17c4"]
+memory = "[ss unknown]"
+
+[annotations."0935:17c7"]
+memory = "[ds unknown]"
+
+[annotations."0935:17cd"]
+jmp = "pascal_string_copy_slice@0935:019f"
+
+[annotations."0935:17d0"]
+memory = "[ss unknown]"
+
+[annotations."0935:17e3"]
+jmp = "pascal_digits_all_zero@0935:16ff"
+
+[annotations."0935:17e8"]
+jmp = "'8"
+
+[annotations."0935:17ee"]
+memory = "[ss unknown]"
+
+[annotations."0935:17f1"]
+memory = "[ss unknown]"
+
+[annotations."0935:17f4"]
+jmp = "'0"
+
+[annotations."0935:17f7"]
+jmp = "'9"
+
+[annotations."0935:17fc"]
+memory = "[ss unknown]"
+
+[annotations."0935:17ff"]
+memory = "[ss unknown]"
+
+[annotations."0935:1802"]
+jmp = "'0"
+
+[annotations."0935:1805"]
+jmp = "'epilogue_exit@87"
+
+[annotations."0935:1808"]
+label = "check_length_overflow"
+memory = "[ss unknown]"
+
+[annotations."0935:180b"]
+memory = "[ds unknown]"
+
+[annotations."0935:180f"]
+comment = "If number length > 36 digits, fallback to spelling individually"
+
+[annotations."0935:1812"]
+jmp = "'handle_cardinal_or_ordinal@12"
+
+[annotations."0935:1818"]
+memory = "[ss unknown]"
+
+[annotations."0935:181b"]
+jmp = "'0"
+
+[annotations."0935:181e"]
+jmp = "'epilogue_exit@87"
+
+[annotations."0935:1821"]
+label = "handle_cardinal_or_ordinal"
+memory = "[ss unknown]"
+
+[annotations."0935:1824"]
+memory = "[ds unknown]"
+
+[annotations."0935:1828"]
+memory = "[ss unknown]"
+
+[annotations."0935:182b"]
+memory = "[ss unknown]"
+
+[annotations."0935:182f"]
+jmp = "'14"
+
+[annotations."0935:1831"]
+jmp = "'handle_hundreds_place@48"
+
+[annotations."0935:1834"]
+memory = "[ds unknown]"
+
+[annotations."0935:1839"]
+jmp = "'16"
+
+[annotations."0935:183b"]
+jmp = "'decompose_thousands_group@38"
+
+[annotations."0935:183e"]
+memory = "[ds unknown]"
+
+[annotations."0935:1843"]
+jmp = "'18"
+
+[annotations."0935:1845"]
+jmp = "'decompose_thousands_group@38"
+
+[annotations."0935:1848"]
+comment = "Check if 4-digit number should be pronounced as a year (e.g. 19xx)"
+memory = "[ss unknown]"
+
+[annotations."0935:184c"]
+jmp = "'20"
+
+[annotations."0935:184e"]
+jmp = "'decompose_thousands_group@38"
+
+[annotations."0935:1851"]
+memory = "[ds unknown]"
+
+[annotations."0935:1856"]
+jmp = "'22"
+
+[annotations."0935:1858"]
+jmp = "'decompose_thousands_group@38"
+
+[annotations."0935:185b"]
+memory = "[ds unknown]"
+
+[annotations."0935:1862"]
+jmp = "'24"
+
+[annotations."0935:1865"]
+memory = "[ds unknown]"
+
+[annotations."0935:186c"]
+jmp = "'26"
+
+[annotations."0935:1873"]
+jmp = "'pronounce_year_pair@28"
+
+[annotations."0935:1875"]
+jmp = "'decompose_thousands_group@38"
+
+[annotations."0935:1878"]
+label = "pronounce_year_pair"
+memory = "[ss unknown]"
+
+[annotations."0935:1886"]
+jmp = "pascal_string_copy_bounded@0d72:538c"
+
+[annotations."0935:188b"]
+memory = "[ss unknown]"
+
+[annotations."0935:188e"]
+memory = "[ds unknown]"
+
+[annotations."0935:1891"]
+memory = "[ss unknown]"
+
+[annotations."0935:1895"]
+memory = "[ds unknown]"
+
+[annotations."0935:1898"]
+memory = "[ss unknown]"
+
+[annotations."0935:18a0"]
+memory = "[ss unknown]"
+
+[annotations."0935:18a5"]
+memory = "[ss unknown]"
+
+[annotations."0935:18a8"]
+jmp = "'0"
+
+[annotations."0935:18ab"]
+memory = "[ss unknown]"
+
+[annotations."0935:18ae"]
+memory = "[ds unknown]"
+
+[annotations."0935:18b5"]
+jmp = "'30"
+
+[annotations."0935:18b8"]
+memory = "[ds unknown]"
+
+[annotations."0935:18bf"]
+jmp = "'32"
+
+[annotations."0935:18c4"]
+memory = "[ds unknown]"
+
+[annotations."0935:18cb"]
+jmp = "'34"
+
+[annotations."0935:18d2"]
+jmp = "'36"
+
+[annotations."0935:18f5"]
+memory = "[ss unknown]"
+
+[annotations."0935:18f8"]
+memory = "[ds unknown]"
+
+[annotations."0935:18fb"]
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:18fe"]
+jmp = "'37"
+
+[annotations."0935:1900"]
+memory = "[ss unknown]"
+
+[annotations."0935:1903"]
+memory = "[ds unknown]"
+
+[annotations."0935:1906"]
+memory = "[ss unknown]"
+
+[annotations."0935:190a"]
+memory = "[ds unknown]"
+
+[annotations."0935:190d"]
+memory = "[ss unknown]"
+
+[annotations."0935:1915"]
+memory = "[ss unknown]"
+
+[annotations."0935:191a"]
+memory = "[ss unknown]"
+
+[annotations."0935:191d"]
+jmp = "'0"
+
+[annotations."0935:1920"]
+jmp = "'epilogue_exit@87"
+
+[annotations."0935:1923"]
+label = "decompose_thousands_group"
+memory = "[ss unknown]"
+
+[annotations."0935:1926"]
+memory = "[ss unknown]"
+
+[annotations."0935:192f"]
+memory = "[ss unknown]"
+
+[annotations."0935:1939"]
+comment = "Calculate 3-digit group magnitude (thousands, millions, etc.)"
+
+[annotations."0935:193d"]
+jmp = "pascal_string_copy_slice@0935:019f"
+
+[annotations."0935:1940"]
+label = "next_magnitude_group"
+memory = "[ss unknown]"
+
+[annotations."0935:1946"]
+memory = "[ss unknown]"
+
+[annotations."0935:1949"]
+memory = "[ss unknown]"
+
+[annotations."0935:195c"]
+jmp = "pascal_digits_all_zero@0935:16ff"
+
+[annotations."0935:1961"]
+jmp = "'41"
+
+[annotations."0935:1963"]
+jmp = "'44"
+
+[annotations."0935:196a"]
+memory = "[ss unknown]"
+
+[annotations."0935:196f"]
+memory = "[ss unknown]"
+
+[annotations."0935:1972"]
+jmp = "'0"
+
+[annotations."0935:1975"]
+memory = "[ss unknown]"
+
+[annotations."0935:1979"]
+jmp = "'43"
+
+[annotations."0935:199c"]
+memory = "[ss unknown]"
+
+[annotations."0935:199f"]
+memory = "[ds unknown]"
+
+[annotations."0935:19a2"]
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:19a5"]
+jmp = "'44"
+
+[annotations."0935:19bb"]
+memory = "[ss unknown]"
+
+[annotations."0935:19d8"]
+memory = "[ss unknown]"
+
+[annotations."0935:19db"]
+memory = "[ds unknown]"
+
+[annotations."0935:19de"]
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:1a02"]
+memory = "[ss unknown]"
+
+[annotations."0935:1a05"]
+memory = "[ds unknown]"
+
+[annotations."0935:1a08"]
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:1a0b"]
+memory = "[ss unknown]"
+
+[annotations."0935:1a19"]
+jmp = "pascal_string_copy_bounded@0d72:538c"
+
+[annotations."0935:1a1e"]
+memory = "[ss unknown]"
+
+[annotations."0935:1a21"]
+memory = "[ds unknown]"
+
+[annotations."0935:1a25"]
+memory = "[ss unknown]"
+
+[annotations."0935:1a2b"]
+memory = "[ds unknown]"
+
+[annotations."0935:1a2e"]
+memory = "[ss unknown]"
+
+[annotations."0935:1a32"]
+memory = "[ds unknown]"
+
+[annotations."0935:1a35"]
+memory = "[ss unknown]"
+
+[annotations."0935:1a39"]
+memory = "[ds unknown]"
+
+[annotations."0935:1a3c"]
+memory = "[ss unknown]"
+
+[annotations."0935:1a40"]
+memory = "[ds unknown]"
+
+[annotations."0935:1a48"]
+jmp = "'46"
+
+[annotations."0935:1a4a"]
+jmp = "'epilogue_exit@87"
+
+[annotations."0935:1a4d"]
+memory = "[ss unknown]"
+
+[annotations."0935:1a51"]
+jmp = "'handle_hundreds_place@48"
+
+[annotations."0935:1a53"]
+jmp = "'next_magnitude_group@39"
+
+[annotations."0935:1a56"]
+label = "handle_hundreds_place"
+memory = "[ss unknown]"
+
+[annotations."0935:1a5a"]
+jmp = "'50"
+
+[annotations."0935:1a5c"]
+jmp = "'handle_tens_place@53"
+
+[annotations."0935:1a5f"]
+memory = "[ss unknown]"
+
+[annotations."0935:1a62"]
+memory = "[ds unknown]"
+
+[annotations."0935:1a69"]
+memory = "[ds unknown]"
+
+[annotations."0935:1a6e"]
+comment = "Convert ASCII hundreds digit to integer"
+
+[annotations."0935:1a71"]
+memory = "[ss unknown]"
+
+[annotations."0935:1a74"]
+memory = "[ss unknown]"
+
+[annotations."0935:1a78"]
+jmp = "'52"
+
+[annotations."0935:1a92"]
+comment = "Emit digit name sound frame followed by 'hundred'"
+
+[annotations."0935:1aa3"]
+memory = "[ss unknown]"
+
+[annotations."0935:1aa6"]
+memory = "[ds unknown]"
+
+[annotations."0935:1aa9"]
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:1acd"]
+memory = "[ss unknown]"
+
+[annotations."0935:1ad0"]
+memory = "[ds unknown]"
+
+[annotations."0935:1ad3"]
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:1ad6"]
+memory = "[ss unknown]"
+
+[annotations."0935:1adb"]
+label = "handle_tens_place"
+memory = "[ss unknown]"
+
+[annotations."0935:1adf"]
+jmp = "'55"
+
+[annotations."0935:1ae1"]
+jmp = "'handle_ones_place@68"
+
+[annotations."0935:1ae4"]
+memory = "[ss unknown]"
+
+[annotations."0935:1ae7"]
+memory = "[ds unknown]"
+
+[annotations."0935:1aee"]
+memory = "[ds unknown]"
+
+[annotations."0935:1afa"]
+memory = "[ds unknown]"
+
+[annotations."0935:1b00"]
+comment = "Compute 2-digit value (tens * 10 + ones)"
+
+[annotations."0935:1b04"]
+memory = "[ss unknown]"
+
+[annotations."0935:1b07"]
+memory = "[ss unknown]"
+
+[annotations."0935:1b0b"]
+jmp = "'57"
+
+[annotations."0935:1b21"]
+memory = "[ss unknown]"
+
+[annotations."0935:1b2d"]
+comment = "Lookup tens word (twenty, thirty, etc.) from table at 0x390"
+
+[annotations."0935:1b3e"]
+memory = "[ss unknown]"
+
+[annotations."0935:1b41"]
+memory = "[ds unknown]"
+
+[annotations."0935:1b44"]
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:1b47"]
+memory = "[ss unknown]"
+
+[annotations."0935:1b4c"]
+jmp = "'handle_ones_place@68"
+
+[annotations."0935:1b4f"]
+memory = "[ss unknown]"
+
+[annotations."0935:1b53"]
+jmp = "'59"
+
+[annotations."0935:1b55"]
+jmp = "'67"
+
+[annotations."0935:1b58"]
+memory = "[ss unknown]"
+
+[annotations."0935:1b5c"]
+jmp = "'pronounce_teen_value@61"
+
+[annotations."0935:1b87"]
+memory = "[ss unknown]"
+
+[annotations."0935:1b8a"]
+memory = "[ds unknown]"
+
+[annotations."0935:1b8d"]
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:1baf"]
+memory = "[ss unknown]"
+
+[annotations."0935:1bb2"]
+memory = "[ds unknown]"
+
+[annotations."0935:1bb5"]
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:1bb8"]
+jmp = "'62"
+
+[annotations."0935:1bba"]
+label = "pronounce_teen_value"
+
+[annotations."0935:1be3"]
+memory = "[ss unknown]"
+
+[annotations."0935:1be6"]
+memory = "[ds unknown]"
+
+[annotations."0935:1be9"]
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:1bec"]
+memory = "[ss unknown]"
+
+[annotations."0935:1bf0"]
+jmp = "'66"
+
+[annotations."0935:1bf2"]
+memory = "[ss unknown]"
+
+[annotations."0935:1bf5"]
+memory = "[ds unknown]"
+
+[annotations."0935:1bfd"]
+memory = "[es unknown]"
+
+[annotations."0935:1c05"]
+comment = "Ordinal adjustment: replace trailing 'v' with 'f' (e.g., five/twelve -> fifth/twelfth)"
+memory = "[es unknown]"
+
+[annotations."0935:1c09"]
+jmp = "'65"
+
+[annotations."0935:1c0d"]
+memory = "[ss unknown]"
+
+[annotations."0935:1c11"]
+memory = "[ss unknown]"
+
+[annotations."0935:1c15"]
+memory = "[es unknown]"
+
+[annotations."0935:1c2a"]
+memory = "[ds unknown]"
+
+[annotations."0935:1c2e"]
+memory = "[ds unknown]"
+
+[annotations."0935:1c32"]
+memory = "[ss unknown]"
+
+[annotations."0935:1c35"]
+memory = "[ds unknown]"
+
+[annotations."0935:1c38"]
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:1c3b"]
+memory = "[ss unknown]"
+
+[annotations."0935:1c40"]
+jmp = "'handle_ones_place@68"
+
+[annotations."0935:1c42"]
+memory = "[ss unknown]"
+
+[annotations."0935:1c47"]
+label = "handle_ones_place"
+memory = "[ss unknown]"
+
+[annotations."0935:1c4b"]
+jmp = "'70"
+
+[annotations."0935:1c4d"]
+jmp = "'epilogue_exit@87"
+
+[annotations."0935:1c50"]
+memory = "[ss unknown]"
+
+[annotations."0935:1c53"]
+memory = "[ds unknown]"
+
+[annotations."0935:1c5a"]
+memory = "[ds unknown]"
+
+[annotations."0935:1c5e"]
+comment = "Convert ASCII ones digit to integer"
+
+[annotations."0935:1c61"]
+memory = "[ss unknown]"
+
+[annotations."0935:1c64"]
+memory = "[ss unknown]"
+
+[annotations."0935:1c6b"]
+jmp = "'72"
+
+[annotations."0935:1c74"]
+jmp = "'74"
+
+[annotations."0935:1c79"]
+memory = "[ss unknown]"
+
+[annotations."0935:1c8a"]
+memory = "[ss unknown]"
+
+[annotations."0935:1c8f"]
+jmp = "pascal_digits_all_zero@0935:16ff"
+
+[annotations."0935:1c98"]
+jmp = "'emit_ones_ordinal@76"
+
+[annotations."0935:1c9a"]
+jmp = "'append_ordinal_suffix@82"
+
+[annotations."0935:1c9d"]
+label = "emit_ones_ordinal"
+memory = "[ss unknown]"
+
+[annotations."0935:1ca1"]
+jmp = "'emit_ones_cardinal@79"
+
+[annotations."0935:1ca3"]
+memory = "[ss unknown]"
+
+[annotations."0935:1ca7"]
+jmp = "'emit_ones_cardinal@79"
+
+[annotations."0935:1cd2"]
+memory = "[ss unknown]"
+
+[annotations."0935:1cd5"]
+memory = "[ds unknown]"
+
+[annotations."0935:1cd8"]
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:1cdb"]
+jmp = "'81"
+
+[annotations."0935:1cdd"]
+label = "emit_ones_cardinal"
+
+[annotations."0935:1d06"]
+memory = "[ss unknown]"
+
+[annotations."0935:1d09"]
+memory = "[ds unknown]"
+
+[annotations."0935:1d0c"]
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:1d0f"]
+memory = "[ss unknown]"
+
+[annotations."0935:1d13"]
+jmp = "'81"
+
+[annotations."0935:1d26"]
+memory = "[ds unknown]"
+
+[annotations."0935:1d2a"]
+memory = "[ds unknown]"
+
+[annotations."0935:1d2e"]
+memory = "[ss unknown]"
+
+[annotations."0935:1d31"]
+memory = "[ds unknown]"
+
+[annotations."0935:1d34"]
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:1d37"]
+jmp = "'epilogue_exit@87"
+
+[annotations."0935:1d39"]
+label = "append_ordinal_suffix"
+memory = "[ss unknown]"
+
+[annotations."0935:1d3d"]
+jmp = "'epilogue_exit@87"
+
+[annotations."0935:1d3f"]
+memory = "[ss unknown]"
+
+[annotations."0935:1d42"]
+memory = "[ds unknown]"
+
+[annotations."0935:1d4a"]
+memory = "[es unknown]"
+
+[annotations."0935:1d55"]
+comment = "Check for -ty endings to append appropriate ordinal suffix (-tieth vs -th)"
+memory = "[es unknown]"
+
+[annotations."0935:1d59"]
+jmp = "'86"
+
+[annotations."0935:1d5d"]
+memory = "[es unknown]"
+
+[annotations."0935:1d61"]
+jmp = "'86"
+
+[annotations."0935:1d74"]
+memory = "[ds unknown]"
+
+[annotations."0935:1d78"]
+memory = "[ds unknown]"
+
+[annotations."0935:1d7c"]
+memory = "[ss unknown]"
+
+[annotations."0935:1d80"]
+memory = "[ss unknown]"
+
+[annotations."0935:1d83"]
+memory = "[ds unknown]"
+
+[annotations."0935:1d86"]
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:1d9a"]
+memory = "[ds unknown]"
+
+[annotations."0935:1d9e"]
+memory = "[ds unknown]"
+
+[annotations."0935:1da2"]
+memory = "[ss unknown]"
+
+[annotations."0935:1da5"]
+memory = "[ds unknown]"
+
+[annotations."0935:1da8"]
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:1dab"]
+label = "epilogue_exit"

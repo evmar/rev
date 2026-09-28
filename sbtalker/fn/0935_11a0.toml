@@ -1,0 +1,90 @@
+ip = "0935:11a0"
+len = 112
+name = "get_next_char"
+desc = "Reads and preprocesses the next character from a length-prefixed string."
+details = "Fetches the character at global index ds:[160h] from a length-prefixed string located at offset 0Ch in the provided structure. Clamps control characters under ASCII 0x20 to spaces, checks the character against a filter table at ds:1CDCh, optionally transforms it via an auxiliary routine, and increments the global character offset before returning."
+blocks = ["0935:11a0", "0935:11ba", "0935:11c1", "0935:11da", "0935:11df", "0935:11f7", "0935:1206"]
+
+[[params]]
+name = "struct_ptr"
+value = "[bp+4]"
+type = "u16"
+desc = "Near pointer to structure containing far string reference at offset 0x0C"
+
+[annotations."0935:11a7"]
+memory = "[ss unknown]"
+
+[annotations."0935:11ac"]
+comment = "Load far pointer to string from struct offset 0x0C"
+
+[annotations."0935:11af"]
+comment = "Get string length from prefix byte"
+memory = "[es unknown]"
+
+[annotations."0935:11b4"]
+comment = "Check if current index has exceeded length"
+memory = "[ds unknown]"
+
+[annotations."0935:11b8"]
+jmp = "'read_char@2"
+
+[annotations."0935:11ba"]
+comment = "End of string: write null byte to buffer"
+memory = "[ds unknown]"
+
+[annotations."0935:11bf"]
+jmp = "'advance_and_exit@6"
+
+[annotations."0935:11c1"]
+label = "read_char"
+memory = "[ss unknown]"
+
+[annotations."0935:11c9"]
+memory = "[ds unknown]"
+
+[annotations."0935:11cd"]
+comment = "Read character at current string index"
+memory = "[es unknown]"
+
+[annotations."0935:11d0"]
+memory = "[ds unknown]"
+
+[annotations."0935:11d3"]
+memory = "[ds unknown]"
+
+[annotations."0935:11d8"]
+jmp = "'check_char@4"
+
+[annotations."0935:11da"]
+comment = "Clamp control characters to ASCII space (0x20)"
+memory = "[ds unknown]"
+
+[annotations."0935:11df"]
+label = "check_char"
+memory = "[ds unknown]"
+
+[annotations."0935:11ee"]
+comment = "Check character against lookup table at ds:1CDCh"
+jmp = "set_contains@0d72:5452"
+
+[annotations."0935:11f5"]
+jmp = "'advance_and_exit@6"
+
+[annotations."0935:11f7"]
+memory = "[ds unknown]"
+
+[annotations."0935:11fb"]
+comment = "Transform character via helper routine"
+jmp = "ascii_to_glyph_index@0935:0063"
+
+[annotations."0935:11fe"]
+memory = "[ds unknown]"
+
+[annotations."0935:1201"]
+comment = "Clear state flag"
+memory = "[ds unknown]"
+
+[annotations."0935:1206"]
+comment = "Increment character index"
+label = "advance_and_exit"
+memory = "[ds unknown]"

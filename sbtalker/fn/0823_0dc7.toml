@@ -1,0 +1,26 @@
+ip = "0823:0dc7"
+len = 28
+name = "init_mcb_bounds"
+desc = "Reads the memory block size from its MCB and calculates segment boundaries"
+details = "Accesses the DOS Memory Control Block (MCB) located one paragraph before the segment stored at cs:[0x8E]. It extracts the block size in paragraphs from offset 0x03 of the MCB, saves it into cs:[0x90], and calculates the upper segment limit (base + size + 1) which is saved into cs:[0x0A9]."
+blocks = ["0823:0dc7"]
+
+[annotations."0823:0dc7"]
+comment = "Get base segment and step back one paragraph to the MCB"
+memory = "0823:008e"
+
+[annotations."0823:0dce"]
+comment = "Read block size (in paragraphs) from MCB offset 3"
+
+[annotations."0823:0dd1"]
+memory = "[es unknown]"
+
+[annotations."0823:0dd4"]
+comment = "Save block size, then calculate and store boundary segment (base + size + 1)"
+memory = "0823:0090"
+
+[annotations."0823:0dd8"]
+memory = "0823:008e"
+
+[annotations."0823:0dde"]
+memory = "0823:00a9"

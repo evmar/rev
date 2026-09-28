@@ -1,0 +1,111 @@
+ip = "0d72:5c2a"
+len = 4410
+name = "checked_stack_frame_prologue"
+desc = "Establish a BP frame and reserve AX local bytes, checking for stack underflow and the runtime stack limit."
+details = "Called with a near CALL: removes the continuation IP into CX, saves the old BP, sets BP to that saved word, and computes BX = BP - AX; if subtraction does not borrow and BX >= unsigned DS:[0792h], sets SP = BX and jumps to CX, leaving AX unchanged and BX/CX clobbered. On failure, constructs a far continuation and transfers to 0d72:6b88, which repeats the allocation check and either returns to that continuation, dispatches through the far handler at DS:[078Eh] (offset FFFFh means absent), or enters the default diagnostic/termination path with error code 0. On normal continuation [BP] holds the old BP and locals occupy [BP-AX,BP); the caller restores SP/BP in its own epilogue, and the apparent fallthrough beyond the indirect termination call at 6d39 is not part of the intended prologue flow (a separate function begins at 6d3e)."
+blocks = ["0d72:5c2a", "0d72:5c34", "0d72:5c3a", "0d72:5c3e", "0d72:6b88", "0d72:6b90", "0d72:6b96", "0d72:6b9b", "0d72:6ba1", "0d72:6ba6", "0d72:6d29", "0d72:6d47", "0d72:6d4c", "0d72:6d51", "0d72:6d62"]
+
+[[params]]
+name = "local_bytes"
+value = "ax"
+type = "u16"
+desc = "Number of local stack bytes to reserve below the saved BP; no alignment adjustment is performed."
+
+[annotations."0d72:5c2a"]
+comment = "Remove the near CALL continuation, then replace its stack slot with saved BP and establish the caller's frame."
+
+[annotations."0d72:5c2e"]
+comment = "Candidate SP = BP - requested local bytes (AX); unsigned borrow means stack offset wraparound."
+
+[annotations."0d72:5c32"]
+jmp = "'stack_allocation_failed@3"
+
+[annotations."0d72:5c34"]
+comment = "Require candidate SP >= runtime lower stack bound DS:[0792h]; equality is accepted."
+memory = "[ds unknown]"
+
+[annotations."0d72:5c38"]
+jmp = "'stack_allocation_failed@3"
+
+[annotations."0d72:5c3a"]
+comment = "Commit local allocation and jump to the near continuation in CX; saved BP remains for the caller's epilogue."
+
+[annotations."0d72:5c3c"]
+jmp = "unknown:reg"
+
+[annotations."0d72:5c3e"]
+comment = "Convert continuation CX into a far return address CS:CX and tail-jump to the shared checked allocator."
+label = "stack_allocation_failed"
+
+[annotations."0d72:5c40"]
+jmp = "'4"
+
+[annotations."0d72:6b88"]
+comment = "Shared far-entry allocator pops continuation IP:CS into CX:DX and retries SP-AX with the same unsigned checks."
+
+[annotations."0d72:6b8e"]
+jmp = "'dispatch_stack_overflow@7"
+
+[annotations."0d72:6b90"]
+memory = "[ds unknown]"
+
+[annotations."0d72:6b94"]
+jmp = "'dispatch_stack_overflow@7"
+
+[annotations."0d72:6b96"]
+comment = "Commit allocation, restore the far continuation, and RETF to it; net SP points at allocated locals."
+
+[annotations."0d72:6b9b"]
+comment = "Check low word of far overflow-handler pointer DS:[078Eh]; FFFFh is the absent-handler sentinel. AX is overwritten here."
+label = "dispatch_stack_overflow"
+memory = "[ds unknown]"
+
+[annotations."0d72:6b9f"]
+jmp = "'invoke_stack_overflow_handler@9"
+
+[annotations."0d72:6ba1"]
+comment = "No handler installed: select error code 0 and enter the default diagnostic/termination path."
+
+[annotations."0d72:6ba3"]
+jmp = "'default_stack_overflow_error@10"
+
+[annotations."0d72:6ba6"]
+comment = "Push the far continuation and jump through DS:[078Eh]; recovery behavior depends on the installed handler."
+label = "invoke_stack_overflow_handler"
+
+[annotations."0d72:6ba8"]
+jmp = "unknown:mem"
+memory = "[ds unknown]"
+
+[annotations."0d72:6d29"]
+comment = "Save error code 0 across diagnostic-prefix helper 6ecc, then pass it to diagnostic output routine 6f1b."
+label = "default_stack_overflow_error"
+
+[annotations."0d72:6d2a"]
+jmp = "0d72:6ecc"
+
+[annotations."0d72:6d2f"]
+jmp = "0d72:6f1b"
+
+[annotations."0d72:6d34"]
+comment = "Pass 00FFh to indirect runtime termination entry at CS:word DS:[0798h]; PUSH CS + near indirect CALL supplies a far return frame. Expected not to return."
+
+[annotations."0d72:6d39"]
+jmp = "unknown:mem"
+memory = "[ds unknown]"
+
+[annotations."0d72:6d3d"]
+comment = "Apparent post-termination fallthrough is not reliable code for this function; independently decoded function 6d3e begins with PUSH SI / XOR SI,SI."
+memory = "[ss unknown]"
+
+[annotations."0d72:6d4a"]
+jmp = "'11"
+
+[annotations."0d72:6d4f"]
+jmp = "'14"
+
+[annotations."0d72:6d51"]
+jmp = "0d72:6ecc"
+
+[annotations."0d72:6d5a"]
+jmp = "0d72:6f1b"

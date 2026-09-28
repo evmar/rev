@@ -1,0 +1,58 @@
+ip = "0823:0a97"
+len = 9
+name = "swap_memory_with_ems"
+desc = "Swaps a block of conventional memory with EMS expanded memory pages"
+details = "Checks whether EMS paging is active via the flag at cs:[1CBh]. If enabled, it saves the current EMS page map state, iterates through each EMS logical page, maps it into the page frame at cs:[9Ch], and exchanges the 16KB block word-by-word with conventional memory starting at segment cs:[9]. Afterwards, it restores the previous EMS page map state and returns."
+blocks = ["0823:0a2f", "0823:0a53", "0823:0a63", "0823:0a78", "0823:0a8a", "0823:0a97", "0823:0a9f"]
+
+[annotations."0823:0a2f"]
+label = "do_ems_swap"
+
+[annotations."0823:0a37"]
+comment = "EMS fn 47h: Save EMS page map context for handle in DX"
+
+[annotations."0823:0a39"]
+memory = "0823:009e"
+
+[annotations."0823:0a47"]
+comment = "DS = base segment of conventional memory buffer"
+memory = "0823:0009"
+
+[annotations."0823:0a4d"]
+comment = "ES = EMS physical page 0 frame segment"
+memory = "0823:009c"
+
+[annotations."0823:0a53"]
+label = "page_loop"
+memory = "0823:009e"
+
+[annotations."0823:0a58"]
+comment = "EMS fn 44h: Map logical page BX into physical page 0"
+
+[annotations."0823:0a63"]
+comment = "Swap 16-bit word between EMS page (ES:DI) and buffer (DS:SI)"
+label = "word_swap_loop"
+memory = "[es unknown]"
+
+[annotations."0823:0a76"]
+jmp = "'word_swap_loop@2"
+
+[annotations."0823:0a78"]
+comment = "Advance DS by 16KB (400h paragraphs) for next page"
+
+[annotations."0823:0a83"]
+comment = "Check if all EMS pages (count at cs:[9Ah]) have been processed"
+memory = "0823:009a"
+
+[annotations."0823:0a88"]
+jmp = "'page_loop@1"
+
+[annotations."0823:0a8a"]
+comment = "EMS fn 48h: Restore EMS page map context for handle in DX"
+
+[annotations."0823:0a97"]
+comment = "Check EMS enabled/active flag"
+memory = "0823:01cb"
+
+[annotations."0823:0a9d"]
+jmp = "'do_ems_swap@0"

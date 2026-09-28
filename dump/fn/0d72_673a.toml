@@ -1,7 +1,5 @@
 ip = "0d72:673a"
 len = 31
-callers = ["report_fatal_error_and_exit@0d72:4bac", "report_fatal_error_and_exit@0d72:4bac", "report_fatal_error_and_exit@0d72:4bac", "report_fatal_error_and_exit@0d72:4bac", "report_fatal_error_and_exit@0d72:4bac"]
-callees = ["0d72:676b", "0d72:67ff"]
 
 ---
 0d72:673a mov ax,0

@@ -54,7 +54,7 @@ fn cmd_read(db: &mut DB, ReadArgs { addr_or_name }: ReadArgs) -> anyhow::Result<
         anyhow::bail!("unknown function {addr_or_name:?}")
     };
     let mut buf = String::new();
-    func.serialize(&mut buf)?;
+    func.to_plain_text(&mut buf)?;
     print!("{}", buf);
     Ok(())
 }

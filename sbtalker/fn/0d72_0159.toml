@@ -1,0 +1,94 @@
+ip = "0d72:0159"
+len = 43
+name = "match_repeatable_class_10_context"
+desc = "Matches a repeatable pronunciation-rule context class identified by character-property bit 0x10."
+details = "Tests the current input byte through the character-property table at CS:4A9C. On a match it increments the caller's shared match count and advances SI by the signed scan stride; if the adjacent byte is in the same class and the next encoded rule token has property bit 0x01, it returns to the shared dispatcher to consume another byte, otherwise it records DI as the context backtracking marker."
+blocks = ["0d72:0140", "0d72:0159", "0d72:0162", "0d72:0173", "0d72:0180", "0d72:0183"]
+
+[[params]]
+name = "input_cursor"
+value = "si"
+type = "*mut u8"
+desc = "Near pointer to the current input byte; advanced by scan_stride for each matching class-0x10 byte."
+
+[[params]]
+name = "rule_cursor"
+value = "di"
+type = "*const u8"
+desc = "Near code-segment pointer to the active encoded context token; may be saved as the backtracking marker."
+
+[[params]]
+name = "current_byte"
+value = "bl"
+type = "u8"
+desc = "Current input byte supplied by the shared context-operator dispatcher."
+
+[[params]]
+name = "adjacent_byte"
+value = "ch"
+type = "u8"
+desc = "Input byte one scan_stride beyond the current byte."
+
+[[params]]
+name = "scan_stride"
+value = "[bp+0Ch]"
+type = "i16"
+desc = "Signed input direction, normally -1 for left context or +1 for right context."
+
+[annotations."0d72:0140"]
+memory = "[ds unknown]"
+
+[annotations."0d72:0142"]
+memory = "[ss unknown]"
+
+[annotations."0d72:0145"]
+memory = "[ds unknown]"
+
+[annotations."0d72:0147"]
+memory = "[ss unknown]"
+
+[annotations."0d72:0150"]
+memory = "[bx unknown]"
+
+[annotations."0d72:0157"]
+jmp = "unknown:reg"
+
+[annotations."0d72:0159"]
+comment = "Reject unless the current input byte has character-property bit 0x10."
+memory = "[bx unknown]"
+
+[annotations."0d72:0160"]
+jmp = "'return_to_rule_matcher@5"
+
+[annotations."0d72:0162"]
+comment = "Count this match and advance the input cursor in the active context-scan direction."
+memory = "[ss unknown]"
+
+[annotations."0d72:0165"]
+memory = "[ss unknown]"
+
+[annotations."0d72:0168"]
+comment = "Stop after one byte unless the adjacent input byte also belongs to class 0x10."
+
+[annotations."0d72:016a"]
+memory = "[bx unknown]"
+
+[annotations."0d72:0171"]
+jmp = "'return_to_rule_matcher@5"
+
+[annotations."0d72:0173"]
+comment = "If the next encoded rule token has property bit 0x01, redispatch this operator to greedily consume another class member."
+memory = "[di unknown]"
+
+[annotations."0d72:0177"]
+memory = "[bx unknown]"
+
+[annotations."0d72:017e"]
+jmp = "'0"
+
+[annotations."0d72:0180"]
+comment = "Save the current rule cursor as the caller's context backtracking marker."
+memory = "[ss unknown]"
+
+[annotations."0d72:0183"]
+label = "return_to_rule_matcher"

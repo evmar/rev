@@ -3,7 +3,6 @@ len = 43
 name = "match_repeatable_class_10_context"
 desc = "Matches a repeatable pronunciation-rule context class identified by character-property bit 0x10."
 details = "Tests the current input byte through the character-property table at CS:4A9C. On a match it increments the caller's shared match count and advances SI by the signed scan stride; if the adjacent byte is in the same class and the next encoded rule token has property bit 0x01, it returns to the shared dispatcher to consume another byte, otherwise it records DI as the context backtracking marker."
-callees = ["unknown:reg"]
 
 [[params]]
 name = "input_cursor"

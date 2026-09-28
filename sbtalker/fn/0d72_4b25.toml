@@ -1,0 +1,108 @@
+ip = "0d72:4b25"
+len = 135
+name = "write_stdout_u16_field"
+desc = "Format an unsigned 16-bit value in the selected radix and write a five-character field to stdout."
+details = "Copies a six-byte template from DS:20C7h when the radix word at DS:04EAh is 16, or DS:20CDh otherwise, into the shared buffer at DS:04ECh; the observed caller selects radix 10 or 16. For five positions from right to left, a nonzero value is divided unsigned by the radix, its remainder becomes an ASCII digit (uppercase A-F for hexadecimal), and the quotient replaces the stack-local argument; once zero, remaining positions retain their template bytes, so an input of zero prints the unchanged template field (exact padding/template contents are not established by this disassembly). Writes exactly five bytes from DS:04ECh through write_stdout_near_buffer, forwarding the hidden parent-frame argument, then RET 4 removes both argument words; no semantic return value is established, and the shared buffer makes this routine non-reentrant."
+blocks = ["0d72:4b25", "0d72:4b33", "0d72:4b41", "0d72:4b4d", "0d72:4b52", "0d72:4b58", "0d72:4b74", "0d72:4b83", "0d72:4b8f", "0d72:4b98"]
+
+[[params]]
+name = "parent_frame"
+value = "[sp+2]"
+type = "u16"
+desc = "Hidden static link / parent BP, forwarded to the output wrapper; [bp+4] after the prologue."
+
+[[params]]
+name = "value"
+value = "[sp+4]"
+type = "u16"
+desc = "Unsigned number to format; [bp+6] after the prologue, repeatedly overwritten with its quotient."
+
+[[params]]
+name = "data_segment"
+value = "ds"
+type = "u16"
+desc = "Segment containing radix at 04EAh, six-byte output buffer at 04ECh, and templates at 20C7h / 20CDh."
+
+[annotations."0d72:4b2c"]
+comment = "Select initial field template using global radix DS:04EAh (observed values: 10 and 16)."
+memory = "[ds unknown]"
+
+[annotations."0d72:4b31"]
+jmp = "'copy_nonhex_template@2"
+
+[annotations."0d72:4b33"]
+comment = "Copy six bytes from DS:20C7h to DS:04ECh for hexadecimal; ES becomes DS and DF is cleared."
+
+[annotations."0d72:4b3f"]
+jmp = "'initialize_digit_count@3"
+
+[annotations."0d72:4b41"]
+comment = "Copy six bytes from DS:20CDh to DS:04ECh for other radices (caller uses decimal). Template contents are not visible here."
+label = "copy_nonhex_template"
+
+[annotations."0d72:4b4d"]
+comment = "Process five character positions, from buffer[4] down to buffer[0]; sixth copied byte is not printed."
+label = "initialize_digit_count"
+memory = "[ss unknown]"
+
+[annotations."0d72:4b52"]
+comment = "If the remaining value is zero, retain this position's template byte; all five positions are still visited."
+label = "format_next_position"
+memory = "[ss unknown]"
+
+[annotations."0d72:4b56"]
+jmp = "'advance_position@8"
+
+[annotations."0d72:4b58"]
+comment = "Unsigned remainder = value % radix; store low byte of remainder + '0' at DS:[04EBh + position]."
+memory = "[ss unknown]"
+
+[annotations."0d72:4b5b"]
+memory = "[ss unknown]"
+
+[annotations."0d72:4b69"]
+memory = "[ds unknown]"
+
+[annotations."0d72:4b6d"]
+comment = "For digit bytes above '9', add 7 to obtain uppercase 'A' through 'F' in radix 16."
+memory = "[ds unknown]"
+
+[annotations."0d72:4b72"]
+jmp = "'advance_quotient@7"
+
+[annotations."0d72:4b74"]
+memory = "[ds unknown]"
+
+[annotations."0d72:4b7f"]
+memory = "[ds unknown]"
+
+[annotations."0d72:4b83"]
+comment = "Recompute unsigned quotient value / radix and store it back into this function's stack argument."
+label = "advance_quotient"
+memory = "[ss unknown]"
+
+[annotations."0d72:4b8c"]
+memory = "[ss unknown]"
+
+[annotations."0d72:4b8f"]
+comment = "Move left one character; finish after exactly five positions."
+label = "advance_position"
+memory = "[ss unknown]"
+
+[annotations."0d72:4b93"]
+memory = "[ss unknown]"
+
+[annotations."0d72:4b96"]
+jmp = "'format_next_position@4"
+
+[annotations."0d72:4b98"]
+comment = "Write exactly five bytes at DS:04ECh to stdout, forwarding the hidden parent-frame word; no newline is added here."
+
+[annotations."0d72:4ba0"]
+memory = "[ss unknown]"
+
+[annotations."0d72:4ba3"]
+jmp = "write_stdout_near_buffer@0d72:4b0c"
+
+[annotations."0d72:4ba9"]
+comment = "Near return with callee cleanup of the hidden parent-frame word and unsigned value (4 bytes)."

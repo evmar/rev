@@ -1,6 +1,5 @@
 ip = "0d72:6ef0"
 len = 43
-callers = ["0d72:6f1b"]
 
 ---
 0d72:6ef0 push bp

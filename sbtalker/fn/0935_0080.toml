@@ -1,0 +1,179 @@
+ip = "0935:0080"
+len = 199
+name = "bst_find_value"
+desc = "Searches a binary search tree for a given string key and returns the associated far pointer value."
+details = "Traverses a binary search tree rooted at ds:[0044h] comparing each node's string key against the input key. If a match is found, returns the 32-bit far pointer stored in the node (+04h); otherwise returns NULL."
+blocks = ["0935:0080", "0935:00a8", "0935:00a9", "0935:00b1", "0935:00b4", "0935:00ba", "0935:00bd", "0935:00ea", "0935:0102", "0935:0114", "0935:0127", "0935:0138", "0935:013b"]
+
+[[params]]
+name = "key"
+value = "[bp+4]"
+type = "*const u8"
+desc = "Near pointer to key string to find"
+
+[ret]
+name = "result"
+value = "dx:ax"
+type = "*const u8"
+desc = "Far pointer to value stored in node, or NULL if not found"
+
+[annotations."0935:0087"]
+comment = "initialize return value to NULL"
+memory = "[ss unknown]"
+
+[annotations."0935:008c"]
+comment = "load root pointer of binary search tree from ds:[0044h]"
+memory = "[ds unknown]"
+
+[annotations."0935:008f"]
+memory = "[ds unknown]"
+
+[annotations."0935:0093"]
+memory = "[ss unknown]"
+
+[annotations."0935:0096"]
+memory = "[ss unknown]"
+
+[annotations."0935:0099"]
+memory = "[ss unknown]"
+
+[annotations."0935:009c"]
+comment = "check that key string length is less than 33 bytes"
+memory = "[ds unknown]"
+
+[annotations."0935:00a6"]
+jmp = "'check_flag@2"
+
+[annotations."0935:00a9"]
+comment = "validate against tree lookup enable flag in ds:[0042h]"
+label = "check_flag"
+memory = "[ds unknown]"
+
+[annotations."0935:00af"]
+jmp = "'traverse_loop@4"
+
+[annotations."0935:00b1"]
+jmp = "'exit@12"
+
+[annotations."0935:00b4"]
+comment = "check if current node pointer is NULL"
+label = "traverse_loop"
+memory = "[ss unknown]"
+
+[annotations."0935:00b8"]
+jmp = "'inspect_node@6"
+
+[annotations."0935:00ba"]
+jmp = "'exit@12"
+
+[annotations."0935:00bd"]
+label = "inspect_node"
+
+[annotations."0935:00c0"]
+comment = "load pointer to node's key string"
+
+[annotations."0935:00c3"]
+memory = "[ss unknown]"
+
+[annotations."0935:00c6"]
+memory = "[ss unknown]"
+
+[annotations."0935:00cb"]
+memory = "[ss unknown]"
+
+[annotations."0935:00d3"]
+comment = "copy node key to stack buffer"
+jmp = "pascal_string_copy_bounded@0d72:538c"
+
+[annotations."0935:00d8"]
+memory = "[ss unknown]"
+
+[annotations."0935:00de"]
+memory = "[ss unknown]"
+
+[annotations."0935:00e1"]
+comment = "test if keys match"
+jmp = "pascal_string_equal@0d72:5570"
+
+[annotations."0935:00e8"]
+jmp = "'compare_key@8"
+
+[annotations."0935:00ea"]
+comment = "match found: retrieve node value from offset +04h"
+
+[annotations."0935:00ed"]
+memory = "[es unknown]"
+
+[annotations."0935:00f1"]
+memory = "[es unknown]"
+
+[annotations."0935:00f5"]
+memory = "[ss unknown]"
+
+[annotations."0935:00f8"]
+memory = "[ss unknown]"
+
+[annotations."0935:00fb"]
+memory = "[ss unknown]"
+
+[annotations."0935:0100"]
+jmp = "'next_node@11"
+
+[annotations."0935:0102"]
+label = "compare_key"
+memory = "[ss unknown]"
+
+[annotations."0935:0108"]
+memory = "[ss unknown]"
+
+[annotations."0935:010b"]
+comment = "compare search key against node key to determine branch"
+jmp = "pascal_string_less_than@0d72:5615"
+
+[annotations."0935:0112"]
+jmp = "'traverse_left@10"
+
+[annotations."0935:0114"]
+comment = "traverse to right/greater child at offset +0Ch"
+
+[annotations."0935:0117"]
+memory = "[es unknown]"
+
+[annotations."0935:011b"]
+memory = "[es unknown]"
+
+[annotations."0935:011f"]
+memory = "[ss unknown]"
+
+[annotations."0935:0122"]
+memory = "[ss unknown]"
+
+[annotations."0935:0125"]
+jmp = "'next_node@11"
+
+[annotations."0935:0127"]
+comment = "traverse to left/lesser child at offset +08h"
+label = "traverse_left"
+
+[annotations."0935:012a"]
+memory = "[es unknown]"
+
+[annotations."0935:012e"]
+memory = "[es unknown]"
+
+[annotations."0935:0132"]
+memory = "[ss unknown]"
+
+[annotations."0935:0135"]
+memory = "[ss unknown]"
+
+[annotations."0935:0138"]
+label = "next_node"
+jmp = "'traverse_loop@4"
+
+[annotations."0935:013b"]
+label = "exit"
+memory = "[ss unknown]"
+
+[annotations."0935:013e"]
+memory = "[ss unknown]"

@@ -1,0 +1,64 @@
+ip = "0823:0b87"
+len = 43
+name = "parse_cmdline_d_switch"
+desc = "Parses a command-line string to locate the '/D' switch and extracts up to an 8-character argument immediately following it into an internal buffer."
+details = "Searches the string referenced by ES:DI for the forward slash ('/') character across CX bytes using REPNE SCASB. When found, it inspects the subsequent character to check if it matches 'D'. If matched, it reads up to 8 characters following '/D' until it encounters another '/' switch character or runs out of input characters, copying each character into a buffer located at CS:01AAh."
+blocks = ["0823:0b87", "0823:0b8a", "0823:0b90", "0823:0b95", "0823:0b9b", "0823:0b9d", "0823:0ba4", "0823:0baf"]
+
+[[params]]
+name = "cmdline_ptr"
+value = "es:di"
+type = "*const u8"
+desc = "Pointer to the input string to scan"
+
+[[params]]
+name = "cmdline_len"
+value = "cx"
+type = "u16"
+desc = "Length of the input string"
+
+[annotations."0823:0b87"]
+comment = "Save registers and ensure forward string traversal"
+
+[annotations."0823:0b8a"]
+comment = "Scan for next '/' character"
+label = "scan_for_slash"
+
+[annotations."0823:0b8e"]
+comment = "If end of string reached without finding switch, exit"
+jmp = "'exit@7"
+
+[annotations."0823:0b90"]
+comment = "Check if character immediately following '/' is 'D'"
+memory = "[ds unknown]"
+
+[annotations."0823:0b93"]
+jmp = "'scan_for_slash@1"
+
+[annotations."0823:0b95"]
+comment = "Initialize destination buffer pointer and maximum argument length of 8 bytes"
+
+[annotations."0823:0b9b"]
+comment = "Check remaining string length"
+label = "copy_loop"
+jmp = "'exit@7"
+
+[annotations."0823:0b9d"]
+comment = "Read next character; stop if another '/' switch is encountered"
+
+[annotations."0823:0b9e"]
+memory = "[ds unknown]"
+
+[annotations."0823:0ba2"]
+jmp = "'exit@7"
+
+[annotations."0823:0ba4"]
+comment = "Store character into CS:01AAh buffer and loop until 8 characters copied or CX is exhausted"
+memory = "[bx unknown]"
+
+[annotations."0823:0bad"]
+jmp = "'copy_loop@4"
+
+[annotations."0823:0baf"]
+comment = "Restore registers and return"
+label = "exit"

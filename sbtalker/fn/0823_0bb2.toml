@@ -1,0 +1,69 @@
+ip = "0823:0bb2"
+len = 53
+name = "parse_cmdline_p_switch"
+desc = "Searches an input string for the switch '/P' followed by a 4-digit hexadecimal value and stores the result."
+details = "Scans the input buffer pointed to by ES:DI for the switch '/P'. If located, it parses the next 4 hexadecimal digits into a 16-bit word using an external digit parser and stores the result at CS:[01B2h]. If the switch is not found or an invalid hex digit is encountered, 0 is stored instead."
+blocks = ["0823:0bb2", "0823:0bb7", "0823:0bbd", "0823:0bc2", "0823:0bcb", "0823:0bd6", "0823:0bdd", "0823:0bdf"]
+
+[[params]]
+name = "cmdline"
+value = "es:di"
+type = "char*"
+desc = "Pointer to the command line buffer to scan"
+
+[[params]]
+name = "len"
+value = "cx"
+type = "u16"
+desc = "Length of the command line buffer in bytes"
+
+[ret]
+name = "value"
+value = "bx"
+type = "u16"
+desc = "Parsed 16-bit hexadecimal value (also written to CS:[01B2h]), or 0 on failure"
+
+[annotations."0823:0bb2"]
+comment = "Save registers, clear direction flag, and initialize result to 0"
+
+[annotations."0823:0bb7"]
+comment = "Scan input string for '/' character; exit if end of buffer is reached"
+label = "scan_slash"
+
+[annotations."0823:0bbb"]
+jmp = "'done@7"
+
+[annotations."0823:0bbd"]
+comment = "Check if character following '/' is 'P'; continue scanning if not"
+memory = "[ds unknown]"
+
+[annotations."0823:0bc0"]
+jmp = "'scan_slash@1"
+
+[annotations."0823:0bc2"]
+comment = "Skip 'P' and set up loop counter to parse 4 hexadecimal digits"
+
+[annotations."0823:0bcb"]
+comment = "Fetch next character and convert hex ASCII to numeric value; abort on error"
+label = "parse_digit_loop"
+memory = "[ds unknown]"
+
+[annotations."0823:0bce"]
+jmp = "parse_hex_digit@0823:0b6a"
+
+[annotations."0823:0bd4"]
+jmp = "'done@7"
+
+[annotations."0823:0bd6"]
+comment = "Shift current 16-bit value left by 4 bits and accumulate new nibble"
+
+[annotations."0823:0bdb"]
+jmp = "'parse_digit_loop@4"
+
+[annotations."0823:0bdd"]
+jmp = "'done@7"
+
+[annotations."0823:0bdf"]
+comment = "Store the parsed 16-bit result into CS:[01B2h], restore registers, and return"
+label = "done"
+memory = "0823:01b2"

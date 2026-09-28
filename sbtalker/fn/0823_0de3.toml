@@ -1,0 +1,75 @@
+ip = "0823:0de3"
+len = 73
+name = "expand_memory_block"
+desc = "Expands the heap or DOS memory block by a requested byte size."
+details = "Converts the requested byte size into paragraphs and attempts to resize the DOS memory block using INT 21h Function 4Ah, or delegates to an installed memory hook if present. On success, it updates internal memory tracking structures and returns a far pointer to the memory; on failure, it returns NULL (DX:AX = 0)."
+blocks = ["0823:0de3", "0823:0dfb", "0823:0e0c", "0823:0e11", "0823:0e13", "0823:0e19", "0823:0e26"]
+
+[[params]]
+name = "size_bytes"
+value = "[bp+6]"
+type = "u16"
+desc = "Additional memory size requested in bytes"
+
+[ret]
+name = "ptr"
+value = "dx:ax"
+type = "*mut u8"
+desc = "Far pointer to allocated memory block or NULL (0:0) on failure"
+
+[annotations."0823:0de3"]
+comment = "Set up stack frame"
+
+[annotations."0823:0de6"]
+comment = "Convert requested byte size into paragraphs (round up and divide by 16)"
+memory = "[ss unknown]"
+
+[annotations."0823:0df0"]
+comment = "Check if a custom memory management callback hook is set"
+memory = "0823:0dbd"
+
+[annotations."0823:0df4"]
+memory = "0823:0dbb"
+
+[annotations."0823:0df9"]
+jmp = "'call_hook@2"
+
+[annotations."0823:0dfb"]
+comment = "Add existing size and resize block via DOS AH=4Ah (SETBLOCK)"
+memory = "0823:0090"
+
+[annotations."0823:0e00"]
+memory = "0823:008e"
+
+[annotations."0823:0e0a"]
+jmp = "'check_status@3"
+
+[annotations."0823:0e0c"]
+comment = "Invoke the custom allocation/resize hook"
+label = "call_hook"
+jmp = "unknown:mem[0823:0000]=0"
+memory = "0823:0dbb"
+
+[annotations."0823:0e11"]
+comment = "Check carry flag (DOS error flag)"
+label = "check_status"
+jmp = "'alloc_success@5"
+
+[annotations."0823:0e13"]
+comment = "Return NULL (0:0) on failure"
+label = "alloc_failed"
+
+[annotations."0823:0e17"]
+jmp = "'exit@6"
+
+[annotations."0823:0e19"]
+comment = "Success handler: update internal tracking and return pointer"
+label = "alloc_success"
+memory = "0823:00a9"
+
+[annotations."0823:0e20"]
+jmp = "init_mcb_bounds@0823:0dc7"
+
+[annotations."0823:0e26"]
+comment = "Restore stack frame and far return"
+label = "exit"

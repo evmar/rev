@@ -1,0 +1,75 @@
+ip = "0d72:01c7"
+len = 40
+name = "match_class_04_context_with_h_digraph"
+desc = "Matches character-property class 0x04, treating CH, SH, and TH as two-byte units."
+details = "Tests the current input byte via the character-property table at CS:4A9C. When the current byte is H and the adjacent byte in the scan direction is C, S, or T, it consumes two bytes; otherwise a class-bit 0x04 match consumes one byte. Each successful match increments the shared context-match count."
+blocks = ["0d72:01c7", "0d72:01cc", "0d72:01d2", "0d72:01d6", "0d72:01da", "0d72:01e1", "0d72:01ea", "0d72:01ee"]
+
+[[params]]
+name = "current_char"
+value = "cl"
+type = "u8"
+desc = "Current input byte being tested."
+
+[[params]]
+name = "adjacent_char"
+value = "ch"
+type = "u8"
+desc = "Byte one scan step from the current input position."
+
+[[params]]
+name = "char_table_index"
+value = "bx"
+type = "u16"
+desc = "Zero-extended current byte, used to index the character-property table."
+
+[[params]]
+name = "input_cursor"
+value = "si"
+type = "*mut u8"
+desc = "Current near input pointer; decremented by one or two bytes on a match."
+
+[[params]]
+name = "match_count"
+value = "[bp+3]"
+type = "u8"
+desc = "Shared caller-frame context-match count, incremented on success."
+
+[annotations."0d72:01c7"]
+comment = "Special-case H preceded in the active scan direction by C, S, or T."
+
+[annotations."0d72:01ca"]
+jmp = "'test_class_bit@5"
+
+[annotations."0d72:01d0"]
+jmp = "'match_h_digraph@4"
+
+[annotations."0d72:01d4"]
+jmp = "'match_h_digraph@4"
+
+[annotations."0d72:01d8"]
+jmp = "'return_to_context_matcher@7"
+
+[annotations."0d72:01da"]
+comment = "Consume the two-byte CH/SH/TH unit and record one successful context match."
+label = "match_h_digraph"
+
+[annotations."0d72:01dd"]
+memory = "[ss unknown]"
+
+[annotations."0d72:01e1"]
+comment = "Otherwise test character-property bit 0x04 for the current byte."
+label = "test_class_bit"
+memory = "[bx unknown]"
+
+[annotations."0d72:01e8"]
+jmp = "'return_to_context_matcher@7"
+
+[annotations."0d72:01ea"]
+comment = "Consume one matching byte and record the successful context match."
+
+[annotations."0d72:01eb"]
+memory = "[ss unknown]"
+
+[annotations."0d72:01ee"]
+label = "return_to_context_matcher"

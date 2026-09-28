@@ -1,0 +1,94 @@
+ip = "0d72:64c8"
+len = 2204
+name = "checked_stack_frame_prologue_3"
+desc = "Establish BP frame and reserve AX bytes on stack with stack overflow checking."
+details = "Invoked via near CALL in function prologues (e.g. set_union_into_buffer). Pops the return offset into CX, sets up BP frame (push bp; mov bp, sp), then checks if allocating AX bytes (sp - ax) would cause borrow or drop below the stack limit at ds:[0792h]. If safe, updates SP and jumps back to CX. Otherwise, pushes CS:CX and jumps to the far stack-check/overflow handler at 0d72:6b88."
+blocks = ["0d72:64c8", "0d72:64d2", "0d72:64d8", "0d72:64dc", "0d72:6b88", "0d72:6b90", "0d72:6b96", "0d72:6b9b", "0d72:6ba1", "0d72:6ba6", "0d72:6d29", "0d72:6d47", "0d72:6d4c", "0d72:6d51", "0d72:6d62"]
+
+[[params]]
+name = "local_size"
+value = "ax"
+type = "u16"
+desc = "Number of bytes of local stack space to reserve"
+
+[annotations."0d72:64c8"]
+comment = "pop return offset into CX"
+
+[annotations."0d72:64c9"]
+comment = "set up standard stack frame"
+
+[annotations."0d72:64cc"]
+comment = "check candidate SP (sp - ax)"
+
+[annotations."0d72:64d0"]
+comment = "jump if underflow/borrow"
+jmp = "'handle_stack_overflow@3"
+
+[annotations."0d72:64d2"]
+comment = "check against stack limit"
+memory = "[ds unknown]"
+
+[annotations."0d72:64d6"]
+comment = "jump if candidate SP < ds:[0792h]"
+jmp = "'handle_stack_overflow@3"
+
+[annotations."0d72:64d8"]
+comment = "allocate stack space for local variables"
+
+[annotations."0d72:64da"]
+comment = "return to caller via CX"
+jmp = "unknown:reg"
+
+[annotations."0d72:64dc"]
+comment = "stack limit exceeded: push far return address and jump to handler"
+label = "handle_stack_overflow"
+
+[annotations."0d72:64de"]
+jmp = "'4"
+
+[annotations."0d72:6b8e"]
+jmp = "'7"
+
+[annotations."0d72:6b90"]
+memory = "[ds unknown]"
+
+[annotations."0d72:6b94"]
+jmp = "'7"
+
+[annotations."0d72:6b9b"]
+memory = "[ds unknown]"
+
+[annotations."0d72:6b9f"]
+jmp = "'9"
+
+[annotations."0d72:6ba3"]
+jmp = "'10"
+
+[annotations."0d72:6ba8"]
+jmp = "unknown:mem"
+memory = "[ds unknown]"
+
+[annotations."0d72:6d2a"]
+jmp = "0d72:6ecc"
+
+[annotations."0d72:6d2f"]
+jmp = "0d72:6f1b"
+
+[annotations."0d72:6d39"]
+jmp = "unknown:mem"
+memory = "[ds unknown]"
+
+[annotations."0d72:6d3d"]
+memory = "[ss unknown]"
+
+[annotations."0d72:6d4a"]
+jmp = "'11"
+
+[annotations."0d72:6d4f"]
+jmp = "'14"
+
+[annotations."0d72:6d51"]
+jmp = "0d72:6ecc"
+
+[annotations."0d72:6d5a"]
+jmp = "0d72:6f1b"

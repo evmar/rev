@@ -1,33 +1,12 @@
 ip = "0d72:6f1b"
 len = 43
-callers = ["checked_stack_frame_prologue@0d72:5c2a", "checked_stack_frame_prologue@0d72:5c2a", "checked_stack_frame_prologue_copy@0d72:5ffd", "checked_stack_frame_prologue_copy@0d72:5ffd", "checked_stack_frame_prologue_3@0d72:64c8", "checked_stack_frame_prologue_3@0d72:64c8", "0d72:676b", "0d72:676b", "0d72:6b88", "0d72:6b88", "0d72:6d3e", "0d72:6ecc", "0d72:6ecc"]
-callees = ["0d72:6ef0"]
+blocks = ["0d72:6f1b", "0d72:6f2b", "0d72:6f3f"]
 
----
-0d72:6f1b push bp
-0d72:6f1c mov bp,sp
-0d72:6f1e push di
-@mem ; [ss unknown]
-0d72:6f1f push word ptr [bp+6]
-@jmp 0d72:6ef0
-0d72:6f22 call far ptr 0D72h:6EF0h
-0d72:6f27 or ax,ax
-@jmp '2
-0d72:6f29 je short 6F3Fh
+[annotations."0d72:6f1f"]
+memory = "[ss unknown]"
 
-0d72:6f2b xchg dx,ax
-0d72:6f2c mov di,dx
-0d72:6f2e xor ax,ax
-0d72:6f30 mov cx,0FFFFh
-0d72:6f33 repne scasb
-0d72:6f35 not cx
-0d72:6f37 dec cx
-0d72:6f38 mov bx,2
-0d72:6f3b mov ah,40h
-0d72:6f3d int 21h
+[annotations."0d72:6f22"]
+jmp = "0d72:6ef0"
 
-0d72:6f3f pop di
-0d72:6f40 mov sp,bp
-0d72:6f42 pop bp
-0d72:6f43 retf 2
-
+[annotations."0d72:6f29"]
+jmp = "'2"

@@ -1,7 +1,5 @@
 ip = "0d72:6eb3"
 len = 19
-callers = ["0d72:6e28", "0d72:6e28", "0d72:6e28", "0d72:6e28"]
-callees = ["unknown:mem"]
 
 ---
 0d72:6eb3 cmp si,di

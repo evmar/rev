@@ -1,0 +1,22 @@
+ip = "0823:0b3c"
+len = 24
+name = "init_callback_ptr"
+desc = "Initializes a callback/handler pointer and copies a state variable"
+details = "Stores the far address 0823:0AE2 into code-segment variables at cs:[01D2h] and cs:[01D4h]. It then copies the 16-bit word located at cs:[01B2h] into cs:[01D6h]."
+blocks = ["0823:0b3c"]
+
+[annotations."0823:0b3c"]
+comment = "Set up far pointer at cs:[01D2h] pointing to 0823:0AE2h"
+
+[annotations."0823:0b42"]
+memory = "0823:01d2"
+
+[annotations."0823:0b47"]
+memory = "0823:01d4"
+
+[annotations."0823:0b4b"]
+comment = "Copy word from cs:[01B2h] to cs:[01D6h]"
+memory = "0823:01b2"
+
+[annotations."0823:0b4f"]
+memory = "0823:01d6"

@@ -1,0 +1,1149 @@
+ip = "0935:23ed"
+len = 2047
+name = "parse_argument_switches"
+desc = "Parses a command-line argument, file specification, and option switches"
+details = "This function parses an input command-line or argument token stream. It handles delimiter characters including comma (','), hyphen/minus ('-'), switch slash ('/'), dot/extension ('.'), and quotes ('''), validating syntax against sets of allowed characters, processing sub-options, and displaying diagnostic or error messages via a central output routine."
+blocks = ["0935:23ed", "0935:240b", "0935:240e", "0935:2437", "0935:243e", "0935:2441", "0935:2457", "0935:2477", "0935:24c5", "0935:24c8", "0935:24cb", "0935:24e3", "0935:24e6", "0935:2535", "0935:2550", "0935:2553", "0935:255a", "0935:2579", "0935:257c", "0935:258f", "0935:2596", "0935:25b5", "0935:25c8", "0935:25e0", "0935:25fb", "0935:2602", "0935:2619", "0935:2632", "0935:2639", "0935:2647", "0935:265d", "0935:267d", "0935:2682", "0935:2689", "0935:2690", "0935:26b8", "0935:26ce", "0935:26d5", "0935:26d8", "0935:26ee", "0935:26f1", "0935:2711", "0935:2714", "0935:276d", "0935:2774", "0935:277b", "0935:2780", "0935:2799", "0935:27a0", "0935:27a3", "0935:27b9", "0935:27bc", "0935:27dc", "0935:27df", "0935:280a", "0935:283a", "0935:284e", "0935:2851", "0935:288e", "0935:28ae", "0935:28d0", "0935:28d3", "0935:28fd", "0935:291d", "0935:2941", "0935:295f", "0935:2966", "0935:29aa", "0935:29c8", "0935:29cf", "0935:29d2", "0935:29e8", "0935:29eb", "0935:2a0b", "0935:2a0e", "0935:2a39", "0935:2a3c", "0935:2a5c", "0935:2a5f", "0935:2ac4", "0935:2ae2", "0935:2ae4", "0935:2b1a", "0935:2b26", "0935:2b29", "0935:2b3f", "0935:2b42", "0935:2b62", "0935:2b65", "0935:2ba6", "0935:2bc8", "0935:2be6"]
+
+[[params]]
+name = "ctx"
+value = "[bp+4]"
+type = "*mut u8"
+desc = "Pointer to parser context or argument token structure"
+
+[annotations."0935:23f0"]
+comment = "Allocate local string buffers on stack"
+
+[annotations."0935:23f4"]
+comment = "Initialize parser state flags"
+memory = "[ds unknown]"
+
+[annotations."0935:23f9"]
+memory = "[ds unknown]"
+
+[annotations."0935:23fe"]
+memory = "[ds unknown]"
+
+[annotations."0935:2404"]
+comment = "Pre-check or skip whitespace/delimiters"
+jmp = "parse_date_or_time@0935:21f1"
+
+[annotations."0935:2409"]
+jmp = "'start_parse@2"
+
+[annotations."0935:240b"]
+jmp = "'exit@91"
+
+[annotations."0935:240e"]
+label = "start_parse"
+memory = "[ss unknown]"
+
+[annotations."0935:2411"]
+memory = "[ds unknown]"
+
+[annotations."0935:2428"]
+memory = "[ss unknown]"
+
+[annotations."0935:242c"]
+memory = "[ss unknown]"
+
+[annotations."0935:242f"]
+jmp = "read_filtered_token@0935:1261"
+
+[annotations."0935:2432"]
+memory = "[ds unknown]"
+
+[annotations."0935:2437"]
+comment = "Check if current character is comma (',')"
+label = "check_comma"
+memory = "[ds unknown]"
+
+[annotations."0935:243c"]
+jmp = "'handle_comma@5"
+
+[annotations."0935:243e"]
+jmp = "'check_numeric_opts@10"
+
+[annotations."0935:2441"]
+label = "handle_comma"
+memory = "[ss unknown]"
+
+[annotations."0935:2444"]
+memory = "[ds unknown]"
+
+[annotations."0935:244c"]
+memory = "[es unknown]"
+
+[annotations."0935:2451"]
+memory = "[ds unknown]"
+
+[annotations."0935:2455"]
+jmp = "'check_numeric_opts@10"
+
+[annotations."0935:2457"]
+memory = "[ds unknown]"
+
+[annotations."0935:245b"]
+memory = "[es unknown]"
+
+[annotations."0935:246a"]
+memory = "[ss unknown]"
+
+[annotations."0935:246e"]
+comment = "Test if character is in character set (runtime set membership)"
+jmp = "set_contains@0d72:5452"
+
+[annotations."0935:2475"]
+jmp = "'8"
+
+[annotations."0935:2477"]
+memory = "[ds unknown]"
+
+[annotations."0935:247c"]
+memory = "[ss unknown]"
+
+[annotations."0935:247f"]
+memory = "[ds unknown]"
+
+[annotations."0935:2482"]
+jmp = "get_next_char@0935:11a0"
+
+[annotations."0935:2485"]
+memory = "[ss unknown]"
+
+[annotations."0935:249a"]
+memory = "[ss unknown]"
+
+[annotations."0935:249d"]
+jmp = "read_filtered_token@0935:1261"
+
+[annotations."0935:24a4"]
+memory = "[ss unknown]"
+
+[annotations."0935:24a7"]
+memory = "[ds unknown]"
+
+[annotations."0935:24ad"]
+memory = "[ss unknown]"
+
+[annotations."0935:24b4"]
+memory = "[ss unknown]"
+
+[annotations."0935:24ba"]
+memory = "[ss unknown]"
+
+[annotations."0935:24be"]
+jmp = "pascal_string_append_bytes@0d72:582a"
+
+[annotations."0935:24c3"]
+jmp = "'9"
+
+[annotations."0935:24c5"]
+jmp = "'check_numeric_opts@10"
+
+[annotations."0935:24c8"]
+jmp = "'check_comma@3"
+
+[annotations."0935:24cb"]
+comment = "Check if character is in numeric/option set"
+label = "check_numeric_opts"
+memory = "[ds unknown]"
+
+[annotations."0935:24da"]
+jmp = "set_contains@0d72:5452"
+
+[annotations."0935:24e1"]
+jmp = "'12"
+
+[annotations."0935:24e3"]
+jmp = "'check_hyphen@27"
+
+[annotations."0935:24e6"]
+memory = "[ss unknown]"
+
+[annotations."0935:24e9"]
+memory = "[ds unknown]"
+
+[annotations."0935:250c"]
+memory = "[ss unknown]"
+
+[annotations."0935:2510"]
+memory = "[ss unknown]"
+
+[annotations."0935:2513"]
+jmp = "read_filtered_token@0935:1261"
+
+[annotations."0935:2516"]
+memory = "[ss unknown]"
+
+[annotations."0935:2519"]
+memory = "[ss unknown]"
+
+[annotations."0935:251c"]
+memory = "[ds unknown]"
+
+[annotations."0935:2523"]
+memory = "[ds unknown]"
+
+[annotations."0935:2529"]
+memory = "[ds unknown]"
+
+[annotations."0935:252b"]
+memory = "[ds unknown]"
+
+[annotations."0935:252e"]
+comment = "Check if numeric option is '1'"
+memory = "[ds unknown]"
+
+[annotations."0935:2533"]
+jmp = "'15"
+
+[annotations."0935:2535"]
+memory = "[ss unknown]"
+
+[annotations."0935:2538"]
+memory = "[ds unknown]"
+
+[annotations."0935:2543"]
+memory = "[ss unknown]"
+
+[annotations."0935:2547"]
+jmp = "pascal_string_equal@0d72:5570"
+
+[annotations."0935:254e"]
+jmp = "'15"
+
+[annotations."0935:2550"]
+jmp = "'set_opt_type_2@24"
+
+[annotations."0935:2553"]
+comment = "Check if numeric option is '2'"
+memory = "[ds unknown]"
+
+[annotations."0935:2558"]
+jmp = "'19"
+
+[annotations."0935:255a"]
+memory = "[ss unknown]"
+
+[annotations."0935:255d"]
+memory = "[ds unknown]"
+
+[annotations."0935:2568"]
+memory = "[ss unknown]"
+
+[annotations."0935:256c"]
+memory = "[ss unknown]"
+
+[annotations."0935:2570"]
+jmp = "pascal_string_equal@0d72:5570"
+
+[annotations."0935:2577"]
+jmp = "'18"
+
+[annotations."0935:2579"]
+jmp = "'set_opt_type_2@24"
+
+[annotations."0935:257d"]
+memory = "[ss unknown]"
+
+[annotations."0935:2586"]
+jmp = "pascal_string_equal@0d72:5570"
+
+[annotations."0935:258d"]
+jmp = "'set_opt_type_2@24"
+
+[annotations."0935:258f"]
+comment = "Check if numeric option is '3'"
+memory = "[ds unknown]"
+
+[annotations."0935:2594"]
+jmp = "'22"
+
+[annotations."0935:2596"]
+memory = "[ss unknown]"
+
+[annotations."0935:2599"]
+memory = "[ds unknown]"
+
+[annotations."0935:25a4"]
+memory = "[ss unknown]"
+
+[annotations."0935:25a8"]
+memory = "[ss unknown]"
+
+[annotations."0935:25ac"]
+jmp = "pascal_string_equal@0d72:5570"
+
+[annotations."0935:25b3"]
+jmp = "'set_opt_type_2@24"
+
+[annotations."0935:25b6"]
+memory = "[ss unknown]"
+
+[annotations."0935:25bf"]
+jmp = "pascal_string_equal@0d72:5570"
+
+[annotations."0935:25c6"]
+jmp = "'set_opt_type_2@24"
+
+[annotations."0935:25c8"]
+memory = "[ds unknown]"
+
+[annotations."0935:25d7"]
+jmp = "set_contains@0d72:5452"
+
+[annotations."0935:25de"]
+jmp = "'advance_cursor@25"
+
+[annotations."0935:25e0"]
+memory = "[ss unknown]"
+
+[annotations."0935:25e3"]
+memory = "[ds unknown]"
+
+[annotations."0935:25ee"]
+memory = "[ss unknown]"
+
+[annotations."0935:25f2"]
+jmp = "pascal_string_equal@0d72:5570"
+
+[annotations."0935:25f9"]
+jmp = "'advance_cursor@25"
+
+[annotations."0935:25fb"]
+label = "set_opt_type_2"
+memory = "[ds unknown]"
+
+[annotations."0935:2600"]
+jmp = "'commit_numeric_token@26"
+
+[annotations."0935:2602"]
+label = "advance_cursor"
+memory = "[ss unknown]"
+
+[annotations."0935:2605"]
+memory = "[ds unknown]"
+
+[annotations."0935:260b"]
+memory = "[ds unknown]"
+
+[annotations."0935:260f"]
+memory = "[ss unknown]"
+
+[annotations."0935:2612"]
+memory = "[ds unknown]"
+
+[annotations."0935:2616"]
+memory = "[ds unknown]"
+
+[annotations."0935:2619"]
+label = "commit_numeric_token"
+memory = "[ds unknown]"
+
+[annotations."0935:261d"]
+memory = "[ss unknown]"
+
+[annotations."0935:2620"]
+memory = "[ds unknown]"
+
+[annotations."0935:2625"]
+memory = "[ss unknown]"
+
+[annotations."0935:2629"]
+memory = "[ss unknown]"
+
+[annotations."0935:262c"]
+jmp = "tts_pronounce_number@0935:1742"
+
+[annotations."0935:262f"]
+jmp = "'check_quote@82"
+
+[annotations."0935:2632"]
+comment = "Check if current character is hyphen/minus ('-')"
+label = "check_hyphen"
+memory = "[ds unknown]"
+
+[annotations."0935:2637"]
+jmp = "'check_slash@32"
+
+[annotations."0935:2639"]
+memory = "[ss unknown]"
+
+[annotations."0935:263c"]
+memory = "[ds unknown]"
+
+[annotations."0935:2645"]
+jmp = "'check_slash@32"
+
+[annotations."0935:2647"]
+memory = "[ss unknown]"
+
+[annotations."0935:264a"]
+memory = "[ds unknown]"
+
+[annotations."0935:2652"]
+memory = "[es unknown]"
+
+[annotations."0935:2657"]
+memory = "[ds unknown]"
+
+[annotations."0935:265b"]
+jmp = "'check_slash@32"
+
+[annotations."0935:265d"]
+memory = "[ds unknown]"
+
+[annotations."0935:2661"]
+memory = "[es unknown]"
+
+[annotations."0935:2670"]
+memory = "[ss unknown]"
+
+[annotations."0935:2674"]
+jmp = "set_contains@0d72:5452"
+
+[annotations."0935:267b"]
+jmp = "'check_slash@32"
+
+[annotations."0935:267d"]
+memory = "[ds unknown]"
+
+[annotations."0935:2682"]
+label = "check_slash"
+memory = "[ds unknown]"
+
+[annotations."0935:2687"]
+jmp = "'35"
+
+[annotations."0935:2689"]
+comment = "Check if switch character is slash ('/')"
+memory = "[ds unknown]"
+
+[annotations."0935:268e"]
+jmp = "'35"
+
+[annotations."0935:26af"]
+memory = "[ss unknown]"
+
+[annotations."0935:26b2"]
+memory = "[ds unknown]"
+
+[annotations."0935:26b5"]
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:26b8"]
+memory = "[ds unknown]"
+
+[annotations."0935:26bc"]
+memory = "[ss unknown]"
+
+[annotations."0935:26bf"]
+memory = "[ds unknown]"
+
+[annotations."0935:26c4"]
+memory = "[ss unknown]"
+
+[annotations."0935:26c8"]
+memory = "[ss unknown]"
+
+[annotations."0935:26cb"]
+jmp = "tts_pronounce_number@0935:1742"
+
+[annotations."0935:26ce"]
+comment = "Loop processing trailing hyphen options"
+label = "hyphen_loop"
+memory = "[ds unknown]"
+
+[annotations."0935:26d3"]
+jmp = "'38"
+
+[annotations."0935:26d5"]
+jmp = "'check_switch_slash@47"
+
+[annotations."0935:26d8"]
+memory = "[ss unknown]"
+
+[annotations."0935:26db"]
+memory = "[ds unknown]"
+
+[annotations."0935:26e3"]
+memory = "[es unknown]"
+
+[annotations."0935:26e8"]
+memory = "[ds unknown]"
+
+[annotations."0935:26ec"]
+jmp = "'40"
+
+[annotations."0935:26ee"]
+jmp = "'check_switch_slash@47"
+
+[annotations."0935:26f1"]
+memory = "[ds unknown]"
+
+[annotations."0935:26f5"]
+memory = "[es unknown]"
+
+[annotations."0935:2704"]
+memory = "[ss unknown]"
+
+[annotations."0935:2708"]
+jmp = "set_contains@0d72:5452"
+
+[annotations."0935:270f"]
+jmp = "'42"
+
+[annotations."0935:2711"]
+jmp = "'check_switch_slash@47"
+
+[annotations."0935:2714"]
+memory = "[ss unknown]"
+
+[annotations."0935:2717"]
+memory = "[ds unknown]"
+
+[annotations."0935:271a"]
+jmp = "get_next_char@0935:11a0"
+
+[annotations."0935:272e"]
+memory = "[ds unknown]"
+
+[annotations."0935:2732"]
+memory = "[ss unknown]"
+
+[annotations."0935:2735"]
+memory = "[ds unknown]"
+
+[annotations."0935:2738"]
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:273b"]
+memory = "[ss unknown]"
+
+[annotations."0935:273e"]
+memory = "[ds unknown]"
+
+[annotations."0935:2755"]
+memory = "[ss unknown]"
+
+[annotations."0935:2759"]
+memory = "[ss unknown]"
+
+[annotations."0935:275c"]
+jmp = "read_filtered_token@0935:1261"
+
+[annotations."0935:275f"]
+memory = "[ss unknown]"
+
+[annotations."0935:2762"]
+memory = "[ds unknown]"
+
+[annotations."0935:276b"]
+jmp = "'44"
+
+[annotations."0935:276d"]
+memory = "[ds unknown]"
+
+[annotations."0935:2772"]
+jmp = "'46"
+
+[annotations."0935:2774"]
+memory = "[ds unknown]"
+
+[annotations."0935:2779"]
+jmp = "'46"
+
+[annotations."0935:277b"]
+memory = "[ds unknown]"
+
+[annotations."0935:2780"]
+memory = "[ds unknown]"
+
+[annotations."0935:2784"]
+memory = "[ss unknown]"
+
+[annotations."0935:2787"]
+memory = "[ds unknown]"
+
+[annotations."0935:278c"]
+memory = "[ss unknown]"
+
+[annotations."0935:2790"]
+memory = "[ss unknown]"
+
+[annotations."0935:2793"]
+jmp = "tts_pronounce_number@0935:1742"
+
+[annotations."0935:2796"]
+jmp = "'hyphen_loop@36"
+
+[annotations."0935:2799"]
+comment = "Handle slash ('/') command switches"
+label = "check_switch_slash"
+memory = "[ds unknown]"
+
+[annotations."0935:279e"]
+jmp = "'49"
+
+[annotations."0935:27a0"]
+jmp = "'check_flag_56@65"
+
+[annotations."0935:27a3"]
+memory = "[ss unknown]"
+
+[annotations."0935:27a6"]
+memory = "[ds unknown]"
+
+[annotations."0935:27ae"]
+memory = "[es unknown]"
+
+[annotations."0935:27b3"]
+memory = "[ds unknown]"
+
+[annotations."0935:27b7"]
+jmp = "'51"
+
+[annotations."0935:27b9"]
+jmp = "'check_flag_56@65"
+
+[annotations."0935:27bc"]
+memory = "[ds unknown]"
+
+[annotations."0935:27c0"]
+memory = "[es unknown]"
+
+[annotations."0935:27cf"]
+memory = "[ss unknown]"
+
+[annotations."0935:27d3"]
+jmp = "set_contains@0d72:5452"
+
+[annotations."0935:27da"]
+jmp = "'53"
+
+[annotations."0935:27dc"]
+jmp = "'check_flag_56@65"
+
+[annotations."0935:27df"]
+memory = "[ss unknown]"
+
+[annotations."0935:27e2"]
+memory = "[ds unknown]"
+
+[annotations."0935:27e5"]
+jmp = "get_next_char@0935:11a0"
+
+[annotations."0935:27e8"]
+memory = "[ss unknown]"
+
+[annotations."0935:27fd"]
+memory = "[ss unknown]"
+
+[annotations."0935:2800"]
+jmp = "read_filtered_token@0935:1261"
+
+[annotations."0935:2803"]
+memory = "[ds unknown]"
+
+[annotations."0935:2808"]
+jmp = "'55"
+
+[annotations."0935:281b"]
+memory = "[ds unknown]"
+
+[annotations."0935:281f"]
+memory = "[ss unknown]"
+
+[annotations."0935:2822"]
+memory = "[ds unknown]"
+
+[annotations."0935:2825"]
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:2828"]
+memory = "[ds unknown]"
+
+[annotations."0935:282c"]
+memory = "[ss unknown]"
+
+[annotations."0935:2831"]
+memory = "[ss unknown]"
+
+[annotations."0935:2834"]
+jmp = "tts_pronounce_number@0935:1742"
+
+[annotations."0935:2837"]
+jmp = "'check_flag_56@65"
+
+[annotations."0935:283a"]
+memory = "[ss unknown]"
+
+[annotations."0935:2845"]
+jmp = "pascal_string_equal@0d72:5570"
+
+[annotations."0935:284c"]
+jmp = "'57"
+
+[annotations."0935:284e"]
+jmp = "'61"
+
+[annotations."0935:2862"]
+memory = "[ds unknown]"
+
+[annotations."0935:2866"]
+memory = "[ds unknown]"
+
+[annotations."0935:286a"]
+memory = "[ss unknown]"
+
+[annotations."0935:286d"]
+memory = "[ds unknown]"
+
+[annotations."0935:2870"]
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:2873"]
+memory = "[ss unknown]"
+
+[annotations."0935:2876"]
+memory = "[ds unknown]"
+
+[annotations."0935:2881"]
+memory = "[ss unknown]"
+
+[annotations."0935:2885"]
+jmp = "pascal_string_equal@0d72:5570"
+
+[annotations."0935:288c"]
+jmp = "'59"
+
+[annotations."0935:289f"]
+memory = "[ds unknown]"
+
+[annotations."0935:28a3"]
+memory = "[ss unknown]"
+
+[annotations."0935:28a6"]
+memory = "[ds unknown]"
+
+[annotations."0935:28a9"]
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:28ac"]
+jmp = "'60"
+
+[annotations."0935:28bf"]
+memory = "[ds unknown]"
+
+[annotations."0935:28c3"]
+memory = "[ds unknown]"
+
+[annotations."0935:28c7"]
+memory = "[ss unknown]"
+
+[annotations."0935:28ca"]
+memory = "[ds unknown]"
+
+[annotations."0935:28cd"]
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:28d0"]
+jmp = "'check_flag_56@65"
+
+[annotations."0935:28d7"]
+memory = "[ss unknown]"
+
+[annotations."0935:28dc"]
+memory = "[ss unknown]"
+
+[annotations."0935:28df"]
+jmp = "tts_pronounce_number@0935:1742"
+
+[annotations."0935:28e2"]
+memory = "[ss unknown]"
+
+[annotations."0935:28e5"]
+memory = "[ds unknown]"
+
+[annotations."0935:28f0"]
+memory = "[ss unknown]"
+
+[annotations."0935:28f4"]
+jmp = "pascal_string_not_equal@0d72:55e0"
+
+[annotations."0935:28fb"]
+jmp = "'check_flag_56@65"
+
+[annotations."0935:28fd"]
+memory = "[ss unknown]"
+
+[annotations."0935:2900"]
+memory = "[ds unknown]"
+
+[annotations."0935:2908"]
+memory = "[es unknown]"
+
+[annotations."0935:2910"]
+memory = "[es unknown]"
+
+[annotations."0935:2913"]
+memory = "[ds unknown]"
+
+[annotations."0935:2916"]
+memory = "[ds unknown]"
+
+[annotations."0935:291b"]
+jmp = "'64"
+
+[annotations."0935:292e"]
+memory = "[ds unknown]"
+
+[annotations."0935:2932"]
+memory = "[ss unknown]"
+
+[annotations."0935:2936"]
+memory = "[ss unknown]"
+
+[annotations."0935:2939"]
+memory = "[ds unknown]"
+
+[annotations."0935:293c"]
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:293f"]
+jmp = "'check_flag_56@65"
+
+[annotations."0935:2952"]
+memory = "[ds unknown]"
+
+[annotations."0935:2956"]
+memory = "[ss unknown]"
+
+[annotations."0935:2959"]
+memory = "[ds unknown]"
+
+[annotations."0935:295c"]
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:295f"]
+label = "check_flag_56"
+memory = "[ds unknown]"
+
+[annotations."0935:2964"]
+jmp = "'check_dot@68"
+
+[annotations."0935:2986"]
+memory = "[ss unknown]"
+
+[annotations."0935:2989"]
+memory = "[ds unknown]"
+
+[annotations."0935:298c"]
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:298f"]
+memory = "[ss unknown]"
+
+[annotations."0935:2992"]
+memory = "[ds unknown]"
+
+[annotations."0935:299d"]
+memory = "[ss unknown]"
+
+[annotations."0935:29a1"]
+jmp = "pascal_string_not_equal@0d72:55e0"
+
+[annotations."0935:29a8"]
+jmp = "'check_dot@68"
+
+[annotations."0935:29bb"]
+memory = "[ds unknown]"
+
+[annotations."0935:29bf"]
+memory = "[ss unknown]"
+
+[annotations."0935:29c2"]
+memory = "[ds unknown]"
+
+[annotations."0935:29c5"]
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:29c8"]
+comment = "Check if delimiter is dot ('.') for file extension"
+label = "check_dot"
+memory = "[ds unknown]"
+
+[annotations."0935:29cd"]
+jmp = "'70"
+
+[annotations."0935:29cf"]
+jmp = "'check_quote@82"
+
+[annotations."0935:29d2"]
+memory = "[ss unknown]"
+
+[annotations."0935:29d5"]
+memory = "[ds unknown]"
+
+[annotations."0935:29dd"]
+memory = "[es unknown]"
+
+[annotations."0935:29e2"]
+memory = "[ds unknown]"
+
+[annotations."0935:29e6"]
+jmp = "'72"
+
+[annotations."0935:29e8"]
+jmp = "'check_quote@82"
+
+[annotations."0935:29eb"]
+memory = "[ds unknown]"
+
+[annotations."0935:29ef"]
+memory = "[es unknown]"
+
+[annotations."0935:29fe"]
+memory = "[ss unknown]"
+
+[annotations."0935:2a02"]
+jmp = "set_contains@0d72:5452"
+
+[annotations."0935:2a09"]
+jmp = "'74"
+
+[annotations."0935:2a0b"]
+jmp = "'check_quote@82"
+
+[annotations."0935:2a0e"]
+memory = "[ss unknown]"
+
+[annotations."0935:2a11"]
+memory = "[ds unknown]"
+
+[annotations."0935:2a14"]
+jmp = "get_next_char@0935:11a0"
+
+[annotations."0935:2a17"]
+memory = "[ss unknown]"
+
+[annotations."0935:2a2c"]
+memory = "[ss unknown]"
+
+[annotations."0935:2a2f"]
+jmp = "read_filtered_token@0935:1261"
+
+[annotations."0935:2a32"]
+memory = "[ds unknown]"
+
+[annotations."0935:2a37"]
+jmp = "'parse_extension@76"
+
+[annotations."0935:2a39"]
+jmp = "'81"
+
+[annotations."0935:2a3c"]
+label = "parse_extension"
+memory = "[ss unknown]"
+
+[annotations."0935:2a4e"]
+memory = "[ss unknown]"
+
+[annotations."0935:2a53"]
+comment = "Validate file extension"
+jmp = "parse_trailing_int@0935:1db1"
+
+[annotations."0935:2a56"]
+memory = "[ss unknown]"
+
+[annotations."0935:2a5a"]
+jmp = "'78"
+
+[annotations."0935:2a5c"]
+jmp = "'80"
+
+[annotations."0935:2a7e"]
+memory = "[ss unknown]"
+
+[annotations."0935:2a81"]
+memory = "[ds unknown]"
+
+[annotations."0935:2a84"]
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:2a8b"]
+memory = "[ss unknown]"
+
+[annotations."0935:2a90"]
+memory = "[ss unknown]"
+
+[annotations."0935:2a93"]
+jmp = "tts_pronounce_number@0935:1742"
+
+[annotations."0935:2ab5"]
+memory = "[ss unknown]"
+
+[annotations."0935:2ab8"]
+memory = "[ds unknown]"
+
+[annotations."0935:2abb"]
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:2abe"]
+memory = "[ss unknown]"
+
+[annotations."0935:2ac2"]
+jmp = "'80"
+
+[annotations."0935:2ad5"]
+memory = "[ds unknown]"
+
+[annotations."0935:2ad9"]
+memory = "[ss unknown]"
+
+[annotations."0935:2adc"]
+memory = "[ds unknown]"
+
+[annotations."0935:2adf"]
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:2ae2"]
+jmp = "'check_quote@82"
+
+[annotations."0935:2b03"]
+memory = "[ss unknown]"
+
+[annotations."0935:2b06"]
+memory = "[ds unknown]"
+
+[annotations."0935:2b09"]
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:2b0f"]
+memory = "[ss unknown]"
+
+[annotations."0935:2b14"]
+memory = "[ss unknown]"
+
+[annotations."0935:2b17"]
+jmp = "tts_pronounce_number@0935:1742"
+
+[annotations."0935:2b1a"]
+label = "check_quote"
+memory = "[ds unknown]"
+
+[annotations."0935:2b1f"]
+comment = "Check for single-quote delimited string ('\\''')"
+memory = "[ds unknown]"
+
+[annotations."0935:2b24"]
+jmp = "'84"
+
+[annotations."0935:2b26"]
+jmp = "'exit@91"
+
+[annotations."0935:2b29"]
+memory = "[ss unknown]"
+
+[annotations."0935:2b2c"]
+memory = "[ds unknown]"
+
+[annotations."0935:2b34"]
+memory = "[es unknown]"
+
+[annotations."0935:2b39"]
+memory = "[ds unknown]"
+
+[annotations."0935:2b3d"]
+jmp = "'86"
+
+[annotations."0935:2b3f"]
+jmp = "'exit@91"
+
+[annotations."0935:2b42"]
+memory = "[ds unknown]"
+
+[annotations."0935:2b46"]
+memory = "[es unknown]"
+
+[annotations."0935:2b55"]
+memory = "[ss unknown]"
+
+[annotations."0935:2b59"]
+jmp = "set_contains@0d72:5452"
+
+[annotations."0935:2b60"]
+jmp = "'88"
+
+[annotations."0935:2b62"]
+jmp = "'exit@91"
+
+[annotations."0935:2b65"]
+memory = "[ss unknown]"
+
+[annotations."0935:2b68"]
+memory = "[ds unknown]"
+
+[annotations."0935:2b6b"]
+jmp = "get_next_char@0935:11a0"
+
+[annotations."0935:2b6e"]
+memory = "[ss unknown]"
+
+[annotations."0935:2b71"]
+memory = "[ds unknown]"
+
+[annotations."0935:2b74"]
+jmp = "get_next_char@0935:11a0"
+
+[annotations."0935:2b77"]
+memory = "[ss unknown]"
+
+[annotations."0935:2b7a"]
+memory = "[ds unknown]"
+
+[annotations."0935:2b82"]
+memory = "[es unknown]"
+
+[annotations."0935:2b8a"]
+memory = "[es unknown]"
+
+[annotations."0935:2b99"]
+memory = "[ss unknown]"
+
+[annotations."0935:2b9d"]
+jmp = "set_contains@0d72:5452"
+
+[annotations."0935:2ba4"]
+jmp = "'90"
+
+[annotations."0935:2bb7"]
+memory = "[ds unknown]"
+
+[annotations."0935:2bbb"]
+memory = "[ds unknown]"
+
+[annotations."0935:2bbf"]
+memory = "[ss unknown]"
+
+[annotations."0935:2bc2"]
+memory = "[ds unknown]"
+
+[annotations."0935:2bc5"]
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:2bd9"]
+memory = "[ds unknown]"
+
+[annotations."0935:2bdd"]
+memory = "[ss unknown]"
+
+[annotations."0935:2be0"]
+memory = "[ds unknown]"
+
+[annotations."0935:2be3"]
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:2be6"]
+label = "exit"

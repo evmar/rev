@@ -1,0 +1,135 @@
+ip = "0d72:66cc"
+len = 110
+name = "write_stdout_far_buffer_chunked"
+desc = "Write a far buffer to stdout in chunks of up to 85 bytes via an internal staging buffer."
+details = "Iterates over a far byte buffer, copying chunks of at most 55h (85) bytes into the fixed staging buffer at DS:0724h via copy_far_bytes_forward, and writes each chunk to file handle 1 (standard output) via DOS INT 21h AH=40h. If a write call returns an error (AX < 0), or when the remaining length reaches 0 (or exceeds 7FFFh due to underflow/completion), the loop terminates. Returns far, discarding 6 bytes of stack parameters."
+blocks = ["0d72:66cc", "0d72:66d9", "0d72:66df", "0d72:66e7", "0d72:66ec", "0d72:671b", "0d72:671d", "0d72:672b", "0d72:6732"]
+
+[[params]]
+name = "buf_offset"
+value = "[bp+6]"
+type = "u16"
+desc = "Offset of source buffer in memory"
+
+[[params]]
+name = "buf_segment"
+value = "[bp+8]"
+type = "u16"
+desc = "Segment of source buffer in memory"
+
+[[params]]
+name = "count"
+value = "[bp+0Ah]"
+type = "u16"
+desc = "Total number of bytes to write"
+
+[ret]
+name = "status"
+value = "ax"
+type = "i16"
+desc = "Return code / write result from last chunk (or 0 if count was 0)"
+
+[annotations."0d72:66cc"]
+comment = "Allocate 8 bytes of stack space for locals and check stack limit."
+
+[annotations."0d72:66cf"]
+jmp = "0d72:676b"
+
+[annotations."0d72:66d4"]
+comment = "Initialize bytes_transferred offset [bp-2] to 0."
+memory = "[ss unknown]"
+
+[annotations."0d72:66d9"]
+comment = "Check if remaining bytes [bp+0Ah] > 85 (0x55)."
+label = "loop_chunk"
+memory = "[ss unknown]"
+
+[annotations."0d72:66dd"]
+jmp = "'3"
+
+[annotations."0d72:66df"]
+comment = "Chunk size [bp-4] = remaining count (<= 85)."
+memory = "[ss unknown]"
+
+[annotations."0d72:66e2"]
+memory = "[ss unknown]"
+
+[annotations."0d72:66e5"]
+jmp = "'4"
+
+[annotations."0d72:66e7"]
+comment = "Chunk size [bp-4] = 85 (0x55)."
+label = "set_chunk_max"
+memory = "[ss unknown]"
+
+[annotations."0d72:66ec"]
+comment = "Compute current source pointer: ES:DI = buffer + bytes_transferred."
+label = "do_copy_and_write"
+
+[annotations."0d72:66ef"]
+memory = "[ss unknown]"
+
+[annotations."0d72:66f2"]
+memory = "[ss unknown]"
+
+[annotations."0d72:66f5"]
+memory = "[ss unknown]"
+
+[annotations."0d72:66f8"]
+comment = "Copy chunk to staging buffer at DS:0724h (source: ES:DI, dest: DS:0724h, length: [bp-4])."
+
+[annotations."0d72:66ff"]
+memory = "[ss unknown]"
+
+[annotations."0d72:6702"]
+comment = "Invoke copy_far_bytes_forward."
+jmp = "copy_far_bytes_forward@0d72:507e"
+
+[annotations."0d72:6707"]
+comment = "Call write helper: handle = 1 (stdout), buffer = DS:0724h, count = [bp-4]."
+
+[annotations."0d72:670f"]
+memory = "[ss unknown]"
+
+[annotations."0d72:6712"]
+comment = "DOS write (AH=40h) to stdout."
+jmp = "0d72:67ff"
+
+[annotations."0d72:6717"]
+comment = "If write returned error (AX < 0 / 0xFFFF), exit loop."
+
+[annotations."0d72:6719"]
+jmp = "'6"
+
+[annotations."0d72:671b"]
+jmp = "'8"
+
+[annotations."0d72:671d"]
+comment = "Advance bytes_transferred by 85 (0x55)."
+label = "next_chunk"
+memory = "[ss unknown]"
+
+[annotations."0d72:6721"]
+comment = "Decrement remaining byte count by 85 (add 0xFFAB)."
+memory = "[ss unknown]"
+
+[annotations."0d72:6725"]
+comment = "If remaining bytes == 0, done."
+memory = "[ss unknown]"
+
+[annotations."0d72:6729"]
+jmp = "'8"
+
+[annotations."0d72:672b"]
+comment = "Loop while remaining bytes <= 7FFFh (positive count)."
+memory = "[ss unknown]"
+
+[annotations."0d72:6730"]
+jmp = "'1"
+
+[annotations."0d72:6732"]
+comment = "Restore registers and stack frame."
+label = "exit"
+
+[annotations."0d72:6737"]
+comment = "Far return, pop 6 parameter bytes."

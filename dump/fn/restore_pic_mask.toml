@@ -3,7 +3,6 @@ len = 13
 name = "restore_pic_mask"
 desc = "restores or updates the Master 8259 PIC interrupt mask"
 details = "Disables interrupts and loads a cached interrupt mask byte from cs:[01CDh], then writes it to port 21h (Master PIC Interrupt Mask Register). Executes a short jump for I/O port timing delay before restoring ax and re-enabling interrupts."
-callers = ["tsr_entry_point@0823:0ae2"]
 
 ---
 ; disable interrupts during PIC reprogramming

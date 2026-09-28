@@ -1,0 +1,111 @@
+ip = "0d72:5ffd"
+len = 3431
+name = "checked_stack_frame_prologue_copy"
+desc = "Establish a BP frame and reserve AX local bytes after checking the runtime stack limit."
+details = "Called with a near CALL, this helper removes the continuation IP into CX, saves the old BP, sets BP to the saved word, and computes candidate SP = BP - AX. It rejects unsigned wraparound or a candidate below DS:[0792h]; otherwise it commits SP and jumps to the continuation. On failure it passes a far continuation to the shared allocator at 0d72:6b88, which retries the check and either resumes the caller, invokes the installed overflow handler at DS:[078Eh], or prints diagnostic code 0 and terminates through DS:[0798h]."
+blocks = ["0d72:5ffd", "0d72:6007", "0d72:600d", "0d72:6011", "0d72:6b88", "0d72:6b90", "0d72:6b96", "0d72:6b9b", "0d72:6ba1", "0d72:6ba6", "0d72:6d29", "0d72:6d47", "0d72:6d4c", "0d72:6d51", "0d72:6d62"]
+
+[[params]]
+name = "local_bytes"
+value = "ax"
+type = "u16"
+desc = "Number of bytes to reserve below the saved BP."
+
+[annotations."0d72:5ffd"]
+comment = "Remove the near CALL continuation, save BP in its place, and establish the caller's frame."
+
+[annotations."0d72:6001"]
+comment = "Compute candidate SP = BP - AX; unsigned borrow indicates stack-offset wraparound."
+
+[annotations."0d72:6005"]
+jmp = "'stack_allocation_failed@3"
+
+[annotations."0d72:6007"]
+comment = "Require candidate SP >= unsigned runtime lower stack bound DS:[0792h]."
+memory = "[ds unknown]"
+
+[annotations."0d72:600b"]
+jmp = "'stack_allocation_failed@3"
+
+[annotations."0d72:600d"]
+comment = "Commit the allocation and jump to the saved near continuation; the caller later restores BP and SP."
+
+[annotations."0d72:600f"]
+jmp = "unknown:reg"
+
+[annotations."0d72:6011"]
+comment = "Build a far continuation CS:CX and tail-jump to the shared checked allocator."
+label = "stack_allocation_failed"
+
+[annotations."0d72:6013"]
+jmp = "'4"
+
+[annotations."0d72:6b88"]
+comment = "Pop continuation IP:CS into CX:DX and retry the allocation after removing the far address."
+
+[annotations."0d72:6b8e"]
+jmp = "'dispatch_stack_overflow@7"
+
+[annotations."0d72:6b90"]
+memory = "[ds unknown]"
+
+[annotations."0d72:6b94"]
+jmp = "'dispatch_stack_overflow@7"
+
+[annotations."0d72:6b96"]
+comment = "Commit allocation, restore the far continuation, and RETF to the caller's next instruction."
+
+[annotations."0d72:6b9b"]
+comment = "Check the low word of the overflow-handler pointer; FFFFh means no handler is installed."
+label = "dispatch_stack_overflow"
+memory = "[ds unknown]"
+
+[annotations."0d72:6b9f"]
+jmp = "'invoke_stack_overflow_handler@9"
+
+[annotations."0d72:6ba1"]
+comment = "Select diagnostic code 0 for the default overflow error path."
+
+[annotations."0d72:6ba3"]
+jmp = "'default_stack_overflow_error@10"
+
+[annotations."0d72:6ba6"]
+comment = "Restore the far continuation and jump through the installed overflow handler at DS:[078Eh]."
+label = "invoke_stack_overflow_handler"
+
+[annotations."0d72:6ba8"]
+jmp = "unknown:mem"
+memory = "[ds unknown]"
+
+[annotations."0d72:6d29"]
+comment = "Print the default runtime diagnostic with code 0."
+label = "default_stack_overflow_error"
+
+[annotations."0d72:6d2a"]
+jmp = "0d72:6ecc"
+
+[annotations."0d72:6d2f"]
+jmp = "0d72:6f1b"
+
+[annotations."0d72:6d34"]
+comment = "Pass 00FFh to the indirect runtime termination entry at DS:[0798h]; normal execution should not return."
+
+[annotations."0d72:6d39"]
+jmp = "unknown:mem"
+memory = "[ds unknown]"
+
+[annotations."0d72:6d3d"]
+comment = "Apparent fallthrough after termination is unrelated code, beginning with a separately decoded function at 6d3e."
+memory = "[ss unknown]"
+
+[annotations."0d72:6d4a"]
+jmp = "'11"
+
+[annotations."0d72:6d4f"]
+jmp = "'14"
+
+[annotations."0d72:6d51"]
+jmp = "0d72:6ecc"
+
+[annotations."0d72:6d5a"]
+jmp = "0d72:6f1b"

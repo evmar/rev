@@ -1,0 +1,37 @@
+ip = "0823:0a04"
+len = 43
+name = "swap_ivt_vectors"
+desc = "swaps the lower half of the interrupt vector table with a local buffer"
+details = "Saves and restores 256 words (512 bytes, covering interrupt vectors 00h through 7Fh) between memory at 0000:0000 and CS:03FC using bidirectional word exchanges with interrupts disabled. Because each iteration decrements CX twice (once via DEC and once via LOOPNE), exactly 256 words are exchanged."
+blocks = ["0823:0a04", "0823:0a19", "0823:0a27"]
+
+[annotations."0823:0a0c"]
+comment = "Point DS to segment 0000h (Interrupt Vector Table)"
+
+[annotations."0823:0a0e"]
+comment = "Point ES to code segment"
+
+[annotations."0823:0a10"]
+comment = "Buffer offset in CS"
+
+[annotations."0823:0a15"]
+comment = "Counter for loop (decremented twice per iteration to yield 256 words)"
+
+[annotations."0823:0a18"]
+comment = "Disable interrupts during vector table swap"
+
+[annotations."0823:0a19"]
+label = "swap_loop"
+memory = "[ds unknown]"
+
+[annotations."0823:0a1b"]
+comment = "Swap word between IVT and buffer"
+
+[annotations."0823:0a24"]
+comment = "Double decrement with LOOPNE (processes 256 words total)"
+
+[annotations."0823:0a25"]
+jmp = "'swap_loop@1"
+
+[annotations."0823:0a27"]
+comment = "Re-enable interrupts"

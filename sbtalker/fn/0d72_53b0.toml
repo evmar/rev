@@ -1,0 +1,82 @@
+ip = "0d72:53b0"
+len = 71
+name = "copy_words_to_stack"
+desc = "Allocates stack space and copies CX words from ES:BX onto the caller's stack."
+details = "Removes the far return address into DS:05F2/05F4, computes a 2*CX-byte allocation below the caller's SP, and calls 0d72:6b88 if subtraction borrows or the resulting offset is below the stack limit at DS:0792. It sets SP to the destination, copies words forward from ES:BX through DS:DI (requiring DS to address the stack, normally DS=SS), and far-jumps to the saved return address, leaving the copied block at SS:SP; the known caller supplies CX=0x11 to copy 34 bytes. The normal path consumes CX to zero, advances BX by 2*CX and DI to the pre-allocation caller SP, and leaves AX holding the last word; the unchecked count must be nonzero and small enough that doubling does not wrap, and the global return-address scratch makes this helper non-reentrant."
+blocks = ["0d72:53b0", "0d72:53c2", "0d72:53c8", "0d72:53e6", "0d72:53e8", "0d72:53f3"]
+
+[[params]]
+name = "source"
+value = "es:bx"
+type = "*const u16"
+desc = "Far pointer to the source words; BX advances by the copied byte count."
+
+[[params]]
+name = "word_count"
+value = "cx"
+type = "u16"
+desc = "Number of words to copy; must be nonzero and fit a non-wrapping doubled byte count. Consumed to zero."
+
+[annotations."0d72:53b0"]
+comment = "Pop the far return IP and CS into global scratch DS:05F2/05F4, exposing the caller's SP."
+memory = "[ds unknown]"
+
+[annotations."0d72:53b4"]
+memory = "[ds unknown]"
+
+[annotations."0d72:53b8"]
+comment = "AX = 2*word_count; DI = caller_SP - AX. The following JB detects subtraction underflow, not overflow of the doubling."
+
+[annotations."0d72:53c0"]
+jmp = "'handle_stack_limit@2"
+
+[annotations."0d72:53c2"]
+comment = "Accept destination offsets at or above the stack lower bound DS:0792."
+memory = "[ds unknown]"
+
+[annotations."0d72:53c6"]
+jmp = "'allocate_destination@3"
+
+[annotations."0d72:53c8"]
+comment = "Save source pointer and count in global scratch DS:05EC/05EE/05E8 before invoking the checked stack-allocation/overflow helper."
+label = "handle_stack_limit"
+memory = "[ds unknown]"
+
+[annotations."0d72:53cc"]
+memory = "[ds unknown]"
+
+[annotations."0d72:53d0"]
+memory = "[ds unknown]"
+
+[annotations."0d72:53d4"]
+jmp = "0d72:6b88"
+
+[annotations."0d72:53da"]
+comment = "Restore BX, CX and ES if the stack helper returns."
+memory = "[ds unknown]"
+
+[annotations."0d72:53de"]
+memory = "[ds unknown]"
+
+[annotations."0d72:53e2"]
+memory = "[ds unknown]"
+
+[annotations."0d72:53e6"]
+comment = "Reserve the block by installing its starting offset as SP."
+label = "allocate_destination"
+
+[annotations."0d72:53e8"]
+comment = "Copy one word from ES:BX to DS:DI and advance both offsets by two; destination assumes DS aliases SS. No zero-count guard precedes LOOP."
+label = "copy_word_loop"
+memory = "[es unknown]"
+
+[annotations."0d72:53ed"]
+memory = "[ds unknown]"
+
+[annotations."0d72:53f1"]
+jmp = "'copy_word_loop@4"
+
+[annotations."0d72:53f3"]
+comment = "Far jump to saved CS:IP instead of RETF, so the copied block remains at the top of the caller's stack."
+jmp = "unknown:mem"
+memory = "[ds unknown]"

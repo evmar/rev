@@ -1,0 +1,150 @@
+ip = "0935:3d66"
+len = 174
+name = "process_transaction_loop"
+desc = "Initializes and executes an event/transaction processing loop, then finalizes state and returns an adjusted identifier."
+details = "Updates an 8-byte state table record indexed by ds:[166h] with configuration bytes, sets up a 256-byte buffer via far call, and enters a polling loop (calling subroutines to service tasks until ds:[4Ch] remains 3 or ds:[60h] becomes nonzero). Finally, it runs a completion callback passing the far buffer pointer and returns ds:[160h] decremented by 2."
+blocks = ["0935:3d66", "0935:3de4", "0935:3def", "0935:3df8"]
+
+[[params]]
+name = "initial_id"
+value = "[bp+6]"
+type = "u16"
+desc = "Initial ID or counter value stored to ds:[160h]"
+
+[[params]]
+name = "buffer_ptr"
+value = "[bp+8]"
+type = "*mut [u8]"
+desc = "Far pointer to data buffer"
+
+[ret]
+name = "result_id"
+value = "ax"
+type = "u16"
+desc = "Value of ds:[160h] decremented by 2"
+
+[annotations."0935:3d6f"]
+memory = "[ss unknown]"
+
+[annotations."0935:3d72"]
+memory = "[ds unknown]"
+
+[annotations."0935:3d75"]
+memory = "[ds unknown]"
+
+[annotations."0935:3d78"]
+comment = "Calculate table record offset: index * 8 + 0x48C"
+
+[annotations."0935:3d81"]
+memory = "[ss unknown]"
+
+[annotations."0935:3d84"]
+memory = "[ss unknown]"
+
+[annotations."0935:3d87"]
+memory = "[ds unknown]"
+
+[annotations."0935:3d8a"]
+memory = "[ss unknown]"
+
+[annotations."0935:3d8d"]
+memory = "[ds unknown]"
+
+[annotations."0935:3d8f"]
+memory = "[ss unknown]"
+
+[annotations."0935:3d92"]
+memory = "[ds unknown]"
+
+[annotations."0935:3d95"]
+memory = "[ss unknown]"
+
+[annotations."0935:3d98"]
+comment = "Save status byte ds:[168h] into record offset +6"
+memory = "[ds unknown]"
+
+[annotations."0935:3d9b"]
+memory = "[ds unknown]"
+
+[annotations."0935:3d9e"]
+memory = "[ss unknown]"
+
+[annotations."0935:3da1"]
+memory = "[ds unknown]"
+
+[annotations."0935:3da4"]
+comment = "Save status byte ds:[16Ch] into record offset +7"
+memory = "[ds unknown]"
+
+[annotations."0935:3da7"]
+memory = "[ds unknown]"
+
+[annotations."0935:3daa"]
+memory = "[ds unknown]"
+
+[annotations."0935:3db8"]
+comment = "Transfer or initialize 256-byte buffer"
+jmp = "pascal_string_copy_bounded@0d72:538c"
+
+[annotations."0935:3dbd"]
+memory = "[ds unknown]"
+
+[annotations."0935:3dc2"]
+memory = "[ds unknown]"
+
+[annotations."0935:3dc7"]
+memory = "[ds unknown]"
+
+[annotations."0935:3dcd"]
+jmp = "check_string_has_lowercase@0935:1210"
+
+[annotations."0935:3dd0"]
+memory = "[ds unknown]"
+
+[annotations."0935:3dd5"]
+memory = "[ds unknown]"
+
+[annotations."0935:3dda"]
+memory = "[ds unknown]"
+
+[annotations."0935:3ddd"]
+memory = "[ds unknown]"
+
+[annotations."0935:3de1"]
+jmp = "get_next_char@0935:11a0"
+
+[annotations."0935:3de4"]
+label = "poll_loop"
+
+[annotations."0935:3de5"]
+comment = "Execute sub-task iteration"
+jmp = "dispatch_command_input@0935:3cc9"
+
+[annotations."0935:3de8"]
+memory = "[ds unknown]"
+
+[annotations."0935:3ded"]
+jmp = "'exit_loop@3"
+
+[annotations."0935:3def"]
+memory = "[ds unknown]"
+
+[annotations."0935:3df6"]
+comment = "Loop while ds:[4Ch] != 3 and ds:[60h] == 0"
+jmp = "'poll_loop@1"
+
+[annotations."0935:3df8"]
+label = "exit_loop"
+
+[annotations."0935:3dfe"]
+comment = "Call completion handler with far pointer"
+jmp = "apply_prosody_intonation@0935:0d7f"
+
+[annotations."0935:3e01"]
+memory = "[ds unknown]"
+
+[annotations."0935:3e06"]
+memory = "[ss unknown]"
+
+[annotations."0935:3e09"]
+memory = "[ss unknown]"

@@ -1,0 +1,74 @@
+ip = "0d72:507e"
+len = 38
+name = "copy_far_bytes_forward"
+desc = "Copy a byte count from a far source pointer to a far destination pointer, proceeding forward."
+details = "Loads DS:SI from the source and ES:DI from the destination, clears DF, and copies count/2 words followed by one byte when count is odd; MOVSW preserves the carry set by SHR for the odd-byte test. The caller pushes source segment/offset, destination segment/offset, then count; RETF 0Ah removes all five argument words, with no defined return value. Preserves DS and BP, clobbers AX/CX/SI/DI/ES, and leaves DF clear; offsets advance with 16-bit wrapping without segment adjustment, and overlapping regions require a forward-safe layout (the string-deletion caller shifts data toward lower addresses)."
+blocks = ["0d72:507e", "0d72:509c", "0d72:509d"]
+
+[[params]]
+name = "count"
+value = "[sp+4]"
+type = "u16"
+desc = "Number of bytes to copy; zero performs no memory transfer."
+
+[[params]]
+name = "destination_offset"
+value = "[sp+6]"
+type = "u16"
+desc = "Destination offset, loaded into DI."
+
+[[params]]
+name = "destination_segment"
+value = "[sp+8]"
+type = "u16"
+desc = "Destination segment, loaded into ES."
+
+[[params]]
+name = "source_offset"
+value = "[sp+0Ah]"
+type = "u16"
+desc = "Source offset, loaded into SI."
+
+[[params]]
+name = "source_segment"
+value = "[sp+0Ch]"
+type = "u16"
+desc = "Source segment, temporarily loaded into DS."
+
+[annotations."0d72:5082"]
+comment = "Load source far pointer from BP+0Eh:BP+0Ch into DS:SI; original DS is saved."
+memory = "[ss unknown]"
+
+[annotations."0d72:5087"]
+memory = "[ss unknown]"
+
+[annotations."0d72:508a"]
+comment = "Load destination far pointer from BP+0Ah:BP+8 into ES:DI."
+memory = "[ss unknown]"
+
+[annotations."0d72:508f"]
+memory = "[ss unknown]"
+
+[annotations."0d72:5092"]
+comment = "Load unsigned byte count; force forward copying."
+memory = "[ss unknown]"
+
+[annotations."0d72:5096"]
+comment = "CX = count / 2; CF = count & 1."
+
+[annotations."0d72:5098"]
+comment = "Copy whole words forward. REP MOVSW does not change CF."
+
+[annotations."0d72:509a"]
+comment = "Skip trailing byte if original byte count was even (CF clear)."
+jmp = "'restore_and_return@2"
+
+[annotations."0d72:509c"]
+comment = "Copy the remaining byte for an odd count."
+
+[annotations."0d72:509d"]
+comment = "Restore caller DS and stack frame."
+label = "restore_and_return"
+
+[annotations."0d72:50a1"]
+comment = "Far return, discarding 10 bytes of arguments."

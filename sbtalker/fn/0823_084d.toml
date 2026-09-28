@@ -1,0 +1,35 @@
+ip = "0823:084d"
+len = 44
+name = "hook_int15h"
+desc = "Hooks interrupt 15h (BIOS System Services)"
+details = "Disables interrupts to safely hook INT 15h (vector at 0000:0054h). It saves the existing ISR vector to CS:[0086h] and CS:[0088h], then overwrites the interrupt vector table with the address of a new handler at 0823:07FCh."
+blocks = ["0823:084d"]
+
+[annotations."0823:0851"]
+comment = "Point ES to the Interrupt Vector Table (segment 0000h)"
+
+[annotations."0823:0855"]
+comment = "Vector offset for INT 15h (21 * 4 = 54h)"
+
+[annotations."0823:0858"]
+comment = "Save original INT 15h offset to CS:[0086h]"
+memory = "[es unknown]"
+
+[annotations."0823:085b"]
+memory = "0823:0086"
+
+[annotations."0823:085f"]
+comment = "Save original INT 15h segment to CS:[0088h]"
+memory = "[es unknown]"
+
+[annotations."0823:0863"]
+memory = "0823:0088"
+
+[annotations."0823:0867"]
+comment = "Install new INT 15h handler at 0823:07FCh"
+
+[annotations."0823:086a"]
+memory = "[es unknown]"
+
+[annotations."0823:0870"]
+memory = "[es unknown]"

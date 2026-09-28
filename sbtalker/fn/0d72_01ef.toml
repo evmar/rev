@@ -1,0 +1,109 @@
+ip = "0d72:01ef"
+len = 51
+name = "match_context_class_bit0"
+desc = "Consume a context character belonging to character-class flag bit 0, with a backward QU digraph special case."
+details = "Tests the character in BL against bit 0 of the CS character-class table at 4A9Ch. On a match it increments the context-match count and advances SI by the signed scan step; when scanning backward it also accepts the Q/U digraph as a two-character unit. If the following character (CH) has the same class flag, it saves DI in [BP+0Eh], likely as a continuation/backtracking position."
+blocks = ["0d72:01ef", "0d72:01f8", "0d72:0209", "0d72:020c", "0d72:020d", "0d72:0213", "0d72:0218", "0d72:021d"]
+
+[[params]]
+name = "character"
+value = "bl"
+type = "u8"
+desc = "Current context character used to index the character-class table."
+
+[[params]]
+name = "next_character"
+value = "ch"
+type = "u8"
+desc = "Adjacent character after advancing in the scan direction; also the Q in the backward QU special case."
+
+[[params]]
+name = "lookahead_character"
+value = "cl"
+type = "u8"
+desc = "Second adjacent character, tested for U in the backward QU special case."
+
+[[params]]
+name = "cursor"
+value = "si"
+type = "u16"
+desc = "Context scan cursor; advanced in place by the signed scan step."
+
+[[params]]
+name = "continuation"
+value = "di"
+type = "u16"
+desc = "Continuation/backtracking position saved when the next character is also in class bit 0."
+
+[[params]]
+name = "match_count"
+value = "[bp+3]"
+type = "u8"
+desc = "Matcher state byte incremented when this context atom matches."
+
+[[params]]
+name = "scan_step"
+value = "[bp+0Ch]"
+type = "i16"
+desc = "Signed cursor increment; +1 scans right and a non-+1 value scans left."
+
+[[params]]
+name = "saved_continuation"
+value = "[bp+0Eh]"
+type = "u16"
+desc = "Matcher-state slot receiving DI when another class-bit-0 character follows."
+
+[annotations."0d72:01ef"]
+comment = "Test the current character's bit-0 class flag."
+memory = "[bx unknown]"
+
+[annotations."0d72:01f6"]
+jmp = "'try_backward_qu@4"
+
+[annotations."0d72:01f8"]
+comment = "Record one matched context atom and advance the scan cursor."
+label = "consume_match"
+memory = "[ss unknown]"
+
+[annotations."0d72:01fb"]
+memory = "[ss unknown]"
+
+[annotations."0d72:01fe"]
+comment = "Classify the adjacent character after the cursor advance."
+
+[annotations."0d72:0200"]
+memory = "[bx unknown]"
+
+[annotations."0d72:0207"]
+jmp = "'done@3"
+
+[annotations."0d72:0209"]
+comment = "Save the caller's continuation/backtracking position when the same class continues."
+memory = "[ss unknown]"
+
+[annotations."0d72:020c"]
+label = "done"
+
+[annotations."0d72:020d"]
+comment = "Only the reverse scan has the Q/U digraph exception."
+label = "try_backward_qu"
+memory = "[ss unknown]"
+
+[annotations."0d72:0211"]
+jmp = "'done@3"
+
+[annotations."0d72:0213"]
+comment = "Recognize Q followed by U as the reverse-scan special case."
+
+[annotations."0d72:0216"]
+jmp = "'done@3"
+
+[annotations."0d72:021b"]
+jmp = "'done@3"
+
+[annotations."0d72:021d"]
+comment = "Pre-consume the extra digraph character, then use the normal match path for the other one."
+memory = "[ss unknown]"
+
+[annotations."0d72:0220"]
+jmp = "'consume_match@1"

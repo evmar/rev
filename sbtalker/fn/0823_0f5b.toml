@@ -1,0 +1,97 @@
+ip = "0823:0f5b"
+len = 456
+name = "dispatch_command"
+desc = "Dispatches driver/subsystem API commands based on a function index in AL"
+details = "Saves caller context and stack pointers, then routes execution based on the function code passed in AL. Functions 0Ch and 0Dh are handled as parameter-unstacking routines that retrieve far pointers into internal storage before returning; all other commands index into an indirect far jump table."
+blocks = ["0823:0f5b", "0823:0f69", "0823:0f6c", "0823:0f70", "0823:0f73", "0823:10e5", "0823:1104"]
+
+[[params]]
+name = "cmd"
+value = "al"
+type = "u8"
+desc = "Command or function number"
+
+[annotations."0823:0f5b"]
+comment = "Save caller's SS:SP"
+memory = "0823:0e5f"
+
+[annotations."0823:0f60"]
+memory = "0823:0e61"
+
+[annotations."0823:0f65"]
+comment = "Handle command 0Ch separately"
+
+[annotations."0823:0f67"]
+jmp = "'check_cmd_0d@2"
+
+[annotations."0823:0f69"]
+jmp = "'cmd_0c_handler@5"
+
+[annotations."0823:0f6c"]
+comment = "Handle command 0Dh separately"
+label = "check_cmd_0d"
+
+[annotations."0823:0f6e"]
+jmp = "'dispatch_table@4"
+
+[annotations."0823:0f70"]
+jmp = "'cmd_0d_handler@6"
+
+[annotations."0823:0f73"]
+comment = "Save return IP and segments, switch DS to driver data segment"
+label = "dispatch_table"
+memory = "0823:0e51"
+
+[annotations."0823:0f78"]
+memory = "0823:0e53"
+
+[annotations."0823:0f7d"]
+memory = "0823:0e55"
+
+[annotations."0823:0f87"]
+comment = "Calculate jump table offset (AL * 2) and dispatch"
+
+[annotations."0823:0f8d"]
+jmp = "exec_and_restore_context@0823:0fdc"
+memory = "0823:0d8e"
+assume = [["bx", 0]]
+
+[annotations."0823:10e5"]
+comment = "Command 0Ch: pop a far pointer parameter from caller's stack into cs:[0DBBh], restore far return address, and retf"
+label = "cmd_0c_handler"
+memory = "0823:0e63"
+
+[annotations."0823:10ea"]
+memory = "0823:0e65"
+
+[annotations."0823:10ef"]
+memory = "0823:0dbb"
+
+[annotations."0823:10f4"]
+memory = "0823:0dbd"
+
+[annotations."0823:10f9"]
+memory = "0823:0e65"
+
+[annotations."0823:10fe"]
+memory = "0823:0e63"
+
+[annotations."0823:1104"]
+comment = "Command 0Dh: pop a far pointer parameter from caller's stack into cs:[0DBFh], restore far return address, and retf"
+label = "cmd_0d_handler"
+memory = "0823:0e63"
+
+[annotations."0823:1109"]
+memory = "0823:0e65"
+
+[annotations."0823:110e"]
+memory = "0823:0dbf"
+
+[annotations."0823:1113"]
+memory = "0823:0dc1"
+
+[annotations."0823:1118"]
+memory = "0823:0e65"
+
+[annotations."0823:111d"]
+memory = "0823:0e63"

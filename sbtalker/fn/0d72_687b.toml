@@ -1,22 +1,15 @@
 ip = "0d72:687b"
 len = 11
-callers = ["0d72:67ff"]
+blocks = ["0d72:6871", "0d72:687b", "0d72:687f", "0d72:6885"]
 
----
-@mem ; [ds unknown]
-0d72:6871 mov ds:[805h],ax
-0d72:6874 mov ax,0FFFFh
-0d72:6877 mov dx,ax
-@jmp '3
-0d72:6879 jmp short 6885h
+[annotations."0d72:6871"]
+memory = "[ds unknown]"
 
-0d72:687b int 21h
-@jmp '0
-0d72:687d jb short 6871h
+[annotations."0d72:6879"]
+jmp = "'3"
 
-0d72:687f xor bx,bx
-@mem ; [ds unknown]
-0d72:6881 mov ds:[805h],bx
+[annotations."0d72:687d"]
+jmp = "'0"
 
-0d72:6885 ret
-
+[annotations."0d72:6881"]
+memory = "[ds unknown]"

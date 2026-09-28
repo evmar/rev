@@ -1,0 +1,25 @@
+ip = "0d72:0190"
+len = 4
+name = "advance_input_cursor_by_scan_stride"
+desc = "Advances the input cursor by one signed scan step and returns to the rule matcher."
+details = "Adds the caller-frame scan stride at [BP+0Ch] to SI, so the same block can move forward or backward through the input buffer. This address is also the shared tail of the surrounding class-0x01 context matcher; it assumes BP already refers to the active matcher stack frame."
+blocks = ["0d72:0190"]
+
+[[params]]
+name = "input_cursor"
+value = "si"
+type = "*mut u8"
+desc = "Near pointer to the current input byte; updated in place by one scan step."
+
+[[params]]
+name = "scan_stride"
+value = "[bp+0Ch]"
+type = "i16"
+desc = "Signed cursor increment, normally +1 for forward scanning or -1 for reverse scanning."
+
+[annotations."0d72:0190"]
+comment = "Advance SI by one signed scan step from the caller stack frame."
+memory = "[ss unknown]"
+
+[annotations."0d72:0193"]
+comment = "Return to the encoded-rule context matcher."

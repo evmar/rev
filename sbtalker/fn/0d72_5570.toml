@@ -1,0 +1,123 @@
+ip = "0d72:5570"
+len = 112
+name = "pascal_string_equal"
+desc = "Tests two length-prefixed Pascal strings for exact bytewise equality."
+details = "Compares the unsigned length bytes at offset 0 of two far-pointer strings; unequal lengths return false, while two empty strings return true. For equal nonzero lengths, compares bytes 1 through length and returns false on the first mismatch, otherwise true (case-sensitive, with embedded zero bytes treated as ordinary data). Returns the Boolean in AL (AH is unspecified because only the low byte of the result local is initialized), preserves SI/DI/BP, uses the runtime stack-frame registration helpers, and removes both far-pointer arguments with RETF 8."
+blocks = ["0d72:5570", "0d72:5592", "0d72:5593", "0d72:559c", "0d72:55a7", "0d72:55ac", "0d72:55bd", "0d72:55c3", "0d72:55d0"]
+
+[[params]]
+name = "right"
+value = "[sp+4]"
+type = "*const u8"
+desc = "Far pointer (offset:segment words), at [bp+6] after the prologue, to a Pascal string: one unsigned length byte followed by that many data bytes."
+
+[[params]]
+name = "left"
+value = "[sp+8]"
+type = "*const u8"
+desc = "Far pointer (offset:segment words), at [bp+0Ah] after the prologue, to the other Pascal string."
+
+[ret]
+name = "equal"
+value = "al"
+type = "u8"
+desc = "1 if the lengths and all data bytes match, otherwise 0. AH is unspecified."
+
+[annotations."0d72:5570"]
+comment = "Allocate six bytes of locals via runtime prologue: result byte at BP-2, index word at BP-4, length word at BP-6."
+
+[annotations."0d72:5573"]
+jmp = "checked_stack_frame_prologue@0d72:5c2a"
+
+[annotations."0d72:5578"]
+comment = "Register the runtime stack frame with argument 0Ah."
+
+[annotations."0d72:557c"]
+jmp = "register_outermost_stack_frame@0d72:4fcc"
+
+[annotations."0d72:5581"]
+comment = "Read left length and compare with right length; CX becomes 0 or 1."
+
+[annotations."0d72:5584"]
+memory = "[es unknown]"
+
+[annotations."0d72:558a"]
+memory = "[es unknown]"
+
+[annotations."0d72:5590"]
+jmp = "'store_length_match@2"
+
+[annotations."0d72:5593"]
+comment = "Store only the result byte; the adjacent high byte remains uninitialized."
+label = "store_length_match"
+memory = "[ss unknown]"
+
+[annotations."0d72:5596"]
+comment = "Unequal lengths immediately return false."
+memory = "[ss unknown]"
+
+[annotations."0d72:559a"]
+jmp = "'return_result@8"
+
+[annotations."0d72:559c"]
+comment = "Zero-extend the common length; equal empty strings immediately return true."
+
+[annotations."0d72:559e"]
+memory = "[ss unknown]"
+
+[annotations."0d72:55a1"]
+memory = "[ss unknown]"
+
+[annotations."0d72:55a5"]
+jmp = "'return_result@8"
+
+[annotations."0d72:55a7"]
+comment = "Start at data offset 1, skipping the length byte."
+memory = "[ss unknown]"
+
+[annotations."0d72:55ac"]
+comment = "Compare corresponding raw bytes at the current index (no case folding or NUL termination)."
+label = "compare_next_byte"
+memory = "[ss unknown]"
+
+[annotations."0d72:55b2"]
+memory = "[es unknown]"
+
+[annotations."0d72:55b8"]
+memory = "[es unknown]"
+
+[annotations."0d72:55bb"]
+jmp = "'advance_index@7"
+
+[annotations."0d72:55bd"]
+comment = "First differing byte clears the result and exits."
+memory = "[ss unknown]"
+
+[annotations."0d72:55c1"]
+jmp = "'return_result@8"
+
+[annotations."0d72:55c3"]
+comment = "Increment index; repeat unless the just-compared index equals the common length."
+label = "advance_index"
+memory = "[ss unknown]"
+
+[annotations."0d72:55c7"]
+memory = "[ss unknown]"
+
+[annotations."0d72:55cb"]
+memory = "[ss unknown]"
+
+[annotations."0d72:55ce"]
+jmp = "'compare_next_byte@5"
+
+[annotations."0d72:55d0"]
+comment = "Unregister runtime stack frame before returning the saved result."
+label = "return_result"
+jmp = "unregister_outermost_stack_frame@0d72:5004"
+
+[annotations."0d72:55d5"]
+comment = "Load a word from the result local, but only AL is defined as Boolean; AH is unspecified."
+memory = "[ss unknown]"
+
+[annotations."0d72:55dd"]
+comment = "Far return, discarding eight bytes for the two far-pointer arguments."

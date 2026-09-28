@@ -3,7 +3,6 @@ len = 90
 name = "tsr_entry_point"
 desc = "Switches to an internal stack, executes a sequence of subroutines, and returns to the caller."
 details = "This function captures the caller's far return address and stack pointer from the stack, switches to a private local stack within the code segment, and conditionally executes setup and cleanup routines based on an internal state flag. After executing a pipeline of subroutines, it restores the caller's original SS:SP and performs an indirect far jump back to the caller."
-callees = ["dispatch_command@0823:0f5b", "hook_int15h@0823:084d", "pic_mask_all_irqs@0823:0923", "reset_int9_to_bios@0823:0804", "restore_int09_vector@0823:082e", "restore_int15_handler@0823:0879", "restore_pic_mask@0823:0936", "swap_ivt_vectors@0823:0a04", "swap_memory_with_ems@0823:0a97", "unknown:mem[0823:0000]=0"]
 
 ---
 ; Save caller far return address offset

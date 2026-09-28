@@ -3,8 +3,6 @@ len = 135
 name = "write_stdout_u16_field"
 desc = "Format an unsigned 16-bit value in the selected radix and write a five-character field to stdout."
 details = "Copies a six-byte template from DS:20C7h when the radix word at DS:04EAh is 16, or DS:20CDh otherwise, into the shared buffer at DS:04ECh; the observed caller selects radix 10 or 16. For five positions from right to left, a nonzero value is divided unsigned by the radix, its remainder becomes an ASCII digit (uppercase A-F for hexadecimal), and the quotient replaces the stack-local argument; once zero, remaining positions retain their template bytes, so an input of zero prints the unchanged template field (exact padding/template contents are not established by this disassembly). Writes exactly five bytes from DS:04ECh through write_stdout_near_buffer, forwarding the hidden parent-frame argument, then RET 4 removes both argument words; no semantic return value is established, and the shared buffer makes this routine non-reentrant."
-callers = ["report_fatal_error_and_exit@0d72:4bac", "report_fatal_error_and_exit@0d72:4bac", "report_fatal_error_and_exit@0d72:4bac", "report_fatal_error_and_exit@0d72:4bac", "report_fatal_error_and_exit@0d72:4bac", "report_fatal_error_and_exit@0d72:4bac", "report_fatal_error_and_exit@0d72:4bac", "report_fatal_error_and_exit@0d72:4bac"]
-callees = ["write_stdout_near_buffer@0d72:4b0c"]
 
 [[params]]
 name = "parent_frame"

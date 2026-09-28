@@ -1,0 +1,122 @@
+ip = "0935:1261"
+len = 155
+name = "read_filtered_token"
+desc = "Reads characters into a buffer while they belong to an allowed character set"
+details = "Initializes the output buffer and loops reading characters until a maximum length of 120 (0x78) is reached or an input character does not belong to the permitted character set passed at [bp+6]. It also checks characters against a secondary character set to set a global flag at ds:[0054h] and updates an editor/UI state via an internal callback."
+blocks = ["0935:1261", "0935:1273", "0935:12c7", "0935:12cc", "0935:12ed", "0935:12f3", "0935:12f6"]
+
+[[params]]
+name = "out_buf"
+value = "[bp+26h]"
+type = "*mut u8"
+desc = "Pointer to destination string buffer"
+
+[[params]]
+name = "valid_chars"
+value = "[bp+6]"
+type = "[u8; 32]"
+desc = "32-byte bitset of allowed characters"
+
+[[params]]
+name = "ui_state"
+value = "[bp+4]"
+type = "*mut u8"
+desc = "Pointer to UI/input state structure"
+
+[annotations."0935:1268"]
+comment = "Initialize target string buffer length to 0"
+memory = "[ss unknown]"
+
+[annotations."0935:126b"]
+memory = "[ds unknown]"
+
+[annotations."0935:126e"]
+comment = "Character counter = 0"
+memory = "[ss unknown]"
+
+[annotations."0935:1273"]
+comment = "Increment read character count"
+label = "read_loop"
+memory = "[ss unknown]"
+
+[annotations."0935:1284"]
+memory = "[ss unknown]"
+
+[annotations."0935:1287"]
+memory = "[ss unknown]"
+
+[annotations."0935:128a"]
+comment = "Read next input character"
+jmp = "pascal_string_insert_bytes@0d72:5909"
+
+[annotations."0935:128f"]
+memory = "[ss unknown]"
+
+[annotations."0935:1292"]
+memory = "[ss unknown]"
+
+[annotations."0935:1295"]
+memory = "[ds unknown]"
+
+[annotations."0935:1298"]
+comment = "Append read character into buffer"
+memory = "[ds unknown]"
+
+[annotations."0935:129a"]
+memory = "[ds unknown]"
+
+[annotations."0935:12b3"]
+memory = "[ss unknown]"
+
+[annotations."0935:12b7"]
+comment = "Perform set operation into local temporary set [bp-22h]"
+jmp = "set_union_into_buffer@0d72:604f"
+
+[annotations."0935:12be"]
+comment = "Check if character is in secondary set"
+jmp = "set_contains@0d72:5452"
+
+[annotations."0935:12c5"]
+jmp = "'check_valid_set@3"
+
+[annotations."0935:12c7"]
+comment = "Flag ds:[0054h] = 1 if character matched secondary set"
+memory = "[ds unknown]"
+
+[annotations."0935:12cc"]
+label = "check_valid_set"
+memory = "[ss unknown]"
+
+[annotations."0935:12cf"]
+comment = "Call display/cursor update routine"
+memory = "[ds unknown]"
+
+[annotations."0935:12d2"]
+jmp = "get_next_char@0935:11a0"
+
+[annotations."0935:12d5"]
+memory = "[ds unknown]"
+
+[annotations."0935:12df"]
+memory = "[ss unknown]"
+
+[annotations."0935:12e4"]
+comment = "Check if character is in valid_chars set"
+jmp = "set_contains@0d72:5452"
+
+[annotations."0935:12eb"]
+comment = "Stop reading if character is not in valid_chars"
+jmp = "'exit@6"
+
+[annotations."0935:12ed"]
+comment = "Stop reading if counter reaches limit of 120 characters"
+memory = "[ss unknown]"
+
+[annotations."0935:12f1"]
+jmp = "'exit@6"
+
+[annotations."0935:12f3"]
+jmp = "'read_loop@1"
+
+[annotations."0935:12f6"]
+label = "exit"

@@ -1,0 +1,93 @@
+ip = "0935:1e4e"
+len = 121
+name = "pronounce_two_digit_number"
+desc = "Formats a value as two decimal digits and emits its cardinal-number pronunciation."
+details = "Copies a two-character Pascal-string template into the caller's scratch buffer, replaces the ones digit and (for values of 10 or more) the tens digit, then passes the resulting zero-padded digit string to tts_pronounce_number in mode 1. The parser uses this helper to speak date and time fields such as month, day, hour, minute, and second."
+blocks = ["0935:1e4e", "0935:1e76", "0935:1e8b"]
+
+[[params]]
+name = "ctx"
+value = "[bp+4]"
+type = "*mut u8"
+desc = "Parser/pronunciation context; scratch Pascal string is at ctx-0x106 and the output handle is reached through ctx+4"
+
+[[params]]
+name = "value"
+value = "[bp+6]"
+type = "i16"
+desc = "Nonnegative date or time field to format as two decimal digits"
+
+[annotations."0935:1e55"]
+memory = "[ss unknown]"
+
+[annotations."0935:1e58"]
+comment = "Initialize ctx[-0x106] from the two-digit Pascal-string template (including its leading-zero digit)."
+
+[annotations."0935:1e5a"]
+memory = "[ds unknown]"
+
+[annotations."0935:1e68"]
+memory = "[ss unknown]"
+
+[annotations."0935:1e6b"]
+jmp = "pascal_string_copy_bounded@0d72:538c"
+
+[annotations."0935:1e70"]
+comment = "Only replace the template's tens digit when value is at least 10; smaller values retain the leading zero."
+memory = "[ss unknown]"
+
+[annotations."0935:1e74"]
+jmp = "'write_ones_digit@2"
+
+[annotations."0935:1e76"]
+memory = "[ss unknown]"
+
+[annotations."0935:1e7c"]
+comment = "Compute value / 10 and store its ASCII tens digit."
+memory = "[ss unknown]"
+
+[annotations."0935:1e87"]
+memory = "[ds unknown]"
+
+[annotations."0935:1e8b"]
+comment = "Compute value % 10 and store its ASCII ones digit."
+label = "write_ones_digit"
+
+[annotations."0935:1e8e"]
+memory = "[ss unknown]"
+
+[annotations."0935:1e94"]
+memory = "[ss unknown]"
+
+[annotations."0935:1e97"]
+memory = "[ss unknown]"
+
+[annotations."0935:1e9a"]
+memory = "[ss unknown]"
+
+[annotations."0935:1ea2"]
+memory = "[ds unknown]"
+
+[annotations."0935:1ea6"]
+comment = "Pronounce the completed two-digit Pascal string in cardinal-number mode (mode 1)."
+
+[annotations."0935:1eaa"]
+memory = "[ss unknown]"
+
+[annotations."0935:1ead"]
+memory = "[ds unknown]"
+
+[annotations."0935:1eb2"]
+memory = "[ss unknown]"
+
+[annotations."0935:1eb5"]
+memory = "[ss unknown]"
+
+[annotations."0935:1eb8"]
+memory = "[ds unknown]"
+
+[annotations."0935:1ebb"]
+memory = "[ds unknown]"
+
+[annotations."0935:1ebe"]
+jmp = "tts_pronounce_number@0935:1742"

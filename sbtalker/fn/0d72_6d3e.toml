@@ -1,32 +1,15 @@
 ip = "0d72:6d3e"
 len = 38
-callers = ["0d72:6e28"]
-callees = ["0d72:6ecc", "0d72:6f1b"]
+blocks = ["0d72:6d3e", "0d72:6d47", "0d72:6d4c", "0d72:6d51", "0d72:6d62"]
 
----
-0d72:6d3e push si
-0d72:6d3f xor si,si
-0d72:6d41 mov cx,42h
-0d72:6d44 xor ah,ah
-0d72:6d46 cld
+[annotations."0d72:6d4a"]
+jmp = "'1"
 
-0d72:6d47 lodsb
-0d72:6d48 xor ah,al
-@jmp '1
-0d72:6d4a loop 6D47h
+[annotations."0d72:6d4f"]
+jmp = "'4"
 
-0d72:6d4c xor ah,55h
-@jmp '4
-0d72:6d4f je short 6D62h
+[annotations."0d72:6d51"]
+jmp = "0d72:6ecc"
 
-@jmp 0d72:6ecc
-0d72:6d51 call far ptr 0D72h:6ECCh
-0d72:6d56 mov ax,1
-0d72:6d59 push ax
-@jmp 0d72:6f1b
-0d72:6d5a call far ptr 0D72h:6F1Bh
-0d72:6d5f mov ax,1
-
-0d72:6d62 pop si
-0d72:6d63 retf
-
+[annotations."0d72:6d5a"]
+jmp = "0d72:6f1b"

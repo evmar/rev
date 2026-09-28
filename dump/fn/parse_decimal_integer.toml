@@ -3,8 +3,6 @@ len = 156
 name = "parse_decimal_integer"
 desc = "Reads a decimal digit token from the input stream and converts it to a 16-bit integer."
 details = "Uses the caller's local length-prefixed buffer at frame_base-0x106 and the digit character set at DS:0170 to read a token via read_filtered_token. It accumulates the token as value = value * 10 + digit using 16-bit arithmetic, returning -1 if the token is empty and otherwise returning the parsed value."
-callers = ["parse_date_or_time@0935:21f1", "parse_date_or_time@0935:21f1", "parse_date_or_time@0935:21f1", "parse_date_or_time@0935:21f1", "parse_date_or_time@0935:21f1"]
-callees = ["read_filtered_token@0935:1261"]
 
 [[params]]
 name = "frame_base"

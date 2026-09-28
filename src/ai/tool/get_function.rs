@@ -33,7 +33,7 @@ impl GetFunctionTool {
             func.name.as_deref().unwrap_or("unknown name")
         );
         let mut buf = String::new();
-        func.serialize(&mut buf)?;
+        func.to_plain_text(&mut buf)?;
         Ok(buf)
     }
 }

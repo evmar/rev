@@ -1,0 +1,81 @@
+ip = "0823:0c12"
+len = 103
+name = "load_overlay"
+desc = "Loads an executable overlay into allocated memory"
+details = "Opens the specified file to check its size, closes it, and calls a memory allocation routine. It then configures an EXEC overlay parameter block at CS:[SI] with the allocated segment and invokes DOS function 4B03h (Load Overlay) to load the file into memory."
+blocks = ["0823:0c12", "0823:0c25", "0823:0c34", "0823:0c45", "0823:0c77", "0823:0c78"]
+
+[[params]]
+name = "desc_ptr"
+value = "si"
+type = "u16"
+desc = "Pointer within CS to overlay descriptor block; CS:[SI+4] contains the ASCIIZ filename, and CS:[SI] receives the overlay parameter block"
+
+[ret]
+name = "cf"
+value = "FLAGS.CF"
+type = "bool"
+desc = "Carry flag: clear on success, set on error"
+
+[annotations."0823:0c12"]
+comment = "Get pointer to filename at CS:[SI+4]"
+
+[annotations."0823:0c19"]
+comment = "Open overlay file read-only (INT 21h, AH=3Dh)"
+
+[annotations."0823:0c23"]
+jmp = "'done@5"
+
+[annotations."0823:0c25"]
+comment = "Seek to end of file to determine file size (INT 21h, AX=4202h)"
+
+[annotations."0823:0c32"]
+jmp = "'done@5"
+
+[annotations."0823:0c34"]
+comment = "Add 0x20 bytes padding and save requested size"
+
+[annotations."0823:0c38"]
+comment = "Close file (INT 21h, AH=3Eh)"
+
+[annotations."0823:0c3d"]
+comment = "Allocate memory for overlay; returns base segment in DX"
+jmp = "expand_memory_block@0823:0de3"
+
+[annotations."0823:0c43"]
+jmp = "'done@5"
+
+[annotations."0823:0c45"]
+comment = "Record allocated segment in data segment at 1483h"
+
+[annotations."0823:0c4e"]
+memory = "1483:0008"
+
+[annotations."0823:0c51"]
+memory = "1483:000c"
+
+[annotations."0823:0c54"]
+memory = "1483:0010"
+
+[annotations."0823:0c57"]
+memory = "1483:0014"
+
+[annotations."0823:0c5a"]
+memory = "1483:0018"
+
+[annotations."0823:0c5f"]
+comment = "Initialize overlay param block at CS:[SI]: load segment and relocation factor"
+memory = "[ds unknown]"
+
+[annotations."0823:0c61"]
+memory = "[ds unknown]"
+
+[annotations."0823:0c6f"]
+comment = "Load overlay (EXEC function 3: INT 21h, AX=4B03h)"
+
+[annotations."0823:0c75"]
+jmp = "'done@5"
+
+[annotations."0823:0c78"]
+comment = "Return (CF set on error, cleared on success)"
+label = "done"

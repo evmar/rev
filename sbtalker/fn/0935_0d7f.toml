@@ -1,0 +1,607 @@
+ip = "0935:0d7f"
+len = 800
+name = "apply_prosody_intonation"
+desc = "Calculates prosodic pitch contours and processes stress markers in a text-to-speech input string"
+details = '''Parses words and trailing punctuation in a Pascal string to compute baseline intonation and pitch contours for vowels according to punctuation rules (periods, question marks, exclamations, semicolons, and WH-questions). It also interprets manual pitch and stress control characters ('#', '@', '/', '\'), updating pitch levels and removing the control characters from the string using System.Delete.'''
+blocks = ["0935:0d7f", "0935:0d92", "0935:0d95", "0935:0da3", "0935:0daf", "0935:0dc2", "0935:0dc3", "0935:0dcc", "0935:0de7", "0935:0ded", "0935:0e1b", "0935:0e21", "0935:0e2e", "0935:0e34", "0935:0e43", "0935:0e4f", "0935:0e54", "0935:0e60", "0935:0e65", "0935:0e96", "0935:0e9c", "0935:0e9f", "0935:0ea8", "0935:0eb4", "0935:0eb8", "0935:0ebe", "0935:0ec5", "0935:0ec8", "0935:0ed5", "0935:0ee1", "0935:0ee6", "0935:0ef4", "0935:0ef9", "0935:0f06", "0935:0f12", "0935:0f16", "0935:0f1a", "0935:0f1c", "0935:0f25", "0935:0f31", "0935:0f35", "0935:0f45", "0935:0f4e", "0935:0f55", "0935:0f59", "0935:0f5b", "0935:0f5d", "0935:0f62", "0935:0f67", "0935:0f6c", "0935:0f6f", "0935:0f74", "0935:0f79", "0935:0f7c", "0935:0f81", "0935:0f86", "0935:0f8b", "0935:0f90", "0935:0f9a", "0935:0fac", "0935:0fc9", "0935:0fcf", "0935:0fd6", "0935:0fda", "0935:0ff8", "0935:0ffe", "0935:101e", "0935:1024", "0935:1044", "0935:105c", "0935:1066", "0935:106c", "0935:1078", "0935:107b", "0935:1086", "0935:1089", "0935:1096", "0935:1099"]
+
+[[params]]
+name = "parent_bp"
+value = "[bp+4]"
+type = "u16"
+desc = "Static link to enclosing procedure frame"
+
+[[params]]
+name = "text"
+value = "[bp+6]"
+type = "*mut [u8]"
+desc = "Far pointer to Pascal text/phoneme string"
+
+[annotations."0935:0d86"]
+comment = "Read string length byte; return early if empty"
+
+[annotations."0935:0d89"]
+memory = "[es unknown]"
+
+[annotations."0935:0d90"]
+jmp = "'init_prosody@2"
+
+[annotations."0935:0d92"]
+jmp = "'exit@77"
+
+[annotations."0935:0d95"]
+label = "init_prosody"
+memory = "[ss unknown]"
+
+[annotations."0935:0d9a"]
+memory = "[ss unknown]"
+
+[annotations."0935:0d9f"]
+memory = "[ss unknown]"
+
+[annotations."0935:0da3"]
+label = "next_word"
+memory = "[ss unknown]"
+
+[annotations."0935:0da8"]
+memory = "[ss unknown]"
+
+[annotations."0935:0dac"]
+memory = "[ss unknown]"
+
+[annotations."0935:0daf"]
+label = "scan_word"
+memory = "[ss unknown]"
+
+[annotations."0935:0db5"]
+memory = "[es unknown]"
+
+[annotations."0935:0dba"]
+memory = "[ss unknown]"
+
+[annotations."0935:0dc0"]
+jmp = "'6"
+
+[annotations."0935:0dc3"]
+memory = "[ss unknown]"
+
+[annotations."0935:0dc6"]
+memory = "[ss unknown]"
+
+[annotations."0935:0dca"]
+jmp = "'10"
+
+[annotations."0935:0dcc"]
+comment = "Check if character belongs to delimiter/boundary set (ds:0190h)"
+memory = "[ss unknown]"
+
+[annotations."0935:0dcf"]
+memory = "[es unknown]"
+
+[annotations."0935:0dde"]
+jmp = "set_contains@0d72:5452"
+
+[annotations."0935:0de5"]
+jmp = "'9"
+
+[annotations."0935:0de7"]
+memory = "[ss unknown]"
+
+[annotations."0935:0dea"]
+memory = "[ss unknown]"
+
+[annotations."0935:0ded"]
+memory = "[ss unknown]"
+
+[annotations."0935:0df0"]
+comment = "Check second character set (ds:01B0h) and call sub_B91"
+
+[annotations."0935:0df3"]
+memory = "[es unknown]"
+
+[annotations."0935:0e02"]
+jmp = "set_contains@0d72:5452"
+
+[annotations."0935:0e0c"]
+memory = "[ss unknown]"
+
+[annotations."0935:0e0f"]
+memory = "[ss unknown]"
+
+[annotations."0935:0e12"]
+jmp = "is_not_sentence_end@0935:0b91"
+
+[annotations."0935:0e15"]
+memory = "[ss unknown]"
+
+[annotations."0935:0e18"]
+memory = "[ss unknown]"
+
+[annotations."0935:0e1b"]
+memory = "[ss unknown]"
+
+[annotations."0935:0e1f"]
+jmp = "'scan_word@4"
+
+[annotations."0935:0e24"]
+memory = "[es unknown]"
+
+[annotations."0935:0e29"]
+memory = "[ss unknown]"
+
+[annotations."0935:0e2c"]
+jmp = "'13"
+
+[annotations."0935:0e2e"]
+comment = "Default delimiter is space (0x20)"
+memory = "[ss unknown]"
+
+[annotations."0935:0e32"]
+jmp = "'calc_contour@14"
+
+[annotations."0935:0e34"]
+memory = "[ss unknown]"
+
+[annotations."0935:0e3a"]
+memory = "[es unknown]"
+
+[annotations."0935:0e3d"]
+memory = "[ss unknown]"
+
+[annotations."0935:0e40"]
+memory = "[ss unknown]"
+
+[annotations."0935:0e43"]
+label = "calc_contour"
+memory = "[ss unknown]"
+
+[annotations."0935:0e46"]
+memory = "[ss unknown]"
+
+[annotations."0935:0e49"]
+memory = "[ss unknown]"
+
+[annotations."0935:0e4d"]
+jmp = "'16"
+
+[annotations."0935:0e4f"]
+comment = "Clamp word length to maximum of 100"
+memory = "[ss unknown]"
+
+[annotations."0935:0e54"]
+memory = "[ss unknown]"
+
+[annotations."0935:0e57"]
+memory = "[ss unknown]"
+
+[annotations."0935:0e5a"]
+memory = "[ss unknown]"
+
+[annotations."0935:0e5e"]
+jmp = "'19"
+
+[annotations."0935:0e60"]
+memory = "[ss unknown]"
+
+[annotations."0935:0e65"]
+comment = "Generate linear pitch inflection slope across vowels in word"
+label = "contour_loop"
+memory = "[ss unknown]"
+
+[annotations."0935:0e68"]
+memory = "[ss unknown]"
+
+[annotations."0935:0e76"]
+memory = "[ss unknown]"
+
+[annotations."0935:0e83"]
+memory = "[ss unknown]"
+
+[annotations."0935:0e86"]
+memory = "[ss unknown]"
+
+[annotations."0935:0e89"]
+memory = "[ss unknown]"
+
+[annotations."0935:0e8d"]
+memory = "[ss unknown]"
+
+[annotations."0935:0e91"]
+memory = "[ss unknown]"
+
+[annotations."0935:0e94"]
+jmp = "'contour_loop@18"
+
+[annotations."0935:0e96"]
+memory = "[ss unknown]"
+
+[annotations."0935:0e9a"]
+jmp = "'21"
+
+[annotations."0935:0e9c"]
+jmp = "'apply_stress_and_pitch@57"
+
+[annotations."0935:0e9f"]
+memory = "[ss unknown]"
+
+[annotations."0935:0ea5"]
+comment = "Dispatch on terminating punctuation character"
+jmp = "'punct_dispatch@46"
+
+[annotations."0935:0ea8"]
+comment = "Period ('.'): apply falling pitch contour to word ending"
+label = "punct_period"
+memory = "[ss unknown]"
+
+[annotations."0935:0eab"]
+memory = "[ss unknown]"
+
+[annotations."0935:0eb2"]
+jmp = "'24"
+
+[annotations."0935:0eb4"]
+memory = "[ss unknown]"
+
+[annotations."0935:0eb8"]
+memory = "[ss unknown]"
+
+[annotations."0935:0ebc"]
+jmp = "'26"
+
+[annotations."0935:0ebe"]
+memory = "[ss unknown]"
+
+[annotations."0935:0ec1"]
+memory = "[ss unknown]"
+
+[annotations."0935:0ec5"]
+jmp = "'apply_stress_and_pitch@57"
+
+[annotations."0935:0ec8"]
+comment = "Exclamation ('!'): elevate pitch across word with high rising tail"
+label = "punct_exclam"
+
+[annotations."0935:0ecb"]
+memory = "[es unknown]"
+
+[annotations."0935:0ed3"]
+jmp = "'36"
+
+[annotations."0935:0ed5"]
+memory = "[ss unknown]"
+
+[annotations."0935:0ed8"]
+memory = "[ss unknown]"
+
+[annotations."0935:0edb"]
+memory = "[ss unknown]"
+
+[annotations."0935:0edf"]
+jmp = "'33"
+
+[annotations."0935:0ee1"]
+memory = "[ss unknown]"
+
+[annotations."0935:0ee6"]
+memory = "[ss unknown]"
+
+[annotations."0935:0ee9"]
+memory = "[ss unknown]"
+
+[annotations."0935:0ef2"]
+jmp = "'32"
+
+[annotations."0935:0ef6"]
+memory = "[ss unknown]"
+
+[annotations."0935:0ef9"]
+memory = "[ss unknown]"
+
+[annotations."0935:0efd"]
+memory = "[ss unknown]"
+
+[annotations."0935:0f01"]
+memory = "[ss unknown]"
+
+[annotations."0935:0f04"]
+jmp = "'30"
+
+[annotations."0935:0f06"]
+memory = "[ss unknown]"
+
+[annotations."0935:0f09"]
+memory = "[ss unknown]"
+
+[annotations."0935:0f10"]
+jmp = "'35"
+
+[annotations."0935:0f12"]
+memory = "[ss unknown]"
+
+[annotations."0935:0f16"]
+memory = "[ss unknown]"
+
+[annotations."0935:0f1a"]
+jmp = "'apply_stress_and_pitch@57"
+
+[annotations."0935:0f1c"]
+label = "punct_semicolon"
+memory = "[ss unknown]"
+
+[annotations."0935:0f1f"]
+memory = "[ss unknown]"
+
+[annotations."0935:0f23"]
+jmp = "'apply_stress_and_pitch@57"
+
+[annotations."0935:0f25"]
+comment = "Question mark ('?'): rising pitch contour, unless starting with 'WH'"
+label = "punct_question"
+memory = "[ss unknown]"
+
+[annotations."0935:0f28"]
+memory = "[ss unknown]"
+
+[annotations."0935:0f2f"]
+jmp = "'40"
+
+[annotations."0935:0f31"]
+memory = "[ss unknown]"
+
+[annotations."0935:0f38"]
+memory = "[es unknown]"
+
+[annotations."0935:0f3d"]
+memory = "[ss unknown]"
+
+[annotations."0935:0f43"]
+jmp = "'44"
+
+[annotations."0935:0f45"]
+memory = "[ss unknown]"
+
+[annotations."0935:0f48"]
+memory = "[es unknown]"
+
+[annotations."0935:0f4c"]
+jmp = "'44"
+
+[annotations."0935:0f4f"]
+memory = "[es unknown]"
+
+[annotations."0935:0f53"]
+jmp = "'44"
+
+[annotations."0935:0f55"]
+memory = "[ss unknown]"
+
+[annotations."0935:0f59"]
+jmp = "'apply_stress_and_pitch@57"
+
+[annotations."0935:0f5b"]
+jmp = "'apply_stress_and_pitch@57"
+
+[annotations."0935:0f5d"]
+label = "punct_dispatch"
+
+[annotations."0935:0f60"]
+jmp = "'45"
+
+[annotations."0935:0f65"]
+jmp = "'45"
+
+[annotations."0935:0f6a"]
+jmp = "'50"
+
+[annotations."0935:0f6c"]
+jmp = "'punct_exclam@27"
+
+[annotations."0935:0f72"]
+jmp = "'45"
+
+[annotations."0935:0f77"]
+jmp = "'53"
+
+[annotations."0935:0f79"]
+jmp = "'punct_period@22"
+
+[annotations."0935:0f7f"]
+jmp = "'45"
+
+[annotations."0935:0f84"]
+jmp = "'punct_semicolon@37"
+
+[annotations."0935:0f89"]
+jmp = "'45"
+
+[annotations."0935:0f8e"]
+jmp = "'punct_question@38"
+
+[annotations."0935:0f90"]
+label = "apply_stress_and_pitch"
+memory = "[ss unknown]"
+
+[annotations."0935:0f95"]
+memory = "[ss unknown]"
+
+[annotations."0935:0f9a"]
+label = "word_char_loop"
+memory = "[ss unknown]"
+
+[annotations."0935:0fa0"]
+memory = "[es unknown]"
+
+[annotations."0935:0fa3"]
+memory = "[ss unknown]"
+
+[annotations."0935:0fa6"]
+comment = "Check '#' (manual pitch/stress up): increment level and delete marker"
+memory = "[ss unknown]"
+
+[annotations."0935:0faa"]
+jmp = "'60"
+
+[annotations."0935:0fac"]
+memory = "[ds unknown]"
+
+[annotations."0935:0fbb"]
+jmp = "pascal_string_delete@0d72:588e"
+
+[annotations."0935:0fc0"]
+memory = "[ss unknown]"
+
+[annotations."0935:0fc3"]
+memory = "[ss unknown]"
+
+[annotations."0935:0fc6"]
+jmp = "'advance_char@73"
+
+[annotations."0935:0fc9"]
+comment = "Check '@' (manual pitch/stress down): decrement level and delete marker"
+memory = "[ss unknown]"
+
+[annotations."0935:0fcd"]
+jmp = "'64"
+
+[annotations."0935:0fcf"]
+memory = "[ds unknown]"
+
+[annotations."0935:0fd4"]
+jmp = "'63"
+
+[annotations."0935:0fd6"]
+memory = "[ds unknown]"
+
+[annotations."0935:0fe3"]
+memory = "[ss unknown]"
+
+[annotations."0935:0fea"]
+jmp = "pascal_string_delete@0d72:588e"
+
+[annotations."0935:0fef"]
+memory = "[ss unknown]"
+
+[annotations."0935:0ff2"]
+memory = "[ss unknown]"
+
+[annotations."0935:0ff5"]
+jmp = "'advance_char@73"
+
+[annotations."0935:0ff8"]
+comment = "Check '/' (inflection up): increment counter and delete marker"
+memory = "[ss unknown]"
+
+[annotations."0935:0ffc"]
+jmp = "'66"
+
+[annotations."0935:0ffe"]
+memory = "[ss unknown]"
+
+[annotations."0935:100a"]
+memory = "[ss unknown]"
+
+[annotations."0935:1011"]
+jmp = "pascal_string_delete@0d72:588e"
+
+[annotations."0935:1016"]
+memory = "[ss unknown]"
+
+[annotations."0935:1019"]
+memory = "[ss unknown]"
+
+[annotations."0935:101c"]
+jmp = "'advance_char@73"
+
+[annotations."0935:101e"]
+comment = '''Check '\' (inflection down): decrement counter and delete marker'''
+memory = "[ss unknown]"
+
+[annotations."0935:1022"]
+jmp = "'68"
+
+[annotations."0935:1024"]
+memory = "[ss unknown]"
+
+[annotations."0935:1030"]
+memory = "[ss unknown]"
+
+[annotations."0935:1037"]
+jmp = "pascal_string_delete@0d72:588e"
+
+[annotations."0935:103c"]
+memory = "[ss unknown]"
+
+[annotations."0935:103f"]
+memory = "[ss unknown]"
+
+[annotations."0935:1042"]
+jmp = "'advance_char@73"
+
+[annotations."0935:1044"]
+comment = "Check if character is a vowel (set at ds:0190h)"
+memory = "[ss unknown]"
+
+[annotations."0935:1053"]
+jmp = "set_contains@0d72:5452"
+
+[annotations."0935:105a"]
+jmp = "'advance_char@73"
+
+[annotations."0935:105c"]
+memory = "[ss unknown]"
+
+[annotations."0935:105f"]
+memory = "[ds unknown]"
+
+[annotations."0935:1064"]
+jmp = "'72"
+
+[annotations."0935:1066"]
+memory = "[ss unknown]"
+
+[annotations."0935:106a"]
+jmp = "'72"
+
+[annotations."0935:106c"]
+memory = "[ss unknown]"
+
+[annotations."0935:106f"]
+memory = "[ss unknown]"
+
+[annotations."0935:1075"]
+comment = "Insert pitch contour value for vowel via helper at 0C4Ch"
+jmp = "edit_adjust_digit@0935:0c4c"
+
+[annotations."0935:1078"]
+memory = "[ss unknown]"
+
+[annotations."0935:107b"]
+label = "advance_char"
+memory = "[ss unknown]"
+
+[annotations."0935:107e"]
+memory = "[ss unknown]"
+
+[annotations."0935:1081"]
+memory = "[ss unknown]"
+
+[annotations."0935:1084"]
+jmp = "'75"
+
+[annotations."0935:1086"]
+jmp = "'word_char_loop@58"
+
+[annotations."0935:108c"]
+memory = "[es unknown]"
+
+[annotations."0935:1091"]
+memory = "[ss unknown]"
+
+[annotations."0935:1094"]
+jmp = "'exit@77"
+
+[annotations."0935:1096"]
+jmp = "'next_word@3"
+
+[annotations."0935:1099"]
+label = "exit"

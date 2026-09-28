@@ -3,7 +3,6 @@ len = 162
 name = "entry_point"
 desc = "TSR installer and program entry point"
 details = "Initializes registers, frees the program's DOS environment block, and queries INT 2Fh (AX=FBFBh) to determine whether the TSR is already installed. If already resident, it terminates via INT 21h AH=4Ch with exit code 0FBh; otherwise, it records MCB allocation details, executes configuration and hardware setup routines, hooks INT 2Fh to its resident handler, and terminates via INT 21h AH=31h to stay resident."
-callees = ["backup_ivt@0823:09e5", "dispatch_command@0823:0f5b", "ems_init@0823:0aa0", "init_callback_ptr@0823:0b3c", "init_heap_bounds@0823:0943", "load_driver@0823:0c86", "parse_cmdline@0823:0be7", "print_string_with_suffix@0823:0c79"]
 
 ---
 ; Initialize segment registers and clear general registers
@@ -105,4 +104,22 @@ callees = ["backup_ivt@0823:09e5", "dispatch_command@0823:0f5b", "ems_init@0823:
 0823:0d88 mov ah,4Ch
 0823:0d8a mov al,0FBh
 0823:0d8c int 21h
+0823:0d8e fmul qword ptr [bx]
+0823:0d90 or dx,[bx+si]
+0823:0d92 cmp [bx+si],dx
+0823:0d94 pop sp
+0823:0d95 adc [bp+si+10h],bh
+0823:0d98 mov dl,[bx+si]
+0823:0d9a lahf
+0823:0d9b adc [di-6DF0h],bh
+0823:0d9f movzx cx,word ptr [bx]
+0823:0da2 pop cx
+0823:0da3 push cx
+0823:0da4 mov ax,sp
+0823:0da6 mov cs:[0E57h],ax
+0823:0daa push ds
+0823:0dab pop ss
+0823:0dac mov sp,cs:[0E59h]
+0823:0db1 push cx
+0823:0db2 ret
 

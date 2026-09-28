@@ -1,0 +1,78 @@
+ip = "0935:1210"
+len = 81
+name = "check_string_has_lowercase"
+desc = "Checks if a Pascal string contains lowercase ASCII characters and sets a global flag."
+details = "Loads a far pointer to a Pascal-style string located at offset +0Ch of the input structure. Iterates through the characters from index 1 to the string length, checking if any character is between 'a' and 'z'. If a lowercase character is found, it sets the global byte at ds:0052h to 1."
+blocks = ["0935:1210", "0935:122d", "0935:1232", "0935:1243", "0935:1249", "0935:124e", "0935:125b"]
+
+[[params]]
+name = "str_record"
+value = "[bp+4]"
+type = "*const u8"
+desc = "Near pointer to structure containing a far pointer to a Pascal string at offset 0x0C"
+
+[annotations."0935:1217"]
+memory = "[ss unknown]"
+
+[annotations."0935:121c"]
+comment = "Load far pointer to Pascal string from struct offset 0x0C"
+
+[annotations."0935:121f"]
+comment = "Read string length prefix byte"
+memory = "[es unknown]"
+
+[annotations."0935:1224"]
+memory = "[ss unknown]"
+
+[annotations."0935:1227"]
+memory = "[ss unknown]"
+
+[annotations."0935:122b"]
+comment = "Exit if string is empty"
+jmp = "'exit@6"
+
+[annotations."0935:122d"]
+comment = "Initialize 1-based character index"
+memory = "[ss unknown]"
+
+[annotations."0935:1232"]
+label = "check_char_loop"
+memory = "[ss unknown]"
+
+[annotations."0935:123a"]
+memory = "[ss unknown]"
+
+[annotations."0935:123d"]
+comment = "Check if character >= 'a'"
+memory = "[es unknown]"
+
+[annotations."0935:1241"]
+jmp = "'advance_index@5"
+
+[annotations."0935:1243"]
+comment = "Check if character <= 'z'"
+memory = "[es unknown]"
+
+[annotations."0935:1247"]
+jmp = "'advance_index@5"
+
+[annotations."0935:1249"]
+comment = "Set global flag indicating lowercase character found"
+memory = "[ds unknown]"
+
+[annotations."0935:124e"]
+label = "advance_index"
+memory = "[ss unknown]"
+
+[annotations."0935:1252"]
+memory = "[ss unknown]"
+
+[annotations."0935:1256"]
+comment = "Compare index with string length and loop if not finished"
+memory = "[ss unknown]"
+
+[annotations."0935:1259"]
+jmp = "'check_char_loop@2"
+
+[annotations."0935:125b"]
+label = "exit"

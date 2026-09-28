@@ -1,0 +1,84 @@
+ip = "0d72:0213"
+len = 15
+name = "handle_qu_pair"
+desc = "Recognize an uppercase QU pair and update the caller's scan state."
+details = "Returns without changing scan state unless CH is 'Q' (0x51) and CL is 'U' (0x55). On a match, adds the word at SS:[BP+0x0C] to SI twice (with 16-bit wraparound), increments the byte at SS:[BP+3], and tests bit 0 of CS:[0x4A9C+BX] after replacing BL with CH; if set, stores DI to SS:[BP+0x0E]. BH is preserved, so interpreting the lookup as a simple character-indexed table requires the caller to supply BH=0; the precise meanings of the counter and saved DI are not established by this routine alone."
+blocks = ["0d72:01f8", "0d72:0209", "0d72:020c", "0d72:0213", "0d72:0218", "0d72:021d"]
+
+[[params]]
+name = "character_pair"
+value = "cx"
+type = "u16"
+desc = "CH must contain uppercase Q and CL uppercase U for the state update to occur."
+
+[[params]]
+name = "scan_position"
+value = "si"
+type = "u16"
+desc = "Scan position, advanced in place by twice the word stride at SS:[BP+0x0C] when QU matches."
+
+[[params]]
+name = "scan_state"
+value = "bp"
+type = "u16"
+desc = "Offset in SS of caller-owned state: byte counter at +3, word stride at +0x0C, and saved word position at +0x0E."
+
+[[params]]
+name = "position_to_save"
+value = "di"
+type = "u16"
+desc = "Stored at SS:[BP+0x0E] on a QU match if the character-table entry has bit 0 set."
+
+[[params]]
+name = "table_index_high"
+value = "bh"
+type = "u8"
+desc = "Preserved high byte of the character-table index; BL becomes Q on a match. Expected to be zero for a simple 256-entry character table."
+
+[annotations."0d72:01f8"]
+comment = "Increment the caller's byte counter at SS:[BP+3] (wraps modulo 256)."
+label = "update_scan_state"
+memory = "[ss unknown]"
+
+[annotations."0d72:01fb"]
+comment = "Advance SI by the word stride at SS:[BP+0x0C]; total advance on this entry path is twice the stride."
+memory = "[ss unknown]"
+
+[annotations."0d72:01fe"]
+comment = "Use CH as the low byte of the character-table index; BH is not cleared here."
+
+[annotations."0d72:0200"]
+comment = "Load character flags from CS:[0x4A9C+BX] (CS:[0x4AED] for Q if BH=0)."
+memory = "[bx unknown]"
+
+[annotations."0d72:0205"]
+comment = "Only bit 0 controls whether DI is saved; AL is left holding this bit."
+
+[annotations."0d72:0207"]
+jmp = "'return_to_caller@2"
+
+[annotations."0d72:0209"]
+comment = "Save DI in the caller's state when the character-table flag is set."
+memory = "[ss unknown]"
+
+[annotations."0d72:020c"]
+label = "return_to_caller"
+
+[annotations."0d72:0213"]
+comment = "Require CH == 'Q'; otherwise return without updating scan state."
+
+[annotations."0d72:0216"]
+jmp = "'return_to_caller@2"
+
+[annotations."0d72:0218"]
+comment = "Require CL == 'U' to recognize the QU pair."
+
+[annotations."0d72:021b"]
+jmp = "'return_to_caller@2"
+
+[annotations."0d72:021d"]
+comment = "First stride advance for QU; the shared update block advances SI once more."
+memory = "[ss unknown]"
+
+[annotations."0d72:0220"]
+jmp = "'update_scan_state@0"

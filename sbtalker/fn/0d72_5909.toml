@@ -1,0 +1,161 @@
+ip = "0d72:5909"
+len = 156
+name = "pascal_string_insert_bytes"
+desc = "Insert raw bytes at a one-based position in a length-prefixed Pascal string."
+details = "For normal arguments (1 <= position <= length+1 and length+count <= capacity <= 255), shifts length-position+1 suffix bytes upward by count using a backward copy, copies count raw source bytes into the gap, and updates the destination's leading length byte; position length+1 appends and no NUL terminator is written. Calls the fatal-error helper at 0d72:5ca6 if the signed 16-bit length+count comparison exceeds capacity or position exceeds length+1, but does not check position >= 1, nonnegative count/capacity, arithmetic overflow, or the 255-byte representation limit; pointer offsets wrap within their segments and source aliasing is not generally safe because the suffix is shifted before the forward source copy. Uses 12 bytes of locals and runtime frame registration, preserves SI/DI/BP/DS, returns no defined value, and RETF 0Eh removes seven argument words."
+blocks = ["0d72:5909", "0d72:592c", "0d72:5935", "0d72:593a"]
+
+[[params]]
+name = "position"
+value = "[sp+4]"
+type = "i16"
+desc = "One-based insertion position (BP+6); length+1 appends. Only the upper bound is checked."
+
+[[params]]
+name = "destination_offset"
+value = "[sp+6]"
+type = "u16"
+desc = "Offset of destination Pascal string's length byte (BP+8)."
+
+[[params]]
+name = "destination_segment"
+value = "[sp+8]"
+type = "u16"
+desc = "Segment of destination Pascal string (BP+0Ah)."
+
+[[params]]
+name = "capacity"
+value = "[sp+0Ah]"
+type = "i16"
+desc = "Maximum destination character count, excluding the length byte (BP+0Ch); normally <=255."
+
+[[params]]
+name = "source_offset"
+value = "[sp+0Ch]"
+type = "u16"
+desc = "Offset of first raw source byte, not a Pascal length prefix (BP+0Eh)."
+
+[[params]]
+name = "source_segment"
+value = "[sp+0Eh]"
+type = "u16"
+desc = "Segment containing raw source bytes (BP+10h)."
+
+[[params]]
+name = "count"
+value = "[sp+10h]"
+type = "u16"
+desc = "Number of bytes to insert (BP+12h); expected small and nonnegative, though not explicitly validated."
+
+[annotations."0d72:5909"]
+comment = "Allocate 12 local bytes through the runtime prologue; BP+6 is the first argument."
+
+[annotations."0d72:590c"]
+jmp = "checked_stack_frame_prologue@0d72:5c2a"
+
+[annotations."0d72:5915"]
+jmp = "register_outermost_stack_frame@0d72:4fcc"
+
+[annotations."0d72:591a"]
+comment = "Load destination length L from its prefix; preserve its low byte in DX."
+
+[annotations."0d72:591d"]
+memory = "[es unknown]"
+
+[annotations."0d72:5924"]
+comment = "Signed 16-bit check: if L+count > capacity, report a fatal string-bounds error."
+memory = "[ss unknown]"
+
+[annotations."0d72:5927"]
+memory = "[ss unknown]"
+
+[annotations."0d72:592a"]
+jmp = "'string_bounds_error@2"
+
+[annotations."0d72:592c"]
+comment = "Recover L, zero-extend, and require position <= L+1 (signed). No lower-bound check."
+
+[annotations."0d72:5930"]
+memory = "[ss unknown]"
+
+[annotations."0d72:5933"]
+jmp = "'shift_suffix_and_insert@3"
+
+[annotations."0d72:5935"]
+comment = "Invoke fatal-error helper for capacity overflow or position beyond L+1."
+label = "string_bounds_error"
+jmp = "report_pascal_string_bounds_error@0d72:5ca6"
+
+[annotations."0d72:593a"]
+comment = "Save and push suffix source far pointer destination+position."
+label = "shift_suffix_and_insert"
+
+[annotations."0d72:593d"]
+memory = "[ss unknown]"
+
+[annotations."0d72:5940"]
+memory = "[ss unknown]"
+
+[annotations."0d72:5943"]
+memory = "[ss unknown]"
+
+[annotations."0d72:5948"]
+comment = "Save and push shifted suffix destination pointer destination+position+count."
+memory = "[ss unknown]"
+
+[annotations."0d72:594b"]
+memory = "[ss unknown]"
+
+[annotations."0d72:5953"]
+memory = "[ss unknown]"
+
+[annotations."0d72:5956"]
+memory = "[ss unknown]"
+
+[annotations."0d72:595b"]
+comment = "Suffix byte count = L-position+1; zero for append."
+
+[annotations."0d72:595e"]
+memory = "[es unknown]"
+
+[annotations."0d72:5963"]
+memory = "[ss unknown]"
+
+[annotations."0d72:5968"]
+comment = "Copy suffix backward to higher addresses so its overlapping bytes are preserved."
+jmp = "copy_far_bytes_backward@0d72:50a4"
+
+[annotations."0d72:596d"]
+comment = "Push raw source pointer and destination+position, followed by insertion count."
+
+[annotations."0d72:5975"]
+memory = "[ss unknown]"
+
+[annotations."0d72:5978"]
+memory = "[ss unknown]"
+
+[annotations."0d72:597b"]
+memory = "[ss unknown]"
+
+[annotations."0d72:5980"]
+memory = "[ss unknown]"
+
+[annotations."0d72:5983"]
+comment = "Copy count source bytes forward into the insertion gap; general source/destination aliasing is unsafe."
+jmp = "copy_far_bytes_forward@0d72:507e"
+
+[annotations."0d72:5988"]
+comment = "Reload length prefix and store low byte of L+count; no terminator is added."
+
+[annotations."0d72:598b"]
+memory = "[es unknown]"
+
+[annotations."0d72:5990"]
+memory = "[ss unknown]"
+
+[annotations."0d72:5995"]
+memory = "[es unknown]"
+
+[annotations."0d72:5998"]
+comment = "Unregister runtime frame, restore saved registers, and far-return discarding 14 argument bytes."
+jmp = "unregister_outermost_stack_frame@0d72:5004"

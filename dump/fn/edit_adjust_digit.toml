@@ -3,8 +3,6 @@ len = 307
 name = "edit_adjust_digit"
 desc = "Adjusts a single-digit numeric field (0-9) in an input buffer, updating the display string and cursor."
 details = "Calculates a new digit value by adding the delta parameter to a base offset, clamping the result to the range [0, 9]. If the value changed, it formats the digit to ASCII ('0'-'9'), optionally removes an existing digit from the buffer, inserts the new character via a string manipulation routine, and updates cursor/length offsets in the context structure."
-callers = ["apply_prosody_intonation@0935:0d7f"]
-callees = ["pascal_string_delete@0d72:588e", "pascal_string_insert_bytes@0d72:5909", "set_contains@0d72:5452"]
 
 [[params]]
 name = "ctx"

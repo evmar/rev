@@ -1,0 +1,408 @@
+ip = "0935:21f1"
+len = 508
+name = "parse_date_or_time"
+desc = "Parses a formatted date (MM/DD/YY) or time (HH:MM[:SS]) string."
+details = "Attempts to parse a date or time from the input scanner stream. If the delimiter following the first integer is '/' or '-', it parses day and year values (normalizing years >= 1900) and checks their ranges. If the delimiter is ':', it parses minutes and optional seconds. On failure, it rolls back the stream state and returns 0."
+blocks = ["0935:21f1", "0935:221c", "0935:221f", "0935:2227", "0935:222a", "0935:2245", "0935:2248", "0935:2250", "0935:2253", "0935:226e", "0935:2271", "0935:2279", "0935:227f", "0935:2286", "0935:228d", "0935:2294", "0935:229b", "0935:229e", "0935:22de", "0935:22e5", "0935:22f1", "0935:22f8", "0935:22fb", "0935:2316", "0935:2319", "0935:2320", "0935:2327", "0935:232a", "0935:2337", "0935:2352", "0935:2355", "0935:236c", "0935:23cc", "0935:23ce", "0935:23d1", "0935:23d7", "0935:23e4"]
+
+[[params]]
+name = "ctx"
+value = "[bp+4]"
+type = "*mut u8"
+desc = "Pointer to parser stream or context structure"
+
+[ret]
+name = "success"
+value = "ax"
+type = "bool"
+desc = "1 if date or time was successfully parsed, 0 on failure"
+
+[annotations."0935:21f8"]
+memory = "[ss unknown]"
+
+[annotations."0935:21fc"]
+comment = "Default date delimiter '/'"
+memory = "[ss unknown]"
+
+[annotations."0935:2200"]
+memory = "[ds unknown]"
+
+[annotations."0935:2203"]
+comment = "Save scanner stream state for rollback"
+memory = "[ss unknown]"
+
+[annotations."0935:2207"]
+memory = "[ds unknown]"
+
+[annotations."0935:220a"]
+memory = "[ss unknown]"
+
+[annotations."0935:220e"]
+comment = "Parse first integer (month or hour)"
+jmp = "parse_decimal_integer@0935:1ec7"
+
+[annotations."0935:2211"]
+memory = "[ss unknown]"
+
+[annotations."0935:2215"]
+memory = "[ss unknown]"
+
+[annotations."0935:221a"]
+jmp = "'check_date_delim@2"
+
+[annotations."0935:221c"]
+jmp = "'parse_error@35"
+
+[annotations."0935:221f"]
+label = "check_date_delim"
+memory = "[ds unknown]"
+
+[annotations."0935:2222"]
+memory = "[ss unknown]"
+
+[annotations."0935:2225"]
+jmp = "'parse_date_day@4"
+
+[annotations."0935:2227"]
+jmp = "'check_dash_delim@18"
+
+[annotations."0935:222a"]
+label = "parse_date_day"
+memory = "[ss unknown]"
+
+[annotations."0935:222d"]
+memory = "[ds unknown]"
+
+[annotations."0935:2230"]
+memory = "[ds unknown]"
+
+[annotations."0935:2233"]
+jmp = "get_next_char@0935:11a0"
+
+[annotations."0935:2237"]
+comment = "Parse day of month"
+jmp = "parse_decimal_integer@0935:1ec7"
+
+[annotations."0935:223a"]
+memory = "[ss unknown]"
+
+[annotations."0935:223e"]
+memory = "[ss unknown]"
+
+[annotations."0935:2243"]
+jmp = "'6"
+
+[annotations."0935:2245"]
+jmp = "'parse_error@35"
+
+[annotations."0935:2248"]
+memory = "[ds unknown]"
+
+[annotations."0935:224b"]
+memory = "[ss unknown]"
+
+[annotations."0935:224e"]
+jmp = "'parse_date_year@8"
+
+[annotations."0935:2250"]
+jmp = "'parse_error@35"
+
+[annotations."0935:2253"]
+label = "parse_date_year"
+memory = "[ss unknown]"
+
+[annotations."0935:2256"]
+memory = "[ds unknown]"
+
+[annotations."0935:2259"]
+memory = "[ds unknown]"
+
+[annotations."0935:225c"]
+jmp = "get_next_char@0935:11a0"
+
+[annotations."0935:2260"]
+comment = "Parse year"
+jmp = "parse_decimal_integer@0935:1ec7"
+
+[annotations."0935:2263"]
+memory = "[ss unknown]"
+
+[annotations."0935:2267"]
+memory = "[ss unknown]"
+
+[annotations."0935:226c"]
+jmp = "'validate_year@10"
+
+[annotations."0935:226e"]
+jmp = "'parse_error@35"
+
+[annotations."0935:2271"]
+label = "validate_year"
+memory = "[ss unknown]"
+
+[annotations."0935:2277"]
+jmp = "'validate_date_ranges@12"
+
+[annotations."0935:2279"]
+comment = "Convert year >= 1900 to 2-digit year"
+memory = "[ss unknown]"
+
+[annotations."0935:227f"]
+label = "validate_date_ranges"
+memory = "[ss unknown]"
+
+[annotations."0935:2284"]
+jmp = "'16"
+
+[annotations."0935:2286"]
+comment = "Validate month (1-12), day (<= 31), and year (<= 99)"
+memory = "[ss unknown]"
+
+[annotations."0935:228b"]
+jmp = "'16"
+
+[annotations."0935:228d"]
+memory = "[ss unknown]"
+
+[annotations."0935:2292"]
+jmp = "'16"
+
+[annotations."0935:2294"]
+memory = "[ss unknown]"
+
+[annotations."0935:2299"]
+jmp = "'date_success@17"
+
+[annotations."0935:229b"]
+jmp = "'parse_error@35"
+
+[annotations."0935:229e"]
+label = "date_success"
+memory = "[ss unknown]"
+
+[annotations."0935:22a3"]
+jmp = "append_spoken_month_name@0935:1f63"
+
+[annotations."0935:22a6"]
+memory = "[ss unknown]"
+
+[annotations."0935:22ab"]
+jmp = "pronounce_two_digit_number@0935:1e4e"
+
+[annotations."0935:22ae"]
+memory = "[ss unknown]"
+
+[annotations."0935:22bc"]
+jmp = "pascal_string_copy_bounded@0d72:538c"
+
+[annotations."0935:22c5"]
+memory = "[ss unknown]"
+
+[annotations."0935:22ca"]
+memory = "[ss unknown]"
+
+[annotations."0935:22cd"]
+memory = "[ds unknown]"
+
+[annotations."0935:22d0"]
+jmp = "tts_pronounce_number@0935:1742"
+
+[annotations."0935:22d3"]
+memory = "[ss unknown]"
+
+[annotations."0935:22d8"]
+jmp = "pronounce_two_digit_number@0935:1e4e"
+
+[annotations."0935:22db"]
+jmp = "'success@34"
+
+[annotations."0935:22de"]
+label = "check_dash_delim"
+memory = "[ds unknown]"
+
+[annotations."0935:22e3"]
+jmp = "'check_time_delim@20"
+
+[annotations."0935:22e5"]
+comment = "Set delimiter to '-' and parse date"
+memory = "[ds unknown]"
+
+[annotations."0935:22e8"]
+memory = "[ss unknown]"
+
+[annotations."0935:22eb"]
+jmp = "'parse_date_day@4"
+
+[annotations."0935:22f1"]
+label = "check_time_delim"
+memory = "[ds unknown]"
+
+[annotations."0935:22f6"]
+jmp = "'parse_time_minute@22"
+
+[annotations."0935:22f8"]
+jmp = "'33"
+
+[annotations."0935:22fb"]
+label = "parse_time_minute"
+memory = "[ss unknown]"
+
+[annotations."0935:22fe"]
+memory = "[ds unknown]"
+
+[annotations."0935:2301"]
+memory = "[ds unknown]"
+
+[annotations."0935:2304"]
+jmp = "get_next_char@0935:11a0"
+
+[annotations."0935:2308"]
+comment = "Parse minute"
+jmp = "parse_decimal_integer@0935:1ec7"
+
+[annotations."0935:230b"]
+memory = "[ss unknown]"
+
+[annotations."0935:230f"]
+memory = "[ss unknown]"
+
+[annotations."0935:2314"]
+jmp = "'validate_time_ranges@24"
+
+[annotations."0935:2316"]
+jmp = "'parse_error@35"
+
+[annotations."0935:2319"]
+comment = "Validate hour (<= 24) and minute (<= 59)"
+label = "validate_time_ranges"
+memory = "[ss unknown]"
+
+[annotations."0935:231e"]
+jmp = "'26"
+
+[annotations."0935:2320"]
+memory = "[ss unknown]"
+
+[annotations."0935:2325"]
+jmp = "'parse_time_second@27"
+
+[annotations."0935:2327"]
+jmp = "'parse_error@35"
+
+[annotations."0935:232a"]
+label = "parse_time_second"
+memory = "[ss unknown]"
+
+[annotations."0935:2330"]
+memory = "[ds unknown]"
+
+[annotations."0935:2335"]
+jmp = "'time_success@30"
+
+[annotations."0935:2337"]
+memory = "[ss unknown]"
+
+[annotations."0935:233a"]
+memory = "[ds unknown]"
+
+[annotations."0935:233d"]
+memory = "[ds unknown]"
+
+[annotations."0935:2340"]
+jmp = "get_next_char@0935:11a0"
+
+[annotations."0935:2344"]
+comment = "Parse optional seconds"
+jmp = "parse_decimal_integer@0935:1ec7"
+
+[annotations."0935:2347"]
+memory = "[ss unknown]"
+
+[annotations."0935:234b"]
+memory = "[ss unknown]"
+
+[annotations."0935:2350"]
+jmp = "'time_success@30"
+
+[annotations."0935:2352"]
+jmp = "'parse_error@35"
+
+[annotations."0935:2355"]
+label = "time_success"
+memory = "[ss unknown]"
+
+[annotations."0935:235a"]
+jmp = "pronounce_two_digit_number@0935:1e4e"
+
+[annotations."0935:235d"]
+memory = "[ss unknown]"
+
+[annotations."0935:2362"]
+jmp = "pronounce_two_digit_number@0935:1e4e"
+
+[annotations."0935:2365"]
+memory = "[ss unknown]"
+
+[annotations."0935:236a"]
+jmp = "'32"
+
+[annotations."0935:238b"]
+memory = "[ss unknown]"
+
+[annotations."0935:238e"]
+memory = "[ds unknown]"
+
+[annotations."0935:2391"]
+memory = "[ds unknown]"
+
+[annotations."0935:2394"]
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:2397"]
+memory = "[ss unknown]"
+
+[annotations."0935:239c"]
+jmp = "pronounce_two_digit_number@0935:1e4e"
+
+[annotations."0935:23c0"]
+memory = "[ss unknown]"
+
+[annotations."0935:23c3"]
+memory = "[ds unknown]"
+
+[annotations."0935:23c6"]
+memory = "[ds unknown]"
+
+[annotations."0935:23c9"]
+jmp = "path_append_component@0935:109f"
+
+[annotations."0935:23cc"]
+jmp = "'success@34"
+
+[annotations."0935:23ce"]
+jmp = "'parse_error@35"
+
+[annotations."0935:23d1"]
+label = "success"
+memory = "[ss unknown]"
+
+[annotations."0935:23d5"]
+jmp = "'exit@36"
+
+[annotations."0935:23d7"]
+comment = "Restore scanner position on parse failure"
+label = "parse_error"
+memory = "[ss unknown]"
+
+[annotations."0935:23db"]
+memory = "[ds unknown]"
+
+[annotations."0935:23de"]
+memory = "[ss unknown]"
+
+[annotations."0935:23e1"]
+memory = "[ds unknown]"
+
+[annotations."0935:23e4"]
+label = "exit"
+memory = "[ss unknown]"

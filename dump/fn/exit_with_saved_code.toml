@@ -3,8 +3,6 @@ len = 16
 name = "exit_with_saved_code"
 desc = "Terminate the program with the default exit code stored in DS:060Eh."
 details = "Loads the exit code word from global DS:060Eh, pushes it onto the stack, and calls far function 0d72:6e28 to perform runtime teardown, flush/close open file handles, restore interrupt vectors, and exit via DOS INT 21h/AH=4Ch. Does not normally return."
-callers = ["report_fatal_error_and_exit@0d72:4bac"]
-callees = ["0d72:6e28"]
 
 [[params]]
 name = "data_segment"

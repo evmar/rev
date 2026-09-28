@@ -1,0 +1,126 @@
+ip = "0935:1ec7"
+len = 156
+name = "parse_decimal_integer"
+desc = "Reads a decimal digit token from the input stream and converts it to a 16-bit integer."
+details = "Uses the caller's local length-prefixed buffer at frame_base-0x106 and the digit character set at DS:0170 to read a token via read_filtered_token. It accumulates the token as value = value * 10 + digit using 16-bit arithmetic, returning -1 if the token is empty and otherwise returning the parsed value."
+blocks = ["0935:1ec7", "0935:1f0e", "0935:1f13", "0935:1f40", "0935:1f4d", "0935:1f55", "0935:1f5a"]
+
+[[params]]
+name = "frame_base"
+value = "[bp+4]"
+type = "*mut u8"
+desc = "Caller's BP/frame pointer; its local token buffer is at frame_base-0x106 and its parser context pointer is at frame_base+4"
+
+[ret]
+name = "value"
+value = "ax"
+type = "i16"
+desc = "Parsed decimal value, or -1 if no digits were read"
+
+[annotations."0935:1ece"]
+memory = "[ss unknown]"
+
+[annotations."0935:1ed1"]
+comment = "Pass the caller's length-prefixed local token buffer at frame_base-0x106"
+memory = "[ds unknown]"
+
+[annotations."0935:1ed6"]
+comment = "Copy the 32-byte decimal-digit character set from DS:0170 onto the stack"
+
+[annotations."0935:1ee8"]
+memory = "[ss unknown]"
+
+[annotations."0935:1eeb"]
+memory = "[ss unknown]"
+
+[annotations."0935:1eee"]
+memory = "[ds unknown]"
+
+[annotations."0935:1ef1"]
+comment = "Read a token containing only permitted digit characters"
+memory = "[ds unknown]"
+
+[annotations."0935:1ef4"]
+jmp = "read_filtered_token@0935:1261"
+
+[annotations."0935:1ef7"]
+memory = "[ss unknown]"
+
+[annotations."0935:1efc"]
+memory = "[ss unknown]"
+
+[annotations."0935:1eff"]
+comment = "Load the token length from its leading byte"
+memory = "[ds unknown]"
+
+[annotations."0935:1f05"]
+memory = "[ss unknown]"
+
+[annotations."0935:1f08"]
+memory = "[ss unknown]"
+
+[annotations."0935:1f0c"]
+jmp = "'finish_parse@3"
+
+[annotations."0935:1f0e"]
+memory = "[ss unknown]"
+
+[annotations."0935:1f13"]
+comment = "Accumulate result = result * 10 + (token[index] - '0')"
+label = "accumulate_digit"
+
+[annotations."0935:1f19"]
+memory = "[ss unknown]"
+
+[annotations."0935:1f1c"]
+memory = "[ss unknown]"
+
+[annotations."0935:1f1f"]
+memory = "[ds unknown]"
+
+[annotations."0935:1f27"]
+memory = "[ds unknown]"
+
+[annotations."0935:1f30"]
+memory = "[ss unknown]"
+
+[annotations."0935:1f33"]
+memory = "[ss unknown]"
+
+[annotations."0935:1f37"]
+memory = "[ss unknown]"
+
+[annotations."0935:1f3b"]
+memory = "[ss unknown]"
+
+[annotations."0935:1f3e"]
+jmp = "'accumulate_digit@2"
+
+[annotations."0935:1f40"]
+comment = "Return the accumulated value when at least one digit was read"
+label = "finish_parse"
+memory = "[ss unknown]"
+
+[annotations."0935:1f43"]
+memory = "[ds unknown]"
+
+[annotations."0935:1f4b"]
+jmp = "'empty_token@5"
+
+[annotations."0935:1f4d"]
+memory = "[ss unknown]"
+
+[annotations."0935:1f50"]
+memory = "[ss unknown]"
+
+[annotations."0935:1f53"]
+jmp = "'return_value@6"
+
+[annotations."0935:1f55"]
+comment = "An empty token is reported as -1"
+label = "empty_token"
+memory = "[ss unknown]"
+
+[annotations."0935:1f5a"]
+label = "return_value"
+memory = "[ss unknown]"

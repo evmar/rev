@@ -1,0 +1,182 @@
+ip = "0935:109f"
+len = 257
+name = "path_append_component"
+desc = "Appends a path component to a destination string buffer with separator and overflow handling."
+details = "Checks if the combined path length exceeds 240 bytes or if a global buffer is already in use. If valid and not empty, it checks for redundant separators or appends the component to the destination Pascal string; otherwise, it appends to an overflow buffer."
+blocks = ["0935:109f", "0935:10c3", "0935:10c6", "0935:10cf", "0935:10d2", "0935:10d8", "0935:10f1", "0935:1104", "0935:1115", "0935:1128", "0935:1139", "0935:1155", "0935:1178", "0935:117a", "0935:119a"]
+
+[[params]]
+name = "dest_rec"
+value = "[bp+4]"
+type = "*mut u8"
+desc = "pointer to record containing far pointer to destination Pascal string at offset +8"
+
+[[params]]
+name = "component"
+value = "[bp+6]"
+type = "[u8; 256]"
+desc = "Pascal string containing path component to append"
+
+[annotations."0935:10a6"]
+memory = "[ss unknown]"
+
+[annotations."0935:10ab"]
+comment = "load far pointer to destination string from struct offset 8"
+
+[annotations."0935:10ae"]
+memory = "[es unknown]"
+
+[annotations."0935:10b3"]
+memory = "[ss unknown]"
+
+[annotations."0935:10b6"]
+memory = "[ss unknown]"
+
+[annotations."0935:10bb"]
+memory = "[ss unknown]"
+
+[annotations."0935:10be"]
+comment = "verify combined length is under 240 bytes"
+
+[annotations."0935:10c1"]
+jmp = "'check_overflow_state@2"
+
+[annotations."0935:10c3"]
+jmp = "'handle_overflow@13"
+
+[annotations."0935:10c6"]
+comment = "check if global overflow buffer at ds:[0060h] is active"
+label = "check_overflow_state"
+memory = "[ds unknown]"
+
+[annotations."0935:10cd"]
+jmp = "'check_dest_empty@4"
+
+[annotations."0935:10cf"]
+jmp = "'handle_overflow@13"
+
+[annotations."0935:10d2"]
+label = "check_dest_empty"
+memory = "[ss unknown]"
+
+[annotations."0935:10d6"]
+jmp = "'test_backslash@6"
+
+[annotations."0935:10d8"]
+memory = "[ss unknown]"
+
+[annotations."0935:10db"]
+memory = "[ss unknown]"
+
+[annotations."0935:10de"]
+memory = "[ss unknown]"
+
+[annotations."0935:10e6"]
+memory = "[ss unknown]"
+
+[annotations."0935:10e9"]
+comment = "destination is empty; copy input string directly"
+jmp = "pascal_string_copy_bounded@0d72:538c"
+
+[annotations."0935:10ee"]
+jmp = "'exit@12"
+
+[annotations."0935:10f1"]
+label = "test_backslash"
+memory = "[ss unknown]"
+
+[annotations."0935:10fb"]
+jmp = "pascal_string_equal@0d72:5570"
+
+[annotations."0935:1102"]
+jmp = "'test_slash@8"
+
+[annotations."0935:1104"]
+memory = "[ss unknown]"
+
+[annotations."0935:110c"]
+memory = "[ss unknown]"
+
+[annotations."0935:110f"]
+comment = "check if destination string ends with backslash"
+memory = "[es unknown]"
+
+[annotations."0935:1113"]
+jmp = "'strip_separator@10"
+
+[annotations."0935:1115"]
+label = "test_slash"
+memory = "[ss unknown]"
+
+[annotations."0935:111f"]
+jmp = "pascal_string_equal@0d72:5570"
+
+[annotations."0935:1126"]
+jmp = "'do_append@11"
+
+[annotations."0935:1128"]
+memory = "[ss unknown]"
+
+[annotations."0935:1130"]
+memory = "[ss unknown]"
+
+[annotations."0935:1133"]
+comment = "check if destination string ends with slash"
+memory = "[es unknown]"
+
+[annotations."0935:1137"]
+jmp = "'do_append@11"
+
+[annotations."0935:1139"]
+label = "strip_separator"
+
+[annotations."0935:113d"]
+memory = "[ss unknown]"
+
+[annotations."0935:1147"]
+memory = "[ss unknown]"
+
+[annotations."0935:114e"]
+comment = "delete trailing separator from destination string"
+jmp = "pascal_string_delete@0d72:588e"
+
+[annotations."0935:1153"]
+jmp = "'exit@12"
+
+[annotations."0935:1155"]
+label = "do_append"
+memory = "[ss unknown]"
+
+[annotations."0935:115b"]
+memory = "[ss unknown]"
+
+[annotations."0935:1164"]
+memory = "[ss unknown]"
+
+[annotations."0935:116e"]
+memory = "[ss unknown]"
+
+[annotations."0935:1173"]
+comment = "append string component to destination path"
+jmp = "pascal_string_insert_bytes@0d72:5909"
+
+[annotations."0935:1178"]
+label = "exit"
+jmp = "'epilogue@14"
+
+[annotations."0935:117a"]
+label = "handle_overflow"
+memory = "[ss unknown]"
+
+[annotations."0935:1180"]
+memory = "[ss unknown]"
+
+[annotations."0935:118e"]
+memory = "[ds unknown]"
+
+[annotations."0935:1195"]
+comment = "append string component to overflow buffer"
+jmp = "pascal_string_insert_bytes@0d72:5909"
+
+[annotations."0935:119a"]
+label = "epilogue"

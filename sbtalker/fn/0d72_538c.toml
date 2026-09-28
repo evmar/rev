@@ -1,0 +1,63 @@
+ip = "0d72:538c"
+len = 36
+name = "pascal_string_copy_bounded"
+desc = "Copies a length-prefixed Pascal string to a destination buffer, truncating to its capacity minus the length byte."
+details = "Reads the source length byte at AX:SI, computes n = min(source_length, (CX - 1) modulo 65536), stores n at ES:DI, and copies n payload bytes without adding a NUL terminator. CX is the total destination capacity including the length byte (normally 1..256); zero is not checked and underflows to 65535, causing the entire source string to be copied. Preserves DS, ES and BP; leaves AX equal to the original source length, CX zero, SI and DI advanced by n+1, and DF clear, using a forward word copy followed by an optional odd byte (not safe for arbitrary overlap)."
+blocks = ["0d72:538c", "0d72:539b", "0d72:539d"]
+
+[[params]]
+name = "source_segment"
+value = "ax"
+type = "u16"
+desc = "Segment of the source Pascal string; temporarily loaded into DS."
+
+[[params]]
+name = "source_offset"
+value = "si"
+type = "u16"
+desc = "Offset of the source length byte within source_segment."
+
+[[params]]
+name = "destination_segment"
+value = "es"
+type = "u16"
+desc = "Segment of the destination Pascal string buffer."
+
+[[params]]
+name = "destination_offset"
+value = "di"
+type = "u16"
+desc = "Offset at which to write the destination length byte and payload."
+
+[[params]]
+name = "destination_capacity"
+value = "cx"
+type = "u16"
+desc = "Total destination buffer size including its length byte; 256 permits all 255 payload bytes, 1 produces an empty string, and 0 is invalid but unchecked."
+
+[annotations."0d72:538f"]
+comment = "Save caller DS and select the source segment supplied in AX."
+
+[annotations."0d72:5392"]
+comment = "Load and zero-extend the source Pascal string length into AX."
+memory = "[ds unknown]"
+
+[annotations."0d72:5396"]
+comment = "Reserve one destination byte for the length prefix; unsigned clamp CX to min(capacity - 1, source length). Capacity zero wraps."
+
+[annotations."0d72:5399"]
+jmp = "'store_length_and_copy@2"
+
+[annotations."0d72:539d"]
+comment = "Write the truncated length byte and advance both pointers to the payload."
+label = "store_length_and_copy"
+memory = "[es unknown]"
+
+[annotations."0d72:53a2"]
+comment = "Copy floor(n/2) words forward; SHR retains n's low bit in CF across CLD and REP MOVSW."
+
+[annotations."0d72:53a7"]
+comment = "CX is now zero; ADC CX,CX converts the saved carry into a 0/1 byte count for the odd trailing byte."
+
+[annotations."0d72:53ab"]
+comment = "Restore caller DS and frame, then far return; no stack arguments to discard."

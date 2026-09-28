@@ -1,0 +1,92 @@
+ip = "0823:0cec"
+len = 162
+name = "entry_point"
+desc = "TSR installer and program entry point"
+details = "Initializes registers, frees the program's DOS environment block, and queries INT 2Fh (AX=FBFBh) to determine whether the TSR is already installed. If already resident, it terminates via INT 21h AH=4Ch with exit code 0FBh; otherwise, it records MCB allocation details, executes configuration and hardware setup routines, hooks INT 2Fh to its resident handler, and terminates via INT 21h AH=31h to stay resident."
+blocks = ["0823:0cec", "0823:0d1f", "0823:0d28", "0823:0d88"]
+
+[annotations."0823:0cec"]
+comment = "Initialize segment registers and clear general registers"
+
+[annotations."0823:0d03"]
+comment = "Get current PSP and free environment memory block"
+
+[annotations."0823:0d09"]
+memory = "[es unknown]"
+
+[annotations."0823:0d13"]
+comment = "Check if INT 2Fh is present and test if TSR is already resident via multiplex AX=FBFBh"
+
+[annotations."0823:0d1d"]
+label = "install"
+jmp = "'setup_memory@2"
+
+[annotations."0823:0d26"]
+comment = "Already installed; jump to exit"
+jmp = "'exit_already_installed@3"
+
+[annotations."0823:0d28"]
+comment = "Inspect MCB to record block size and calculate next block segment"
+label = "setup_memory"
+
+[annotations."0823:0d2d"]
+memory = "0823:008e"
+
+[annotations."0823:0d38"]
+memory = "[ds unknown]"
+
+[annotations."0823:0d3a"]
+memory = "0823:0090"
+
+[annotations."0823:0d42"]
+memory = "0823:00a9"
+
+[annotations."0823:0d47"]
+comment = "Call initialization routines (IVT backup, command-line parsing, driver setup, etc.)"
+
+[annotations."0823:0d49"]
+jmp = "backup_ivt@0823:09e5"
+
+[annotations."0823:0d4c"]
+jmp = "parse_cmdline@0823:0be7"
+
+[annotations."0823:0d4f"]
+jmp = "load_driver@0823:0c86"
+
+[annotations."0823:0d52"]
+jmp = "dispatch_command@0823:0f5b"
+
+[annotations."0823:0d55"]
+jmp = "init_heap_bounds@0823:0943"
+
+[annotations."0823:0d58"]
+jmp = "init_callback_ptr@0823:0b3c"
+
+[annotations."0823:0d5b"]
+jmp = "ems_init@0823:0aa0"
+
+[annotations."0823:0d5e"]
+comment = "Hook INT 2Fh to internal handler at CS:0898h, saving the old vector"
+
+[annotations."0823:0d63"]
+memory = "0823:007e"
+
+[annotations."0823:0d68"]
+memory = "0823:0080"
+
+[annotations."0823:0d6f"]
+assume = [["ds", 2083]]
+
+[annotations."0823:0d77"]
+comment = "Prepare resident size and invoke DOS TSR (INT 21h, AH=31h)"
+memory = "0823:00ab"
+
+[annotations."0823:0d7b"]
+jmp = "print_string_with_suffix@0823:0c79"
+
+[annotations."0823:0d81"]
+memory = "0823:0090"
+
+[annotations."0823:0d88"]
+comment = "Exit program with error code 0FBh when TSR is already loaded"
+label = "exit_already_installed"

@@ -3,8 +3,6 @@ len = 4410
 name = "checked_stack_frame_prologue"
 desc = "Establish a BP frame and reserve AX local bytes, checking for stack underflow and the runtime stack limit."
 details = "Called with a near CALL: removes the continuation IP into CX, saves the old BP, sets BP to that saved word, and computes BX = BP - AX; if subtraction does not borrow and BX >= unsigned DS:[0792h], sets SP = BX and jumps to CX, leaving AX unchanged and BX/CX clobbered. On failure, constructs a far continuation and transfers to 0d72:6b88, which repeats the allocation check and either returns to that continuation, dispatches through the far handler at DS:[078Eh] (offset FFFFh means absent), or enters the default diagnostic/termination path with error code 0. On normal continuation [BP] holds the old BP and locals occupy [BP-AX,BP); the caller restores SP/BP in its own epilogue, and the apparent fallthrough beyond the indirect termination call at 6d39 is not part of the intended prologue flow (a separate function begins at 6d3e)."
-callers = ["pascal_string_equal@0d72:5570", "pascal_string_not_equal@0d72:55e0", "pascal_string_less_than@0d72:5615", "pascal_string_append_bytes@0d72:582a", "pascal_string_delete@0d72:588e", "pascal_string_insert_bytes@0d72:5909"]
-callees = ["0d72:6ecc", "0d72:6f1b", "unknown:mem", "unknown:reg"]
 
 [[params]]
 name = "local_bytes"

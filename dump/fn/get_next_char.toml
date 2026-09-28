@@ -3,8 +3,6 @@ len = 112
 name = "get_next_char"
 desc = "Reads and preprocesses the next character from a length-prefixed string."
 details = "Fetches the character at global index ds:[160h] from a length-prefixed string located at offset 0Ch in the provided structure. Clamps control characters under ASCII 0x20 to spaces, checks the character against a filter table at ds:1CDCh, optionally transforms it via an auxiliary routine, and increments the global character offset before returning."
-callers = ["read_filtered_token@0935:1261", "parse_date_or_time@0935:21f1", "parse_date_or_time@0935:21f1", "parse_date_or_time@0935:21f1", "parse_date_or_time@0935:21f1", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "dispatch_action_by_state@0935:30a1", "dispatch_command_input@0935:3cc9", "dispatch_command_input@0935:3cc9", "process_transaction_loop@0935:3d66"]
-callees = ["ascii_to_glyph_index@0935:0063", "set_contains@0d72:5452"]
 
 [[params]]
 name = "struct_ptr"

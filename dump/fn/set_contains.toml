@@ -3,7 +3,6 @@ len = 48
 name = "set_contains"
 desc = "Tests whether an unsigned element belongs to an MSB-first packed bit set."
 details = "Computes byte_index = element >> 3 and returns 0 if it exceeds the inclusive last-byte index. Otherwise returns 1 exactly when set[byte_index] & (0x80 >> (element & 7)) is nonzero; callers use this helper for character-set membership. The set is passed as a 16:16 far pointer, and RETF 8 removes the eight bytes of arguments."
-callers = ["is_not_sentence_end@0935:0b91", "is_not_sentence_end@0935:0b91", "edit_adjust_digit@0935:0c4c", "edit_adjust_digit@0935:0c4c", "apply_prosody_intonation@0935:0d7f", "apply_prosody_intonation@0935:0d7f", "apply_prosody_intonation@0935:0d7f", "get_next_char@0935:11a0", "read_filtered_token@0935:1261", "read_filtered_token@0935:1261", "parse_and_emit_token@0935:12fc", "parse_and_emit_token@0935:12fc", "parse_and_emit_token@0935:12fc", "parse_and_emit_token@0935:12fc", "parse_trailing_int@0935:1db1", "parse_trailing_int@0935:1db1", "parse_trailing_int@0935:1db1", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "parse_argument_switches@0935:23ed", "dispatch_command_input@0935:3cc9", "dispatch_command_input@0935:3cc9"]
 
 [[params]]
 name = "set"

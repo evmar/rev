@@ -1,0 +1,79 @@
+ip = "0d72:01a9"
+len = 30
+name = "match_zero_or_more_class_01_context"
+desc = "Matches zero or more pronunciation-context characters having property bit 0x01."
+details = "This is a specialized tail-dispatched context matcher that always increments the caller's shared match count, so the operator succeeds even when it consumes no input. If the current byte has character-property bit 0x01, it advances SI by the signed scan stride; when the adjacent byte also has bit 0x01, it saves DI as the backtracking marker so the caller can repeat the same encoded context token."
+blocks = ["0d72:01a9", "0d72:01b5", "0d72:01c3", "0d72:01c6"]
+
+[[params]]
+name = "current_byte"
+value = "bl"
+type = "u8"
+desc = "Current input byte, used to index the character-property table at CS:4A9C."
+
+[[params]]
+name = "adjacent_byte"
+value = "ch"
+type = "u8"
+desc = "Input byte one scan step beyond the current byte."
+
+[[params]]
+name = "input_cursor"
+value = "si"
+type = "*mut u8"
+desc = "Near input pointer; advanced by scan_stride when current_byte belongs to class 0x01."
+
+[[params]]
+name = "rule_cursor"
+value = "di"
+type = "*const u8"
+desc = "Near encoded-rule pointer saved as the repetition/backtracking marker when another class member follows."
+
+[[params]]
+name = "match_count"
+value = "[bp+3]"
+type = "u8"
+desc = "Shared caller-frame match count; incremented unconditionally because zero occurrences are valid."
+
+[[params]]
+name = "scan_stride"
+value = "[bp+0Ch]"
+type = "i16"
+desc = "Signed input scan step, normally -1 for left context or +1 for right context."
+
+[[params]]
+name = "backtracking_marker"
+value = "[bp+0Eh]"
+type = "u16"
+desc = "Shared caller-frame rule offset updated to DI when the operator can consume another class-0x01 byte."
+
+[annotations."0d72:01a9"]
+comment = "Mark this context token successful even if it consumes zero class members."
+memory = "[ss unknown]"
+
+[annotations."0d72:01ac"]
+comment = "Test whether the current input byte has character-property bit 0x01."
+memory = "[bx unknown]"
+
+[annotations."0d72:01b3"]
+jmp = "'return@3"
+
+[annotations."0d72:01b5"]
+comment = "Consume the current class member by advancing one signed scan step."
+memory = "[ss unknown]"
+
+[annotations."0d72:01b8"]
+comment = "Test the adjacent input byte for another class-0x01 member."
+
+[annotations."0d72:01ba"]
+memory = "[bx unknown]"
+
+[annotations."0d72:01c1"]
+jmp = "'return@3"
+
+[annotations."0d72:01c3"]
+comment = "Save this rule position so the caller can repeat the same context operator."
+memory = "[ss unknown]"
+
+[annotations."0d72:01c6"]
+label = "return"

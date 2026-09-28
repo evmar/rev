@@ -1,0 +1,119 @@
+ip = "0d72:582a"
+len = 100
+name = "pascal_string_append_bytes"
+desc = "Append a counted byte sequence to a length-prefixed Pascal string, checking destination capacity."
+details = "Reads the destination length byte, adds count using 16-bit arithmetic, and uses a signed comparison against capacity; if the sum is greater, calls the fatal-error helper at 0d72:5ca6 (error code 0x27). Otherwise copies count bytes forward from the far source pointer to destination + 1 + old_length, then rereads and increases the destination length byte without adding a NUL terminator; intended inputs are valid Pascal string lengths/capacities (0..255), and arbitrary overlapping buffers are not supported by the forward copy. The caller at 0935:24be passes capacity 255 and a token payload excluding its length byte; the routine allocates four local bytes through 0d72:5c2a, registers/unregisters its runtime stack frame, preserves SI/DI/BP/DS, and returns with RETF 0Ch and no defined return value."
+blocks = ["0d72:582a", "0d72:584b", "0d72:5850"]
+
+[[params]]
+name = "source_offset"
+value = "[sp+4]"
+type = "u16"
+desc = "Offset of first source payload byte, excluding any Pascal length prefix; [bp+6] after prologue."
+
+[[params]]
+name = "source_segment"
+value = "[sp+6]"
+type = "u16"
+desc = "Segment of source payload pointer; [bp+8] after prologue."
+
+[[params]]
+name = "count"
+value = "[sp+8]"
+type = "u16"
+desc = "Number of source bytes to append; [bp+0Ah] after prologue. Expected to fit destination capacity."
+
+[[params]]
+name = "destination_offset"
+value = "[sp+0Ah]"
+type = "u16"
+desc = "Offset of destination Pascal string length byte; [bp+0Ch] after prologue."
+
+[[params]]
+name = "destination_segment"
+value = "[sp+0Ch]"
+type = "u16"
+desc = "Segment of destination Pascal string; [bp+0Eh] after prologue."
+
+[[params]]
+name = "capacity"
+value = "[sp+0Eh]"
+type = "u16"
+desc = "Maximum destination payload length, excluding length byte (normally <=255); [bp+10h] after prologue."
+
+[annotations."0d72:582a"]
+comment = "Allocate four local bytes via shared stack-checking prologue; BP points to saved BP."
+
+[annotations."0d72:582d"]
+jmp = "checked_stack_frame_prologue@0d72:5c2a"
+
+[annotations."0d72:5832"]
+comment = "Register runtime frame with argument 0Eh."
+
+[annotations."0d72:5836"]
+jmp = "register_outermost_stack_frame@0d72:4fcc"
+
+[annotations."0d72:583b"]
+comment = "Load destination length byte and zero-extend it."
+
+[annotations."0d72:583e"]
+memory = "[es unknown]"
+
+[annotations."0d72:5843"]
+comment = "Compute old_length + count (16-bit); signed JLE allows append when sum <= capacity."
+memory = "[ss unknown]"
+
+[annotations."0d72:5846"]
+memory = "[ss unknown]"
+
+[annotations."0d72:5849"]
+jmp = "'append_payload@2"
+
+[annotations."0d72:584b"]
+comment = "Capacity exceeded: fatal-error helper reports error 27h."
+jmp = "report_pascal_string_bounds_error@0d72:5ca6"
+
+[annotations."0d72:5850"]
+comment = "Push source far pointer for copy_far_bytes_forward."
+label = "append_payload"
+
+[annotations."0d72:5855"]
+comment = "Compute append destination = string pointer + old_length + 1, skipping length byte."
+
+[annotations."0d72:5858"]
+memory = "[es unknown]"
+
+[annotations."0d72:5861"]
+comment = "Save computed append pointer in local far-pointer slot [bp-4]."
+memory = "[ss unknown]"
+
+[annotations."0d72:5864"]
+memory = "[ss unknown]"
+
+[annotations."0d72:5867"]
+comment = "Push append destination and byte count, then copy source payload forward."
+
+[annotations."0d72:5869"]
+memory = "[ss unknown]"
+
+[annotations."0d72:586c"]
+jmp = "copy_far_bytes_forward@0d72:507e"
+
+[annotations."0d72:5871"]
+comment = "Reload string pointer and length after copy; store low byte of length + count. No NUL terminator is written."
+
+[annotations."0d72:5874"]
+memory = "[es unknown]"
+
+[annotations."0d72:5879"]
+memory = "[ss unknown]"
+
+[annotations."0d72:587e"]
+memory = "[es unknown]"
+
+[annotations."0d72:5881"]
+comment = "Unregister runtime frame and restore saved registers."
+jmp = "unregister_outermost_stack_frame@0d72:5004"
+
+[annotations."0d72:588b"]
+comment = "Far return, discarding all 12 argument bytes."

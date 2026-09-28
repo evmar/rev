@@ -1,0 +1,37 @@
+ip = "0823:0fdc"
+len = 47
+name = "exec_and_restore_context"
+desc = "Executes an external processing routine and restores a saved execution context"
+details = "Invokes a local helper, then makes a far call to 0935h:3D66h passing two buffer pointers derived from cs:[0DC3h] along with a word parameter from cs:[03F8h]. Upon completion, it switches SS:SP and DS back to the previously saved stack and data segments, then performs a near return to the saved instruction pointer."
+blocks = ["0823:0fdc"]
+
+[annotations."0823:0fdc"]
+jmp = "switch_to_internal_stack@0823:0da2"
+
+[annotations."0823:0fdf"]
+comment = "Load buffer far pointer from cs:[0DC3h]"
+
+[annotations."0823:0fe7"]
+comment = "Push pointer to buffer offset by +100h bytes"
+
+[annotations."0823:0fec"]
+memory = "0823:03f8"
+
+[annotations."0823:0ff1"]
+comment = "Call external function"
+jmp = "process_transaction_loop@0935:3d66"
+
+[annotations."0823:0ff6"]
+comment = "Restore saved stack segment and stack pointer"
+memory = "0823:0e55"
+
+[annotations."0823:0ffb"]
+memory = "0823:0e57"
+
+[annotations."0823:1000"]
+comment = "Restore saved data segment"
+memory = "0823:0e53"
+
+[annotations."0823:1005"]
+comment = "Push saved IP and jump via near return"
+memory = "0823:0e51"

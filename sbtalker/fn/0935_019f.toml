@@ -1,0 +1,94 @@
+ip = "0935:019f"
+len = 71
+name = "pascal_string_copy_slice"
+desc = "Copies a 1-based slice of a length-prefixed Pascal string into another Pascal string buffer"
+details = "Stores count in destination[0], then copies count bytes from source[index..] into destination[1..]. Source and destination are near pointers addressed through DS and SS respectively; the routine performs no source-length or destination-capacity checks, and copies no payload bytes when signed count is less than 1."
+blocks = ["0935:019f", "0935:01ba", "0935:01bf", "0935:01e0"]
+
+[[params]]
+name = "count"
+value = "[bp+4]"
+type = "u16"
+desc = "Number of characters to copy; its low byte becomes the destination Pascal-string length"
+
+[[params]]
+name = "index"
+value = "[bp+6]"
+type = "u16"
+desc = "1-based index of the first source character to copy"
+
+[[params]]
+name = "dest"
+value = "[bp+8]"
+type = "*mut u8"
+desc = "Destination Pascal-string buffer in the stack segment"
+
+[[params]]
+name = "source"
+value = "[bp+0x0a]"
+type = "*const u8"
+desc = "Source Pascal string in the data segment"
+
+[annotations."0935:01a6"]
+memory = "[ss unknown]"
+
+[annotations."0935:01a9"]
+comment = "Set the destination Pascal-string length byte to count."
+memory = "[ss unknown]"
+
+[annotations."0935:01ac"]
+memory = "[ds unknown]"
+
+[annotations."0935:01ae"]
+memory = "[ss unknown]"
+
+[annotations."0935:01b1"]
+memory = "[ss unknown]"
+
+[annotations."0935:01b4"]
+comment = "Skip the character-copy loop when signed count is less than one."
+memory = "[ss unknown]"
+
+[annotations."0935:01b8"]
+jmp = "'copy_done@3"
+
+[annotations."0935:01ba"]
+memory = "[ss unknown]"
+
+[annotations."0935:01bf"]
+comment = "Copy source[index + i - 1] to destination[i] for i = 1 through count."
+label = "copy_character_loop"
+memory = "[ss unknown]"
+
+[annotations."0935:01c2"]
+memory = "[ss unknown]"
+
+[annotations."0935:01c5"]
+memory = "[ss unknown]"
+
+[annotations."0935:01c8"]
+memory = "[ss unknown]"
+
+[annotations."0935:01cb"]
+memory = "[ss unknown]"
+
+[annotations."0935:01ce"]
+memory = "[ds unknown]"
+
+[annotations."0935:01d1"]
+memory = "[ds unknown]"
+
+[annotations."0935:01d3"]
+memory = "[ss unknown]"
+
+[annotations."0935:01d7"]
+memory = "[ss unknown]"
+
+[annotations."0935:01db"]
+memory = "[ss unknown]"
+
+[annotations."0935:01de"]
+jmp = "'copy_character_loop@2"
+
+[annotations."0935:01e0"]
+label = "copy_done"

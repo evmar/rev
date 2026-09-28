@@ -1,0 +1,47 @@
+ip = "0823:0aa0"
+len = 66
+name = "ems_init"
+desc = "Initializes Expanded Memory (EMS) and allocates pages"
+details = "Checks for the presence of an Expanded Memory Manager (EMM) by inspecting the device header name at the INT 67h interrupt handler offset 000Ah. If valid, retrieves the EMS page frame address, allocates the required number of logical pages specified at [009Ah], stores the allocated handle and page frame segment, and flags EMS as active."
+blocks = ["0823:0aa0", "0823:0ab8", "0823:0ac0", "0823:0ad3", "0823:0ae1"]
+
+[annotations."0823:0aa0"]
+comment = "Get interrupt vector for INT 67h (EMS driver) into ES:BX"
+
+[annotations."0823:0aa5"]
+comment = 'Check for "EMMXXXX0" signature at ES:000Ah'
+
+[annotations."0823:0ab6"]
+comment = "Jump to exit if EMS driver not found"
+jmp = "'done@4"
+
+[annotations."0823:0ab8"]
+comment = "INT 67h, AH=41h: Get page frame segment address"
+
+[annotations."0823:0abe"]
+jmp = "'done@4"
+
+[annotations."0823:0ac0"]
+comment = "Save page frame segment"
+memory = "0823:009c"
+
+[annotations."0823:0ac5"]
+comment = "INT 67h, AH=43h: Allocate requested number of EMS pages"
+memory = "0823:009a"
+
+[annotations."0823:0ad1"]
+jmp = "'done@4"
+
+[annotations."0823:0ad3"]
+comment = "Save EMM handle and set initialized flag"
+memory = "0823:009e"
+
+[annotations."0823:0ad8"]
+memory = "0823:01cb"
+
+[annotations."0823:0ade"]
+comment = "Map initial EMS pages or configure buffers"
+jmp = "ems_copy_to_expanded_memory@0823:0983"
+
+[annotations."0823:0ae1"]
+label = "done"

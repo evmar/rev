@@ -1,20 +1,17 @@
-ip = "0823:0c12"
-len = 103
-name = "load_overlay"
-desc = "Loads an executable overlay into allocated memory"
-details = "Opens the specified file to check its size, closes it, and calls a memory allocation routine. It then configures an EXEC overlay parameter block at CS:[SI] with the allocated segment and invokes DOS function 4B03h (Load Overlay) to load the file into memory."
+function 0823:0c12 (load_overlay)
 
-[[params]]
-name = "desc_ptr"
-value = "si"
-type = "u16"
-desc = "Pointer within CS to overlay descriptor block; CS:[SI+4] contains the ASCIIZ filename, and CS:[SI] receives the overlay parameter block"
+Loads an executable overlay into allocated memory
 
-[ret]
-name = "cf"
-value = "FLAGS.CF"
-type = "bool"
-desc = "Carry flag: clear on success, set on error"
+Opens the specified file to check its size, closes it, and calls a
+memory allocation routine. It then configures an EXEC overlay parameter
+block at CS:[SI] with the allocated segment and invokes DOS function
+4B03h (Load Overlay) to load the file into memory.
+
+parameters:
+  si  desc_ptr: u16 Pointer within CS to overlay descriptor block; CS:[SI+4] contains the ASCIIZ filename, and CS:[SI] receives the overlay parameter block
+
+return:
+  FLAGS.CF  cf: bool Carry flag: clear on success, set on error
 
 ---
 ; Get pointer to filename at CS:[SI+4]

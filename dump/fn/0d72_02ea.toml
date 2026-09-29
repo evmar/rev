@@ -1,5 +1,4 @@
-ip = "0d72:02ea"
-len = 33
+function 0d72:02ea
 
 ---
 0d72:02ea pop ds

@@ -1,26 +1,20 @@
-ip = "0d72:0222"
-len = 16
-name = "test_attr_and_advance"
-desc = "Tests a flag in a lookup table for an indexed item and conditionally increments a counter and updates SI"
-details = "Checks bit 3 (0x08) of the byte at cs:[bx+4A9Ch]. If the bit is set, it increments a byte counter at [bp+3] and adds the word at [bp+0Ch] to register si."
+function 0d72:0222 (test_attr_and_advance)
 
-[[params]]
-name = "index"
-value = "bx"
-type = "u16"
-desc = "Index into the attribute table at cs:4A9Ch"
+Tests a flag in a lookup table for an indexed item and conditionally
+increments a counter and updates SI
 
-[[params]]
-name = "ctx"
-value = "bp"
-type = "*mut u8"
-desc = "Pointer to context structure or caller stack frame"
+Checks bit 3 (0x08) of the byte at cs:[bx+4A9Ch]. If the bit is set, it
+increments a byte counter at [bp+3] and adds the word at [bp+0Ch] to
+register si.
 
-[[params]]
-name = "accum"
-value = "si"
-type = "u16"
-desc = "Accumulator or coordinate offset to be updated if flag is set"
+parameters:
+  bx  index: u16 Index into the attribute table at cs:4A9Ch
+
+parameters:
+  bp  ctx: *mut u8 Pointer to context structure or caller stack frame
+
+parameters:
+  si  accum: u16 Accumulator or coordinate offset to be updated if flag is set
 
 ---
 ; Fetch attribute byte from lookup table

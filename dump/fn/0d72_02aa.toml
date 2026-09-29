@@ -1,5 +1,4 @@
-ip = "0d72:02aa"
-len = 16
+function 0d72:02aa
 
 ---
 @mem ; [bx unknown]

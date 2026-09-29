@@ -1,5 +1,4 @@
-ip = "0d72:6e86"
-len = 45
+function 0d72:6e86
 
 ---
 @mem ; [ds unknown]

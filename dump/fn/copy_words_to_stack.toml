@@ -1,20 +1,25 @@
-ip = "0d72:53b0"
-len = 71
-name = "copy_words_to_stack"
-desc = "Allocates stack space and copies CX words from ES:BX onto the caller's stack."
-details = "Removes the far return address into DS:05F2/05F4, computes a 2*CX-byte allocation below the caller's SP, and calls 0d72:6b88 if subtraction borrows or the resulting offset is below the stack limit at DS:0792. It sets SP to the destination, copies words forward from ES:BX through DS:DI (requiring DS to address the stack, normally DS=SS), and far-jumps to the saved return address, leaving the copied block at SS:SP; the known caller supplies CX=0x11 to copy 34 bytes. The normal path consumes CX to zero, advances BX by 2*CX and DI to the pre-allocation caller SP, and leaves AX holding the last word; the unchecked count must be nonzero and small enough that doubling does not wrap, and the global return-address scratch makes this helper non-reentrant."
+function 0d72:53b0 (copy_words_to_stack)
 
-[[params]]
-name = "source"
-value = "es:bx"
-type = "*const u16"
-desc = "Far pointer to the source words; BX advances by the copied byte count."
+Allocates stack space and copies CX words from ES:BX onto the caller's
+stack.
 
-[[params]]
-name = "word_count"
-value = "cx"
-type = "u16"
-desc = "Number of words to copy; must be nonzero and fit a non-wrapping doubled byte count. Consumed to zero."
+Removes the far return address into DS:05F2/05F4, computes a 2*CX-byte
+allocation below the caller's SP, and calls 0d72:6b88 if subtraction
+borrows or the resulting offset is below the stack limit at DS:0792. It
+sets SP to the destination, copies words forward from ES:BX through
+DS:DI (requiring DS to address the stack, normally DS=SS), and far-jumps
+to the saved return address, leaving the copied block at SS:SP; the
+known caller supplies CX=0x11 to copy 34 bytes. The normal path consumes
+CX to zero, advances BX by 2*CX and DI to the pre-allocation caller SP,
+and leaves AX holding the last word; the unchecked count must be nonzero
+and small enough that doubling does not wrap, and the global return-
+address scratch makes this helper non-reentrant.
+
+parameters:
+  es:bx  source: *const u16 Far pointer to the source words; BX advances by the copied byte count.
+
+parameters:
+  cx  word_count: u16 Number of words to copy; must be nonzero and fit a non-wrapping doubled byte count. Consumed to zero.
 
 ---
 ; Pop the far return IP and CS into global scratch DS:05F2/05F4, exposing the caller's SP.

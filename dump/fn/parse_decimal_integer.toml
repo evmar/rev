@@ -1,20 +1,19 @@
-ip = "0935:1ec7"
-len = 156
-name = "parse_decimal_integer"
-desc = "Reads a decimal digit token from the input stream and converts it to a 16-bit integer."
-details = "Uses the caller's local length-prefixed buffer at frame_base-0x106 and the digit character set at DS:0170 to read a token via read_filtered_token. It accumulates the token as value = value * 10 + digit using 16-bit arithmetic, returning -1 if the token is empty and otherwise returning the parsed value."
+function 0935:1ec7 (parse_decimal_integer)
 
-[[params]]
-name = "frame_base"
-value = "[bp+4]"
-type = "*mut u8"
-desc = "Caller's BP/frame pointer; its local token buffer is at frame_base-0x106 and its parser context pointer is at frame_base+4"
+Reads a decimal digit token from the input stream and converts it to a
+16-bit integer.
 
-[ret]
-name = "value"
-value = "ax"
-type = "i16"
-desc = "Parsed decimal value, or -1 if no digits were read"
+Uses the caller's local length-prefixed buffer at frame_base-0x106 and
+the digit character set at DS:0170 to read a token via
+read_filtered_token. It accumulates the token as value = value * 10 +
+digit using 16-bit arithmetic, returning -1 if the token is empty and
+otherwise returning the parsed value.
+
+parameters:
+  [bp+4]  frame_base: *mut u8 Caller's BP/frame pointer; its local token buffer is at frame_base-0x106 and its parser context pointer is at frame_base+4
+
+return:
+  ax  value: i16 Parsed decimal value, or -1 if no digits were read
 
 ---
 0935:1ec7 push bp

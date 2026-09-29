@@ -1,26 +1,26 @@
-ip = "0d72:5615"
-len = 137
-name = "pascal_string_less_than"
-desc = "Tests whether the first Pascal string is lexicographically less than the second, using unsigned byte comparisons."
-details = "Accepts two far pointers to byte-length-prefixed strings: lhs at [bp+0Ah] and rhs at [bp+6]. Initializes the result to lhs.length < rhs.length, then compares bytes 1 through min(lhs.length, rhs.length); the first unequal byte replaces the result with lhs[i] < rhs[i], so equal strings return false and a proper prefix sorts first. Returns the Boolean in AL (AH is unspecified because only the low byte of the result local is initialized), preserves SI/DI/BP, and removes eight argument bytes with RETF 8; stack allocation and outermost-frame registration use runtime helpers."
+function 0d72:5615 (pascal_string_less_than)
 
-[[params]]
-name = "lhs"
-value = "[sp+8]"
-type = "*const u8"
-desc = "Far pointer (offset then segment) to the first Pascal string; byte 0 is length, followed by that many data bytes. Located at [bp+0Ah] after prologue; pushed first."
+Tests whether the first Pascal string is lexicographically less than the
+second, using unsigned byte comparisons.
 
-[[params]]
-name = "rhs"
-value = "[sp+4]"
-type = "*const u8"
-desc = "Far pointer (offset then segment) to the second Pascal string, with the same byte-length-prefixed representation. Located at [bp+6] after prologue; pushed second."
+Accepts two far pointers to byte-length-prefixed strings: lhs at
+[bp+0Ah] and rhs at [bp+6]. Initializes the result to lhs.length <
+rhs.length, then compares bytes 1 through min(lhs.length, rhs.length);
+the first unequal byte replaces the result with lhs[i] < rhs[i], so
+equal strings return false and a proper prefix sorts first. Returns the
+Boolean in AL (AH is unspecified because only the low byte of the result
+local is initialized), preserves SI/DI/BP, and removes eight argument
+bytes with RETF 8; stack allocation and outermost-frame registration use
+runtime helpers.
 
-[ret]
-name = "less"
-value = "al"
-type = "u8"
-desc = "1 if lhs is lexicographically less than rhs, otherwise 0. Comparisons are unsigned and case-sensitive; AH is unspecified."
+parameters:
+  [sp+8]  lhs: *const u8 Far pointer (offset then segment) to the first Pascal string; byte 0 is length, followed by that many data bytes. Located at [bp+0Ah] after prologue; pushed first.
+
+parameters:
+  [sp+4]  rhs: *const u8 Far pointer (offset then segment) to the second Pascal string, with the same byte-length-prefixed representation. Located at [bp+6] after prologue; pushed second.
+
+return:
+  al  less: u8 1 if lhs is lexicographically less than rhs, otherwise 0. Comparisons are unsigned and case-sensitive; AH is unspecified.
 
 ---
 ; Allocate an 8-byte local frame via the runtime stack-check/prologue helper.

@@ -1,20 +1,18 @@
-ip = "0935:0080"
-len = 199
-name = "bst_find_value"
-desc = "Searches a binary search tree for a given string key and returns the associated far pointer value."
-details = "Traverses a binary search tree rooted at ds:[0044h] comparing each node's string key against the input key. If a match is found, returns the 32-bit far pointer stored in the node (+04h); otherwise returns NULL."
+function 0935:0080 (bst_find_value)
 
-[[params]]
-name = "key"
-value = "[bp+4]"
-type = "*const u8"
-desc = "Near pointer to key string to find"
+Searches a binary search tree for a given string key and returns the
+associated far pointer value.
 
-[ret]
-name = "result"
-value = "dx:ax"
-type = "*const u8"
-desc = "Far pointer to value stored in node, or NULL if not found"
+Traverses a binary search tree rooted at ds:[0044h] comparing each
+node's string key against the input key. If a match is found, returns
+the 32-bit far pointer stored in the node (+04h); otherwise returns
+NULL.
+
+parameters:
+  [bp+4]  key: *const u8 Near pointer to key string to find
+
+return:
+  dx:ax  result: *const u8 Far pointer to value stored in node, or NULL if not found
 
 ---
 0935:0080 push bp

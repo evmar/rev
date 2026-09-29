@@ -1,14 +1,15 @@
-ip = "0935:12fc"
-len = 1027
-name = "parse_and_emit_token"
-desc = "Parses and processes a token or identifier from the input context"
-details = "Extracts a Pascal string token using a helper, strips any trailing matched characters, and queries a symbol table. If defined, it emits a formatted representation of the symbol; otherwise, it handles prefixes, special characters (such as periods, quotes, or table-driven character classes), and dispatches token records to an emitter routine."
+function 0935:12fc (parse_and_emit_token)
 
-[[params]]
-name = "ctx"
-value = "[bp+4]"
-type = "*mut u8"
-desc = "Pointer to parser/context state structure containing string buffers and output handle"
+Parses and processes a token or identifier from the input context
+
+Extracts a Pascal string token using a helper, strips any trailing
+matched characters, and queries a symbol table. If defined, it emits a
+formatted representation of the symbol; otherwise, it handles prefixes,
+special characters (such as periods, quotes, or table-driven character
+classes), and dispatches token records to an emitter routine.
+
+parameters:
+  [bp+4]  ctx: *mut u8 Pointer to parser/context state structure containing string buffers and output handle
 
 ---
 0935:12fc push bp

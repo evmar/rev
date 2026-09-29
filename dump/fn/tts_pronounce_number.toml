@@ -1,26 +1,24 @@
-ip = "0935:1742"
-len = 1647
-name = "tts_pronounce_number"
-desc = "Converts a numeric digit string into speech tokens (cardinal, ordinal, or digit-by-digit)"
-details = "Processes a Pascal-style string of ASCII digits and synthesizes speech by decomposing numbers into magnitude groups (thousands, hundreds, tens, and units). Supports individual digit spelling (mode 0), cardinal pronunciation (mode 1), ordinal forms (mode 2, with phonetic adjustments such as changing 'v' to 'f' for 'twelfth'), and 4-digit year/grouped pronunciations (mode 3). Generated speech frame packets are queued via call 109Fh."
+function 0935:1742 (tts_pronounce_number)
 
-[[params]]
-name = "ctx"
-value = "[bp+4]"
-type = "*mut u8"
-desc = "Pointer to TTS sound synthesis context / channel state"
+Converts a numeric digit string into speech tokens (cardinal, ordinal,
+or digit-by-digit)
 
-[[params]]
-name = "num_str"
-value = "[bp+6]"
-type = "*const u8"
-desc = "Pointer to length-prefixed ASCII digit string (Pascal string)"
+Processes a Pascal-style string of ASCII digits and synthesizes speech
+by decomposing numbers into magnitude groups (thousands, hundreds, tens,
+and units). Supports individual digit spelling (mode 0), cardinal
+pronunciation (mode 1), ordinal forms (mode 2, with phonetic adjustments
+such as changing 'v' to 'f' for 'twelfth'), and 4-digit year/grouped
+pronunciations (mode 3). Generated speech frame packets are queued via
+call 109Fh.
 
-[[params]]
-name = "mode"
-value = "[bp+8]"
-type = "u16"
-desc = "Pronunciation mode: 0 = digits, 1 = cardinal, 2 = ordinal, 3 = year/auto"
+parameters:
+  [bp+4]  ctx: *mut u8 Pointer to TTS sound synthesis context / channel state
+
+parameters:
+  [bp+6]  num_str: *const u8 Pointer to length-prefixed ASCII digit string (Pascal string)
+
+parameters:
+  [bp+8]  mode: u16 Pronunciation mode: 0 = digits, 1 = cardinal, 2 = ordinal, 3 = year/auto
 
 ---
 0935:1742 push bp

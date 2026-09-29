@@ -1,8 +1,10 @@
-ip = "0823:0b3c"
-len = 24
-name = "init_callback_ptr"
-desc = "Initializes a callback/handler pointer and copies a state variable"
-details = "Stores the far address 0823:0AE2 into code-segment variables at cs:[01D2h] and cs:[01D4h]. It then copies the 16-bit word located at cs:[01B2h] into cs:[01D6h]."
+function 0823:0b3c (init_callback_ptr)
+
+Initializes a callback/handler pointer and copies a state variable
+
+Stores the far address 0823:0AE2 into code-segment variables at
+cs:[01D2h] and cs:[01D4h]. It then copies the 16-bit word located at
+cs:[01B2h] into cs:[01D6h].
 
 ---
 ; Set up far pointer at cs:[01D2h] pointing to 0823:0AE2h

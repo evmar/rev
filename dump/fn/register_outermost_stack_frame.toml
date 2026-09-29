@@ -1,14 +1,17 @@
-ip = "0d72:4fcc"
-len = 56
-name = "register_outermost_stack_frame"
-desc = "Registers the outermost active runtime stack frame and snapshots its recovery context."
-details = "If no frame is currently registered at ds:0602, this records a marker within the present call frame, then uses the caller BP and the supplied frame span to locate and save three words from the caller's stack at ds:0604..0608. Nested calls leave the existing record unchanged; the paired routine at 0d72:5004 clears ds:0602 as the registered frame is unwound."
+function 0d72:4fcc (register_outermost_stack_frame)
 
-[[params]]
-name = "frame_span"
-value = "[sp+4]"
-type = "u16"
-desc = "Byte distance from the caller's BP to its lowest saved-context word; callers pass their local-storage size plus saved-register space."
+Registers the outermost active runtime stack frame and snapshots its
+recovery context.
+
+If no frame is currently registered at ds:0602, this records a marker
+within the present call frame, then uses the caller BP and the supplied
+frame span to locate and save three words from the caller's stack at
+ds:0604..0608. Nested calls leave the existing record unchanged; the
+paired routine at 0d72:5004 clears ds:0602 as the registered frame is
+unwound.
+
+parameters:
+  [sp+4]  frame_span: u16 Byte distance from the caller's BP to its lowest saved-context word; callers pass their local-storage size plus saved-register space.
 
 ---
 0d72:4fcc push bp

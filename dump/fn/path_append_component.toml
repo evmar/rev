@@ -1,20 +1,18 @@
-ip = "0935:109f"
-len = 257
-name = "path_append_component"
-desc = "Appends a path component to a destination string buffer with separator and overflow handling."
-details = "Checks if the combined path length exceeds 240 bytes or if a global buffer is already in use. If valid and not empty, it checks for redundant separators or appends the component to the destination Pascal string; otherwise, it appends to an overflow buffer."
+function 0935:109f (path_append_component)
 
-[[params]]
-name = "dest_rec"
-value = "[bp+4]"
-type = "*mut u8"
-desc = "pointer to record containing far pointer to destination Pascal string at offset +8"
+Appends a path component to a destination string buffer with separator
+and overflow handling.
 
-[[params]]
-name = "component"
-value = "[bp+6]"
-type = "[u8; 256]"
-desc = "Pascal string containing path component to append"
+Checks if the combined path length exceeds 240 bytes or if a global
+buffer is already in use. If valid and not empty, it checks for
+redundant separators or appends the component to the destination Pascal
+string; otherwise, it appends to an overflow buffer.
+
+parameters:
+  [bp+4]  dest_rec: *mut u8 pointer to record containing far pointer to destination Pascal string at offset +8
+
+parameters:
+  [bp+6]  component: [u8; 256] Pascal string containing path component to append
 
 ---
 0935:109f push bp

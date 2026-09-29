@@ -1,5 +1,4 @@
-ip = "0d72:6eb3"
-len = 19
+function 0d72:6eb3
 
 ---
 0d72:6eb3 cmp si,di

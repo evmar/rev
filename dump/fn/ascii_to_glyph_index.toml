@@ -1,20 +1,17 @@
-ip = "0935:0063"
-len = 29
-name = "ascii_to_glyph_index"
-desc = "Converts an ASCII character to a zero-based font/glyph index by subtracting 32"
-details = "Takes a character value, subtracts 0x20 (' ', ASCII 32) so printable characters start at index 0, masks the result to an 8-bit unsigned value, and returns it."
+function 0935:0063 (ascii_to_glyph_index)
 
-[[params]]
-name = "c"
-value = "[bp+4]"
-type = "u8"
-desc = "ASCII character code"
+Converts an ASCII character to a zero-based font/glyph index by
+subtracting 32
 
-[ret]
-name = "glyph_idx"
-value = "ax"
-type = "u16"
-desc = "Zero-based glyph/character index (c - 32)"
+Takes a character value, subtracts 0x20 (' ', ASCII 32) so printable
+characters start at index 0, masks the result to an 8-bit unsigned
+value, and returns it.
+
+parameters:
+  [bp+4]  c: u8 ASCII character code
+
+return:
+  ax  glyph_idx: u16 Zero-based glyph/character index (c - 32)
 
 ---
 0935:0063 push bp

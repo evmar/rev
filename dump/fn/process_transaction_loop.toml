@@ -1,26 +1,23 @@
-ip = "0935:3d66"
-len = 174
-name = "process_transaction_loop"
-desc = "Initializes and executes an event/transaction processing loop, then finalizes state and returns an adjusted identifier."
-details = "Updates an 8-byte state table record indexed by ds:[166h] with configuration bytes, sets up a 256-byte buffer via far call, and enters a polling loop (calling subroutines to service tasks until ds:[4Ch] remains 3 or ds:[60h] becomes nonzero). Finally, it runs a completion callback passing the far buffer pointer and returns ds:[160h] decremented by 2."
+function 0935:3d66 (process_transaction_loop)
 
-[[params]]
-name = "initial_id"
-value = "[bp+6]"
-type = "u16"
-desc = "Initial ID or counter value stored to ds:[160h]"
+Initializes and executes an event/transaction processing loop, then
+finalizes state and returns an adjusted identifier.
 
-[[params]]
-name = "buffer_ptr"
-value = "[bp+8]"
-type = "*mut [u8]"
-desc = "Far pointer to data buffer"
+Updates an 8-byte state table record indexed by ds:[166h] with
+configuration bytes, sets up a 256-byte buffer via far call, and enters
+a polling loop (calling subroutines to service tasks until ds:[4Ch]
+remains 3 or ds:[60h] becomes nonzero). Finally, it runs a completion
+callback passing the far buffer pointer and returns ds:[160h]
+decremented by 2.
 
-[ret]
-name = "result_id"
-value = "ax"
-type = "u16"
-desc = "Value of ds:[160h] decremented by 2"
+parameters:
+  [bp+6]  initial_id: u16 Initial ID or counter value stored to ds:[160h]
+
+parameters:
+  [bp+8]  buffer_ptr: *mut [u8] Far pointer to data buffer
+
+return:
+  ax  result_id: u16 Value of ds:[160h] decremented by 2
 
 ---
 0935:3d66 push bp

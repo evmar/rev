@@ -1,26 +1,25 @@
-ip = "0d72:5570"
-len = 112
-name = "pascal_string_equal"
-desc = "Tests two length-prefixed Pascal strings for exact bytewise equality."
-details = "Compares the unsigned length bytes at offset 0 of two far-pointer strings; unequal lengths return false, while two empty strings return true. For equal nonzero lengths, compares bytes 1 through length and returns false on the first mismatch, otherwise true (case-sensitive, with embedded zero bytes treated as ordinary data). Returns the Boolean in AL (AH is unspecified because only the low byte of the result local is initialized), preserves SI/DI/BP, uses the runtime stack-frame registration helpers, and removes both far-pointer arguments with RETF 8."
+function 0d72:5570 (pascal_string_equal)
 
-[[params]]
-name = "right"
-value = "[sp+4]"
-type = "*const u8"
-desc = "Far pointer (offset:segment words), at [bp+6] after the prologue, to a Pascal string: one unsigned length byte followed by that many data bytes."
+Tests two length-prefixed Pascal strings for exact bytewise equality.
 
-[[params]]
-name = "left"
-value = "[sp+8]"
-type = "*const u8"
-desc = "Far pointer (offset:segment words), at [bp+0Ah] after the prologue, to the other Pascal string."
+Compares the unsigned length bytes at offset 0 of two far-pointer
+strings; unequal lengths return false, while two empty strings return
+true. For equal nonzero lengths, compares bytes 1 through length and
+returns false on the first mismatch, otherwise true (case-sensitive,
+with embedded zero bytes treated as ordinary data). Returns the Boolean
+in AL (AH is unspecified because only the low byte of the result local
+is initialized), preserves SI/DI/BP, uses the runtime stack-frame
+registration helpers, and removes both far-pointer arguments with RETF
+8.
 
-[ret]
-name = "equal"
-value = "al"
-type = "u8"
-desc = "1 if the lengths and all data bytes match, otherwise 0. AH is unspecified."
+parameters:
+  [sp+4]  right: *const u8 Far pointer (offset:segment words), at [bp+6] after the prologue, to a Pascal string: one unsigned length byte followed by that many data bytes.
+
+parameters:
+  [sp+8]  left: *const u8 Far pointer (offset:segment words), at [bp+0Ah] after the prologue, to the other Pascal string.
+
+return:
+  al  equal: u8 1 if the lengths and all data bytes match, otherwise 0. AH is unspecified.
 
 ---
 ; Allocate six bytes of locals via runtime prologue: result byte at BP-2, index word at BP-4, length word at BP-6.

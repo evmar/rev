@@ -1,5 +1,4 @@
-ip = "0d72:0303"
-len = 8
+function 0d72:0303
 
 ---
 0d72:0303 inc si

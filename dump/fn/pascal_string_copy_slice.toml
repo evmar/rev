@@ -1,32 +1,25 @@
-ip = "0935:019f"
-len = 71
-name = "pascal_string_copy_slice"
-desc = "Copies a 1-based slice of a length-prefixed Pascal string into another Pascal string buffer"
-details = "Stores count in destination[0], then copies count bytes from source[index..] into destination[1..]. Source and destination are near pointers addressed through DS and SS respectively; the routine performs no source-length or destination-capacity checks, and copies no payload bytes when signed count is less than 1."
+function 0935:019f (pascal_string_copy_slice)
 
-[[params]]
-name = "count"
-value = "[bp+4]"
-type = "u16"
-desc = "Number of characters to copy; its low byte becomes the destination Pascal-string length"
+Copies a 1-based slice of a length-prefixed Pascal string into another
+Pascal string buffer
 
-[[params]]
-name = "index"
-value = "[bp+6]"
-type = "u16"
-desc = "1-based index of the first source character to copy"
+Stores count in destination[0], then copies count bytes from
+source[index..] into destination[1..]. Source and destination are near
+pointers addressed through DS and SS respectively; the routine performs
+no source-length or destination-capacity checks, and copies no payload
+bytes when signed count is less than 1.
 
-[[params]]
-name = "dest"
-value = "[bp+8]"
-type = "*mut u8"
-desc = "Destination Pascal-string buffer in the stack segment"
+parameters:
+  [bp+4]  count: u16 Number of characters to copy; its low byte becomes the destination Pascal-string length
 
-[[params]]
-name = "source"
-value = "[bp+0x0a]"
-type = "*const u8"
-desc = "Source Pascal string in the data segment"
+parameters:
+  [bp+6]  index: u16 1-based index of the first source character to copy
+
+parameters:
+  [bp+8]  dest: *mut u8 Destination Pascal-string buffer in the stack segment
+
+parameters:
+  [bp+0x0a]  source: *const u8 Source Pascal string in the data segment
 
 ---
 0935:019f push bp

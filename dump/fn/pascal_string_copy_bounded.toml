@@ -1,38 +1,31 @@
-ip = "0d72:538c"
-len = 36
-name = "pascal_string_copy_bounded"
-desc = "Copies a length-prefixed Pascal string to a destination buffer, truncating to its capacity minus the length byte."
-details = "Reads the source length byte at AX:SI, computes n = min(source_length, (CX - 1) modulo 65536), stores n at ES:DI, and copies n payload bytes without adding a NUL terminator. CX is the total destination capacity including the length byte (normally 1..256); zero is not checked and underflows to 65535, causing the entire source string to be copied. Preserves DS, ES and BP; leaves AX equal to the original source length, CX zero, SI and DI advanced by n+1, and DF clear, using a forward word copy followed by an optional odd byte (not safe for arbitrary overlap)."
+function 0d72:538c (pascal_string_copy_bounded)
 
-[[params]]
-name = "source_segment"
-value = "ax"
-type = "u16"
-desc = "Segment of the source Pascal string; temporarily loaded into DS."
+Copies a length-prefixed Pascal string to a destination buffer,
+truncating to its capacity minus the length byte.
 
-[[params]]
-name = "source_offset"
-value = "si"
-type = "u16"
-desc = "Offset of the source length byte within source_segment."
+Reads the source length byte at AX:SI, computes n = min(source_length,
+(CX - 1) modulo 65536), stores n at ES:DI, and copies n payload bytes
+without adding a NUL terminator. CX is the total destination capacity
+including the length byte (normally 1..256); zero is not checked and
+underflows to 65535, causing the entire source string to be copied.
+Preserves DS, ES and BP; leaves AX equal to the original source length,
+CX zero, SI and DI advanced by n+1, and DF clear, using a forward word
+copy followed by an optional odd byte (not safe for arbitrary overlap).
 
-[[params]]
-name = "destination_segment"
-value = "es"
-type = "u16"
-desc = "Segment of the destination Pascal string buffer."
+parameters:
+  ax  source_segment: u16 Segment of the source Pascal string; temporarily loaded into DS.
 
-[[params]]
-name = "destination_offset"
-value = "di"
-type = "u16"
-desc = "Offset at which to write the destination length byte and payload."
+parameters:
+  si  source_offset: u16 Offset of the source length byte within source_segment.
 
-[[params]]
-name = "destination_capacity"
-value = "cx"
-type = "u16"
-desc = "Total destination buffer size including its length byte; 256 permits all 255 payload bytes, 1 produces an empty string, and 0 is invalid but unchecked."
+parameters:
+  es  destination_segment: u16 Segment of the destination Pascal string buffer.
+
+parameters:
+  di  destination_offset: u16 Offset at which to write the destination length byte and payload.
+
+parameters:
+  cx  destination_capacity: u16 Total destination buffer size including its length byte; 256 permits all 255 payload bytes, 1 produces an empty string, and 0 is invalid but unchecked.
 
 ---
 0d72:538c push bp

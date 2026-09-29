@@ -1,8 +1,14 @@
-ip = "0823:0ae2"
-len = 90
-name = "tsr_entry_point"
-desc = "Switches to an internal stack, executes a sequence of subroutines, and returns to the caller."
-details = "This function captures the caller's far return address and stack pointer from the stack, switches to a private local stack within the code segment, and conditionally executes setup and cleanup routines based on an internal state flag. After executing a pipeline of subroutines, it restores the caller's original SS:SP and performs an indirect far jump back to the caller."
+function 0823:0ae2 (tsr_entry_point)
+
+Switches to an internal stack, executes a sequence of subroutines, and
+returns to the caller.
+
+This function captures the caller's far return address and stack pointer
+from the stack, switches to a private local stack within the code
+segment, and conditionally executes setup and cleanup routines based on
+an internal state flag. After executing a pipeline of subroutines, it
+restores the caller's original SS:SP and performs an indirect far jump
+back to the caller.
 
 ---
 ; Save caller far return address offset

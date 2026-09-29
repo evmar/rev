@@ -1,14 +1,15 @@
-ip = "0935:1210"
-len = 81
-name = "check_string_has_lowercase"
-desc = "Checks if a Pascal string contains lowercase ASCII characters and sets a global flag."
-details = "Loads a far pointer to a Pascal-style string located at offset +0Ch of the input structure. Iterates through the characters from index 1 to the string length, checking if any character is between 'a' and 'z'. If a lowercase character is found, it sets the global byte at ds:0052h to 1."
+function 0935:1210 (check_string_has_lowercase)
 
-[[params]]
-name = "str_record"
-value = "[bp+4]"
-type = "*const u8"
-desc = "Near pointer to structure containing a far pointer to a Pascal string at offset 0x0C"
+Checks if a Pascal string contains lowercase ASCII characters and sets a
+global flag.
+
+Loads a far pointer to a Pascal-style string located at offset +0Ch of
+the input structure. Iterates through the characters from index 1 to the
+string length, checking if any character is between 'a' and 'z'. If a
+lowercase character is found, it sets the global byte at ds:0052h to 1.
+
+parameters:
+  [bp+4]  str_record: *const u8 Near pointer to structure containing a far pointer to a Pascal string at offset 0x0C
 
 ---
 0935:1210 push bp

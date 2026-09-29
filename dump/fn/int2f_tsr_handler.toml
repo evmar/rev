@@ -1,20 +1,20 @@
-ip = "0823:0898"
-len = 139
-name = "int2f_tsr_handler"
-desc = "TSR interrupt 2Fh (multiplex) handler supporting identification, reset, and uninstallation"
-details = "Handles custom INT 2Fh subfunctions for a TSR. Subfunction 0FBFBh returns an internal table pointer in ES:BX; 0FB00h clears an internal 22-byte state buffer; 0FBFFh verifies interrupt chaining, unhooks INT 2Fh, releases allocated TSR memory (and optional EMS pages), and restores the caller's PSP. Unhandled functions are passed down the previous INT 2Fh chain."
+function 0823:0898 (int2f_tsr_handler)
 
-[[params]]
-name = "func_ax"
-value = "ax"
-type = "u16"
-desc = "Multiplex function request code (0FBFBh, 0FBFFh, or 0FB00h)"
+TSR interrupt 2Fh (multiplex) handler supporting identification, reset,
+and uninstallation
 
-[ret]
-name = "status"
-value = "ax"
-type = "u16"
-desc = "0 on success; 0FFFBh on uninstall failure; ES:BX pointer for get info"
+Handles custom INT 2Fh subfunctions for a TSR. Subfunction 0FBFBh
+returns an internal table pointer in ES:BX; 0FB00h clears an internal
+22-byte state buffer; 0FBFFh verifies interrupt chaining, unhooks INT
+2Fh, releases allocated TSR memory (and optional EMS pages), and
+restores the caller's PSP. Unhandled functions are passed down the
+previous INT 2Fh chain.
+
+parameters:
+  ax  func_ax: u16 Multiplex function request code (0FBFBh, 0FBFFh, or 0FB00h)
+
+return:
+  ax  status: u16 0 on success; 0FFFBh on uninstall failure; ES:BX pointer for get info
 
 ---
 ; Check for function FBFBh: get info / table pointer

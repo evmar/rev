@@ -1,38 +1,28 @@
-ip = "0d72:0184"
-len = 37
-name = "match_class_01_context_with_reverse_qu"
-desc = "Matches one pronunciation-context character with property bit 0x01, treating reverse-scanned QU as one logical match."
-details = "Tests the current input byte through the character-property table at CS:4A9C. A normal class match increments the caller's shared match count and advances SI by scan_stride; when scanning backward, an otherwise-unmatched U preceded by Q is accepted as a QU digraph, advances SI by two strides, and still increments the count only once."
+function 0d72:0184 (match_class_01_context_with_reverse_qu)
 
-[[params]]
-name = "input_cursor"
-value = "si"
-type = "*mut u8"
-desc = "Near pointer to the current input byte; advanced by one matching character or by both bytes of reverse-scanned QU."
+Matches one pronunciation-context character with property bit 0x01,
+treating reverse-scanned QU as one logical match.
 
-[[params]]
-name = "current_byte"
-value = "bl"
-type = "u8"
-desc = "Current input byte used to index the character-property table."
+Tests the current input byte through the character-property table at
+CS:4A9C. A normal class match increments the caller's shared match count
+and advances SI by scan_stride; when scanning backward, an otherwise-
+unmatched U preceded by Q is accepted as a QU digraph, advances SI by
+two strides, and still increments the count only once.
 
-[[params]]
-name = "current_input_byte"
-value = "cl"
-type = "u8"
-desc = "Current input byte, tested as U in the reverse QU special case."
+parameters:
+  si  input_cursor: *mut u8 Near pointer to the current input byte; advanced by one matching character or by both bytes of reverse-scanned QU.
 
-[[params]]
-name = "adjacent_byte"
-value = "ch"
-type = "u8"
-desc = "Input byte one scan_stride away, tested as Q in the reverse QU special case."
+parameters:
+  bl  current_byte: u8 Current input byte used to index the character-property table.
 
-[[params]]
-name = "scan_stride"
-value = "[bp+0Ch]"
-type = "i16"
-desc = "Signed input scan direction, normally -1 for left context or +1 for right context."
+parameters:
+  cl  current_input_byte: u8 Current input byte, tested as U in the reverse QU special case.
+
+parameters:
+  ch  adjacent_byte: u8 Input byte one scan_stride away, tested as Q in the reverse QU special case.
+
+parameters:
+  [bp+0Ch]  scan_stride: i16 Signed input scan direction, normally -1 for left context or +1 for right context.
 
 ---
 ; Accept the current byte directly when its character-property entry has bit 0x01 set.

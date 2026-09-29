@@ -1,44 +1,38 @@
-ip = "0d72:582a"
-len = 100
-name = "pascal_string_append_bytes"
-desc = "Append a counted byte sequence to a length-prefixed Pascal string, checking destination capacity."
-details = "Reads the destination length byte, adds count using 16-bit arithmetic, and uses a signed comparison against capacity; if the sum is greater, calls the fatal-error helper at 0d72:5ca6 (error code 0x27). Otherwise copies count bytes forward from the far source pointer to destination + 1 + old_length, then rereads and increases the destination length byte without adding a NUL terminator; intended inputs are valid Pascal string lengths/capacities (0..255), and arbitrary overlapping buffers are not supported by the forward copy. The caller at 0935:24be passes capacity 255 and a token payload excluding its length byte; the routine allocates four local bytes through 0d72:5c2a, registers/unregisters its runtime stack frame, preserves SI/DI/BP/DS, and returns with RETF 0Ch and no defined return value."
+function 0d72:582a (pascal_string_append_bytes)
 
-[[params]]
-name = "source_offset"
-value = "[sp+4]"
-type = "u16"
-desc = "Offset of first source payload byte, excluding any Pascal length prefix; [bp+6] after prologue."
+Append a counted byte sequence to a length-prefixed Pascal string,
+checking destination capacity.
 
-[[params]]
-name = "source_segment"
-value = "[sp+6]"
-type = "u16"
-desc = "Segment of source payload pointer; [bp+8] after prologue."
+Reads the destination length byte, adds count using 16-bit arithmetic,
+and uses a signed comparison against capacity; if the sum is greater,
+calls the fatal-error helper at 0d72:5ca6 (error code 0x27). Otherwise
+copies count bytes forward from the far source pointer to destination +
+1 + old_length, then rereads and increases the destination length byte
+without adding a NUL terminator; intended inputs are valid Pascal string
+lengths/capacities (0..255), and arbitrary overlapping buffers are not
+supported by the forward copy. The caller at 0935:24be passes capacity
+255 and a token payload excluding its length byte; the routine allocates
+four local bytes through 0d72:5c2a, registers/unregisters its runtime
+stack frame, preserves SI/DI/BP/DS, and returns with RETF 0Ch and no
+defined return value.
 
-[[params]]
-name = "count"
-value = "[sp+8]"
-type = "u16"
-desc = "Number of source bytes to append; [bp+0Ah] after prologue. Expected to fit destination capacity."
+parameters:
+  [sp+4]  source_offset: u16 Offset of first source payload byte, excluding any Pascal length prefix; [bp+6] after prologue.
 
-[[params]]
-name = "destination_offset"
-value = "[sp+0Ah]"
-type = "u16"
-desc = "Offset of destination Pascal string length byte; [bp+0Ch] after prologue."
+parameters:
+  [sp+6]  source_segment: u16 Segment of source payload pointer; [bp+8] after prologue.
 
-[[params]]
-name = "destination_segment"
-value = "[sp+0Ch]"
-type = "u16"
-desc = "Segment of destination Pascal string; [bp+0Eh] after prologue."
+parameters:
+  [sp+8]  count: u16 Number of source bytes to append; [bp+0Ah] after prologue. Expected to fit destination capacity.
 
-[[params]]
-name = "capacity"
-value = "[sp+0Eh]"
-type = "u16"
-desc = "Maximum destination payload length, excluding length byte (normally <=255); [bp+10h] after prologue."
+parameters:
+  [sp+0Ah]  destination_offset: u16 Offset of destination Pascal string length byte; [bp+0Ch] after prologue.
+
+parameters:
+  [sp+0Ch]  destination_segment: u16 Segment of destination Pascal string; [bp+0Eh] after prologue.
+
+parameters:
+  [sp+0Eh]  capacity: u16 Maximum destination payload length, excluding length byte (normally <=255); [bp+10h] after prologue.
 
 ---
 ; Allocate four local bytes via shared stack-checking prologue; BP points to saved BP.

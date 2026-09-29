@@ -1,32 +1,27 @@
-ip = "0d72:66cc"
-len = 110
-name = "write_stdout_far_buffer_chunked"
-desc = "Write a far buffer to stdout in chunks of up to 85 bytes via an internal staging buffer."
-details = "Iterates over a far byte buffer, copying chunks of at most 55h (85) bytes into the fixed staging buffer at DS:0724h via copy_far_bytes_forward, and writes each chunk to file handle 1 (standard output) via DOS INT 21h AH=40h. If a write call returns an error (AX < 0), or when the remaining length reaches 0 (or exceeds 7FFFh due to underflow/completion), the loop terminates. Returns far, discarding 6 bytes of stack parameters."
+function 0d72:66cc (write_stdout_far_buffer_chunked)
 
-[[params]]
-name = "buf_offset"
-value = "[bp+6]"
-type = "u16"
-desc = "Offset of source buffer in memory"
+Write a far buffer to stdout in chunks of up to 85 bytes via an internal
+staging buffer.
 
-[[params]]
-name = "buf_segment"
-value = "[bp+8]"
-type = "u16"
-desc = "Segment of source buffer in memory"
+Iterates over a far byte buffer, copying chunks of at most 55h (85)
+bytes into the fixed staging buffer at DS:0724h via
+copy_far_bytes_forward, and writes each chunk to file handle 1 (standard
+output) via DOS INT 21h AH=40h. If a write call returns an error (AX <
+0), or when the remaining length reaches 0 (or exceeds 7FFFh due to
+underflow/completion), the loop terminates. Returns far, discarding 6
+bytes of stack parameters.
 
-[[params]]
-name = "count"
-value = "[bp+0Ah]"
-type = "u16"
-desc = "Total number of bytes to write"
+parameters:
+  [bp+6]  buf_offset: u16 Offset of source buffer in memory
 
-[ret]
-name = "status"
-value = "ax"
-type = "i16"
-desc = "Return code / write result from last chunk (or 0 if count was 0)"
+parameters:
+  [bp+8]  buf_segment: u16 Segment of source buffer in memory
+
+parameters:
+  [bp+0Ah]  count: u16 Total number of bytes to write
+
+return:
+  ax  status: i16 Return code / write result from last chunk (or 0 if count was 0)
 
 ---
 ; Allocate 8 bytes of stack space for locals and check stack limit.

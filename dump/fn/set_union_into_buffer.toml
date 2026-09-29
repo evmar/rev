@@ -1,44 +1,31 @@
-ip = "0d72:604f"
-len = 143
-name = "set_union_into_buffer"
-desc = "Forms the union of two byte-backed sets in a 32-byte destination buffer."
-details = "Clears all 32 destination bytes, copies bytes 0 through base_last_index from the base set, then ORs bytes 0 through or_last_index from the other set into the destination. Both lengths are inclusive last byte indices; the routine returns the destination's near offset in AX. Callers must provide a 32-byte destination and source ranges matching the supplied indices."
+function 0d72:604f (set_union_into_buffer)
 
-[[params]]
-name = "dest"
-value = "[bp+6]"
-type = "*mut u8"
-desc = "Near pointer to the 32-byte destination set in DS."
+Forms the union of two byte-backed sets in a 32-byte destination buffer.
 
-[[params]]
-name = "or_set"
-value = "[bp+8]"
-type = "*const u8"
-desc = "Far pointer to the set whose bytes are ORed into the destination."
+Clears all 32 destination bytes, copies bytes 0 through base_last_index
+from the base set, then ORs bytes 0 through or_last_index from the other
+set into the destination. Both lengths are inclusive last byte indices;
+the routine returns the destination's near offset in AX. Callers must
+provide a 32-byte destination and source ranges matching the supplied
+indices.
 
-[[params]]
-name = "or_last_index"
-value = "[bp+0Ch]"
-type = "u16"
-desc = "Inclusive last byte index to read from or_set."
+parameters:
+  [bp+6]  dest: *mut u8 Near pointer to the 32-byte destination set in DS.
 
-[[params]]
-name = "base_set"
-value = "[bp+0Eh]"
-type = "*const u8"
-desc = "Far pointer to the set copied into the destination first."
+parameters:
+  [bp+8]  or_set: *const u8 Far pointer to the set whose bytes are ORed into the destination.
 
-[[params]]
-name = "base_last_index"
-value = "[bp+12h]"
-type = "u16"
-desc = "Inclusive last byte index to read from base_set."
+parameters:
+  [bp+0Ch]  or_last_index: u16 Inclusive last byte index to read from or_set.
 
-[ret]
-name = "dest"
-value = "ax"
-type = "*mut u8"
-desc = "Near pointer to the destination set in DS."
+parameters:
+  [bp+0Eh]  base_set: *const u8 Far pointer to the set copied into the destination first.
+
+parameters:
+  [bp+12h]  base_last_index: u16 Inclusive last byte index to read from base_set.
+
+return:
+  ax  dest: *mut u8 Near pointer to the destination set in DS.
 
 ---
 0d72:604f mov ax,4

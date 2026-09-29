@@ -1,5 +1,4 @@
-ip = "0d72:673a"
-len = 31
+function 0d72:673a
 
 ---
 0d72:673a mov ax,0

@@ -1,32 +1,26 @@
-ip = "0d72:01d0"
-len = 31
-name = "match_h_digraph_after_c_test"
-desc = "Completes the C/S/T prefix test for an H digraph and consumes the two-byte unit on success."
-details = "This is an overlapping tail fragment of match_class_04_context_with_h_digraph, entered immediately after CMP AL, 0x43 with AL holding the byte adjacent to H. It accepts C from the incoming ZF state or explicitly tests for S and T; a match subtracts two from SI and increments the shared context-match count at [BP+3], while failure returns without changing either value."
+function 0d72:01d0 (match_h_digraph_after_c_test)
 
-[[params]]
-name = "adjacent_char"
-value = "al"
-type = "u8"
-desc = "Byte adjacent to the current H, already compared with ASCII C by the parent routine."
+Completes the C/S/T prefix test for an H digraph and consumes the two-
+byte unit on success.
 
-[[params]]
-name = "input_cursor"
-value = "si"
-type = "*mut u8"
-desc = "Current near input pointer, decremented by two when the adjacent byte is C, S, or T."
+This is an overlapping tail fragment of
+match_class_04_context_with_h_digraph, entered immediately after CMP AL,
+0x43 with AL holding the byte adjacent to H. It accepts C from the
+incoming ZF state or explicitly tests for S and T; a match subtracts two
+from SI and increments the shared context-match count at [BP+3], while
+failure returns without changing either value.
 
-[[params]]
-name = "match_count"
-value = "[bp+3]"
-type = "u8"
-desc = "Shared caller-frame context-match count, incremented on a successful digraph match."
+parameters:
+  al  adjacent_char: u8 Byte adjacent to the current H, already compared with ASCII C by the parent routine.
 
-[[params]]
-name = "c_compare_equal"
-value = "ZF"
-type = "u8"
-desc = "Incoming zero flag from CMP AL, 0x43; set when adjacent_char is ASCII C."
+parameters:
+  si  input_cursor: *mut u8 Current near input pointer, decremented by two when the adjacent byte is C, S, or T.
+
+parameters:
+  [bp+3]  match_count: u8 Shared caller-frame context-match count, incremented on a successful digraph match.
+
+parameters:
+  ZF  c_compare_equal: u8 Incoming zero flag from CMP AL, 0x43; set when adjacent_char is ASCII C.
 
 ---
 @jmp '3

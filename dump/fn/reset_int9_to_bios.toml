@@ -1,8 +1,12 @@
-ip = "0823:0804"
-len = 42
-name = "reset_int9_to_bios"
-desc = "Hooks or resets interrupt vector 09h (keyboard ISR) to the ROM BIOS default handler"
-details = "Saves the current interrupt 09h vector (located at 0000:0024h) into code-segment storage at cs:[0082h] and cs:[0084h]. It then updates the vector to point directly to the standard IBM PC ROM BIOS keyboard interrupt service routine at F000:E987h."
+function 0823:0804 (reset_int9_to_bios)
+
+Hooks or resets interrupt vector 09h (keyboard ISR) to the ROM BIOS
+default handler
+
+Saves the current interrupt 09h vector (located at 0000:0024h) into
+code-segment storage at cs:[0082h] and cs:[0084h]. It then updates the
+vector to point directly to the standard IBM PC ROM BIOS keyboard
+interrupt service routine at F000:E987h.
 
 ---
 0823:0804 cli

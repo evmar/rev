@@ -1,38 +1,30 @@
-ip = "0d72:0213"
-len = 15
-name = "handle_qu_pair"
-desc = "Recognize an uppercase QU pair and update the caller's scan state."
-details = "Returns without changing scan state unless CH is 'Q' (0x51) and CL is 'U' (0x55). On a match, adds the word at SS:[BP+0x0C] to SI twice (with 16-bit wraparound), increments the byte at SS:[BP+3], and tests bit 0 of CS:[0x4A9C+BX] after replacing BL with CH; if set, stores DI to SS:[BP+0x0E]. BH is preserved, so interpreting the lookup as a simple character-indexed table requires the caller to supply BH=0; the precise meanings of the counter and saved DI are not established by this routine alone."
+function 0d72:0213 (handle_qu_pair)
 
-[[params]]
-name = "character_pair"
-value = "cx"
-type = "u16"
-desc = "CH must contain uppercase Q and CL uppercase U for the state update to occur."
+Recognize an uppercase QU pair and update the caller's scan state.
 
-[[params]]
-name = "scan_position"
-value = "si"
-type = "u16"
-desc = "Scan position, advanced in place by twice the word stride at SS:[BP+0x0C] when QU matches."
+Returns without changing scan state unless CH is 'Q' (0x51) and CL is
+'U' (0x55). On a match, adds the word at SS:[BP+0x0C] to SI twice (with
+16-bit wraparound), increments the byte at SS:[BP+3], and tests bit 0 of
+CS:[0x4A9C+BX] after replacing BL with CH; if set, stores DI to
+SS:[BP+0x0E]. BH is preserved, so interpreting the lookup as a simple
+character-indexed table requires the caller to supply BH=0; the precise
+meanings of the counter and saved DI are not established by this routine
+alone.
 
-[[params]]
-name = "scan_state"
-value = "bp"
-type = "u16"
-desc = "Offset in SS of caller-owned state: byte counter at +3, word stride at +0x0C, and saved word position at +0x0E."
+parameters:
+  cx  character_pair: u16 CH must contain uppercase Q and CL uppercase U for the state update to occur.
 
-[[params]]
-name = "position_to_save"
-value = "di"
-type = "u16"
-desc = "Stored at SS:[BP+0x0E] on a QU match if the character-table entry has bit 0 set."
+parameters:
+  si  scan_position: u16 Scan position, advanced in place by twice the word stride at SS:[BP+0x0C] when QU matches.
 
-[[params]]
-name = "table_index_high"
-value = "bh"
-type = "u8"
-desc = "Preserved high byte of the character-table index; BL becomes Q on a match. Expected to be zero for a simple 256-entry character table."
+parameters:
+  bp  scan_state: u16 Offset in SS of caller-owned state: byte counter at +3, word stride at +0x0C, and saved word position at +0x0E.
+
+parameters:
+  di  position_to_save: u16 Stored at SS:[BP+0x0E] on a QU match if the character-table entry has bit 0 set.
+
+parameters:
+  bh  table_index_high: u8 Preserved high byte of the character-table index; BL becomes Q on a match. Expected to be zero for a simple 256-entry character table.
 
 ---
 ; Increment the caller's byte counter at SS:[BP+3] (wraps modulo 256).

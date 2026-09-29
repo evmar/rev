@@ -1,8 +1,11 @@
-ip = "0823:0923"
-len = 19
-name = "pic_mask_all_irqs"
-desc = "masks all master PIC hardware interrupts and saves the previous mask"
-details = "Reads the master 8259 PIC Interrupt Mask Register (IMR) from port 21h and saves it to CS:[01CDh]. It then writes 0FFh to port 21h to mask all IRQs (0-7), using short jumps for I/O delay, and restores interrupts via STI before returning."
+function 0823:0923 (pic_mask_all_irqs)
+
+masks all master PIC hardware interrupts and saves the previous mask
+
+Reads the master 8259 PIC Interrupt Mask Register (IMR) from port 21h
+and saves it to CS:[01CDh]. It then writes 0FFh to port 21h to mask all
+IRQs (0-7), using short jumps for I/O delay, and restores interrupts via
+STI before returning.
 
 ---
 0823:0923 cli

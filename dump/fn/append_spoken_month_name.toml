@@ -1,20 +1,20 @@
-ip = "0935:1f63"
-len = 654
-name = "append_spoken_month_name"
-desc = "Appends the pronunciation fragment for a numeric month (1-12) to the date parser's speech output."
-details = "Dispatches on the supplied month number through a 12-entry jump table, constructs the corresponding prebuilt Pascal-string pronunciation fragment on the stack, and passes it to path_append_component. The output record is obtained by following nested fields from the caller frame/context; month values below 1 fall through to the first case, while validated callers supply only 1 through 12."
+function 0935:1f63 (append_spoken_month_name)
 
-[[params]]
-name = "caller_frame"
-value = "[bp+4]"
-type = "*mut u8"
-desc = "Pointer to the calling parser frame/context used to locate the speech output record"
+Appends the pronunciation fragment for a numeric month (1-12) to the
+date parser's speech output.
 
-[[params]]
-name = "month"
-value = "[bp+6]"
-type = "u16"
-desc = "Numeric month selector, normally in the range 1 through 12"
+Dispatches on the supplied month number through a 12-entry jump table,
+constructs the corresponding prebuilt Pascal-string pronunciation
+fragment on the stack, and passes it to path_append_component. The
+output record is obtained by following nested fields from the caller
+frame/context; month values below 1 fall through to the first case,
+while validated callers supply only 1 through 12.
+
+parameters:
+  [bp+4]  caller_frame: *mut u8 Pointer to the calling parser frame/context used to locate the speech output record
+
+parameters:
+  [bp+6]  month: u16 Numeric month selector, normally in the range 1 through 12
 
 ---
 0935:1f63 push bp

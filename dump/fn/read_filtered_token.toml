@@ -1,26 +1,22 @@
-ip = "0935:1261"
-len = 155
-name = "read_filtered_token"
-desc = "Reads characters into a buffer while they belong to an allowed character set"
-details = "Initializes the output buffer and loops reading characters until a maximum length of 120 (0x78) is reached or an input character does not belong to the permitted character set passed at [bp+6]. It also checks characters against a secondary character set to set a global flag at ds:[0054h] and updates an editor/UI state via an internal callback."
+function 0935:1261 (read_filtered_token)
 
-[[params]]
-name = "out_buf"
-value = "[bp+26h]"
-type = "*mut u8"
-desc = "Pointer to destination string buffer"
+Reads characters into a buffer while they belong to an allowed character
+set
 
-[[params]]
-name = "valid_chars"
-value = "[bp+6]"
-type = "[u8; 32]"
-desc = "32-byte bitset of allowed characters"
+Initializes the output buffer and loops reading characters until a
+maximum length of 120 (0x78) is reached or an input character does not
+belong to the permitted character set passed at [bp+6]. It also checks
+characters against a secondary character set to set a global flag at
+ds:[0054h] and updates an editor/UI state via an internal callback.
 
-[[params]]
-name = "ui_state"
-value = "[bp+4]"
-type = "*mut u8"
-desc = "Pointer to UI/input state structure"
+parameters:
+  [bp+26h]  out_buf: *mut u8 Pointer to destination string buffer
+
+parameters:
+  [bp+6]  valid_chars: [u8; 32] 32-byte bitset of allowed characters
+
+parameters:
+  [bp+4]  ui_state: *mut u8 Pointer to UI/input state structure
 
 ---
 0935:1261 push bp

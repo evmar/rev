@@ -1,38 +1,29 @@
-ip = "0d72:0159"
-len = 43
-name = "match_repeatable_class_10_context"
-desc = "Matches a repeatable pronunciation-rule context class identified by character-property bit 0x10."
-details = "Tests the current input byte through the character-property table at CS:4A9C. On a match it increments the caller's shared match count and advances SI by the signed scan stride; if the adjacent byte is in the same class and the next encoded rule token has property bit 0x01, it returns to the shared dispatcher to consume another byte, otherwise it records DI as the context backtracking marker."
+function 0d72:0159 (match_repeatable_class_10_context)
 
-[[params]]
-name = "input_cursor"
-value = "si"
-type = "*mut u8"
-desc = "Near pointer to the current input byte; advanced by scan_stride for each matching class-0x10 byte."
+Matches a repeatable pronunciation-rule context class identified by
+character-property bit 0x10.
 
-[[params]]
-name = "rule_cursor"
-value = "di"
-type = "*const u8"
-desc = "Near code-segment pointer to the active encoded context token; may be saved as the backtracking marker."
+Tests the current input byte through the character-property table at
+CS:4A9C. On a match it increments the caller's shared match count and
+advances SI by the signed scan stride; if the adjacent byte is in the
+same class and the next encoded rule token has property bit 0x01, it
+returns to the shared dispatcher to consume another byte, otherwise it
+records DI as the context backtracking marker.
 
-[[params]]
-name = "current_byte"
-value = "bl"
-type = "u8"
-desc = "Current input byte supplied by the shared context-operator dispatcher."
+parameters:
+  si  input_cursor: *mut u8 Near pointer to the current input byte; advanced by scan_stride for each matching class-0x10 byte.
 
-[[params]]
-name = "adjacent_byte"
-value = "ch"
-type = "u8"
-desc = "Input byte one scan_stride beyond the current byte."
+parameters:
+  di  rule_cursor: *const u8 Near code-segment pointer to the active encoded context token; may be saved as the backtracking marker.
 
-[[params]]
-name = "scan_stride"
-value = "[bp+0Ch]"
-type = "i16"
-desc = "Signed input direction, normally -1 for left context or +1 for right context."
+parameters:
+  bl  current_byte: u8 Current input byte supplied by the shared context-operator dispatcher.
+
+parameters:
+  ch  adjacent_byte: u8 Input byte one scan_stride beyond the current byte.
+
+parameters:
+  [bp+0Ch]  scan_stride: i16 Signed input direction, normally -1 for left context or +1 for right context.
 
 ---
 @mem ; [ds unknown]

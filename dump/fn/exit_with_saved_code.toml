@@ -1,14 +1,14 @@
-ip = "0d72:656d"
-len = 16
-name = "exit_with_saved_code"
-desc = "Terminate the program with the default exit code stored in DS:060Eh."
-details = "Loads the exit code word from global DS:060Eh, pushes it onto the stack, and calls far function 0d72:6e28 to perform runtime teardown, flush/close open file handles, restore interrupt vectors, and exit via DOS INT 21h/AH=4Ch. Does not normally return."
+function 0d72:656d (exit_with_saved_code)
 
-[[params]]
-name = "data_segment"
-value = "ds"
-type = "u16"
-desc = "Segment containing runtime state and the exit code at offset 060Eh"
+Terminate the program with the default exit code stored in DS:060Eh.
+
+Loads the exit code word from global DS:060Eh, pushes it onto the stack,
+and calls far function 0d72:6e28 to perform runtime teardown,
+flush/close open file handles, restore interrupt vectors, and exit via
+DOS INT 21h/AH=4Ch. Does not normally return.
+
+parameters:
+  ds  data_segment: u16 Segment containing runtime state and the exit code at offset 060Eh
 
 ---
 0d72:656d push bp

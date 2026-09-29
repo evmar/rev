@@ -1,20 +1,20 @@
-ip = "0935:0d7f"
-len = 800
-name = "apply_prosody_intonation"
-desc = "Calculates prosodic pitch contours and processes stress markers in a text-to-speech input string"
-details = "Parses words and trailing punctuation in a Pascal string to compute baseline intonation and pitch contours for vowels according to punctuation rules (periods, question marks, exclamations, semicolons, and WH-questions). It also interprets manual pitch and stress control characters ('#', '@', '/', '\\'), updating pitch levels and removing the control characters from the string using System.Delete."
+function 0935:0d7f (apply_prosody_intonation)
 
-[[params]]
-name = "parent_bp"
-value = "[bp+4]"
-type = "u16"
-desc = "Static link to enclosing procedure frame"
+Calculates prosodic pitch contours and processes stress markers in a
+text-to-speech input string
 
-[[params]]
-name = "text"
-value = "[bp+6]"
-type = "*mut [u8]"
-desc = "Far pointer to Pascal text/phoneme string"
+Parses words and trailing punctuation in a Pascal string to compute
+baseline intonation and pitch contours for vowels according to
+punctuation rules (periods, question marks, exclamations, semicolons,
+and WH-questions). It also interprets manual pitch and stress control
+characters ('#', '@', '/', '\'), updating pitch levels and removing the
+control characters from the string using System.Delete.
+
+parameters:
+  [bp+4]  parent_bp: u16 Static link to enclosing procedure frame
+
+parameters:
+  [bp+6]  text: *mut [u8] Far pointer to Pascal text/phoneme string
 
 ---
 0935:0d7f push bp

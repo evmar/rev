@@ -1,20 +1,19 @@
-ip = "0935:1e4e"
-len = 121
-name = "pronounce_two_digit_number"
-desc = "Formats a value as two decimal digits and emits its cardinal-number pronunciation."
-details = "Copies a two-character Pascal-string template into the caller's scratch buffer, replaces the ones digit and (for values of 10 or more) the tens digit, then passes the resulting zero-padded digit string to tts_pronounce_number in mode 1. The parser uses this helper to speak date and time fields such as month, day, hour, minute, and second."
+function 0935:1e4e (pronounce_two_digit_number)
 
-[[params]]
-name = "ctx"
-value = "[bp+4]"
-type = "*mut u8"
-desc = "Parser/pronunciation context; scratch Pascal string is at ctx-0x106 and the output handle is reached through ctx+4"
+Formats a value as two decimal digits and emits its cardinal-number
+pronunciation.
 
-[[params]]
-name = "value"
-value = "[bp+6]"
-type = "i16"
-desc = "Nonnegative date or time field to format as two decimal digits"
+Copies a two-character Pascal-string template into the caller's scratch
+buffer, replaces the ones digit and (for values of 10 or more) the tens
+digit, then passes the resulting zero-padded digit string to
+tts_pronounce_number in mode 1. The parser uses this helper to speak
+date and time fields such as month, day, hour, minute, and second.
+
+parameters:
+  [bp+4]  ctx: *mut u8 Parser/pronunciation context; scratch Pascal string is at ctx-0x106 and the output handle is reached through ctx+4
+
+parameters:
+  [bp+6]  value: i16 Nonnegative date or time field to format as two decimal digits
 
 ---
 0935:1e4e push bp

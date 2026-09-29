@@ -1,38 +1,28 @@
-ip = "0d72:0194"
-len = 21
-name = "try_reverse_qu_class_01"
-desc = "Accepts reverse-scanned QU as one logical match for character class bit 0x01."
-details = "This is a secondary entry/tail fragment of the class-0x01 context matcher at 0d72:0184. It applies only when scan_stride is not +1; if the current byte is U and the adjacent byte is Q, it advances SI by two strides through the shared match block and increments the caller's match count once, otherwise it returns without changing state."
+function 0d72:0194 (try_reverse_qu_class_01)
 
-[[params]]
-name = "input_cursor"
-value = "si"
-type = "*mut u8"
-desc = "Near input pointer; advanced by two scan strides when reverse QU is accepted."
+Accepts reverse-scanned QU as one logical match for character class bit
+0x01.
 
-[[params]]
-name = "current_byte"
-value = "cl"
-type = "u8"
-desc = "Current input byte, which must be ASCII U (0x55)."
+This is a secondary entry/tail fragment of the class-0x01 context
+matcher at 0d72:0184. It applies only when scan_stride is not +1; if the
+current byte is U and the adjacent byte is Q, it advances SI by two
+strides through the shared match block and increments the caller's match
+count once, otherwise it returns without changing state.
 
-[[params]]
-name = "adjacent_byte"
-value = "ch"
-type = "u8"
-desc = "Adjacent input byte in the scan direction, which must be ASCII Q (0x51)."
+parameters:
+  si  input_cursor: *mut u8 Near input pointer; advanced by two scan strides when reverse QU is accepted.
 
-[[params]]
-name = "match_count"
-value = "[bp+3]"
-type = "*mut u8"
-desc = "Caller-owned logical match counter incremented once through the shared success block."
+parameters:
+  cl  current_byte: u8 Current input byte, which must be ASCII U (0x55).
 
-[[params]]
-name = "scan_stride"
-value = "[bp+0Ch]"
-type = "i16"
-desc = "Signed scan step; +1 disables this reverse-only QU special case."
+parameters:
+  ch  adjacent_byte: u8 Adjacent input byte in the scan direction, which must be ASCII Q (0x51).
+
+parameters:
+  [bp+3]  match_count: *mut u8 Caller-owned logical match counter incremented once through the shared success block.
+
+parameters:
+  [bp+0Ch]  scan_stride: i16 Signed scan step; +1 disables this reverse-only QU special case.
 
 ---
 @label record_qu_match

@@ -1,5 +1,4 @@
-ip = "0d72:6f1b"
-len = 43
+function 0d72:6f1b
 
 ---
 0d72:6f1b push bp

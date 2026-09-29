@@ -1,20 +1,18 @@
-ip = "0935:21f1"
-len = 508
-name = "parse_date_or_time"
-desc = "Parses a formatted date (MM/DD/YY) or time (HH:MM[:SS]) string."
-details = "Attempts to parse a date or time from the input scanner stream. If the delimiter following the first integer is '/' or '-', it parses day and year values (normalizing years >= 1900) and checks their ranges. If the delimiter is ':', it parses minutes and optional seconds. On failure, it rolls back the stream state and returns 0."
+function 0935:21f1 (parse_date_or_time)
 
-[[params]]
-name = "ctx"
-value = "[bp+4]"
-type = "*mut u8"
-desc = "Pointer to parser stream or context structure"
+Parses a formatted date (MM/DD/YY) or time (HH:MM[:SS]) string.
 
-[ret]
-name = "success"
-value = "ax"
-type = "bool"
-desc = "1 if date or time was successfully parsed, 0 on failure"
+Attempts to parse a date or time from the input scanner stream. If the
+delimiter following the first integer is '/' or '-', it parses day and
+year values (normalizing years >= 1900) and checks their ranges. If the
+delimiter is ':', it parses minutes and optional seconds. On failure, it
+rolls back the stream state and returns 0.
+
+parameters:
+  [bp+4]  ctx: *mut u8 Pointer to parser stream or context structure
+
+return:
+  ax  success: bool 1 if date or time was successfully parsed, 0 on failure
 
 ---
 0935:21f1 push bp

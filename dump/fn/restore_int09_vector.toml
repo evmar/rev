@@ -1,8 +1,11 @@
-ip = "0823:082e"
-len = 31
-name = "restore_int09_vector"
-desc = "restores the INT 09h (keyboard) interrupt vector"
-details = "Disables interrupts and updates the interrupt vector table entry for INT 09h (at 0000:0024h) using the offset and segment values stored in the code segment at cs:[0082h] and cs:[0084h]. Re-enables interrupts and restores modified registers before returning."
+function 0823:082e (restore_int09_vector)
+
+restores the INT 09h (keyboard) interrupt vector
+
+Disables interrupts and updates the interrupt vector table entry for INT
+09h (at 0000:0024h) using the offset and segment values stored in the
+code segment at cs:[0082h] and cs:[0084h]. Re-enables interrupts and
+restores modified registers before returning.
 
 ---
 0823:082e cli

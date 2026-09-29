@@ -1,50 +1,42 @@
-ip = "0d72:5909"
-len = 156
-name = "pascal_string_insert_bytes"
-desc = "Insert raw bytes at a one-based position in a length-prefixed Pascal string."
-details = "For normal arguments (1 <= position <= length+1 and length+count <= capacity <= 255), shifts length-position+1 suffix bytes upward by count using a backward copy, copies count raw source bytes into the gap, and updates the destination's leading length byte; position length+1 appends and no NUL terminator is written. Calls the fatal-error helper at 0d72:5ca6 if the signed 16-bit length+count comparison exceeds capacity or position exceeds length+1, but does not check position >= 1, nonnegative count/capacity, arithmetic overflow, or the 255-byte representation limit; pointer offsets wrap within their segments and source aliasing is not generally safe because the suffix is shifted before the forward source copy. Uses 12 bytes of locals and runtime frame registration, preserves SI/DI/BP/DS, returns no defined value, and RETF 0Eh removes seven argument words."
+function 0d72:5909 (pascal_string_insert_bytes)
 
-[[params]]
-name = "position"
-value = "[sp+4]"
-type = "i16"
-desc = "One-based insertion position (BP+6); length+1 appends. Only the upper bound is checked."
+Insert raw bytes at a one-based position in a length-prefixed Pascal
+string.
 
-[[params]]
-name = "destination_offset"
-value = "[sp+6]"
-type = "u16"
-desc = "Offset of destination Pascal string's length byte (BP+8)."
+For normal arguments (1 <= position <= length+1 and length+count <=
+capacity <= 255), shifts length-position+1 suffix bytes upward by count
+using a backward copy, copies count raw source bytes into the gap, and
+updates the destination's leading length byte; position length+1 appends
+and no NUL terminator is written. Calls the fatal-error helper at
+0d72:5ca6 if the signed 16-bit length+count comparison exceeds capacity
+or position exceeds length+1, but does not check position >= 1,
+nonnegative count/capacity, arithmetic overflow, or the 255-byte
+representation limit; pointer offsets wrap within their segments and
+source aliasing is not generally safe because the suffix is shifted
+before the forward source copy. Uses 12 bytes of locals and runtime
+frame registration, preserves SI/DI/BP/DS, returns no defined value, and
+RETF 0Eh removes seven argument words.
 
-[[params]]
-name = "destination_segment"
-value = "[sp+8]"
-type = "u16"
-desc = "Segment of destination Pascal string (BP+0Ah)."
+parameters:
+  [sp+4]  position: i16 One-based insertion position (BP+6); length+1 appends. Only the upper bound is checked.
 
-[[params]]
-name = "capacity"
-value = "[sp+0Ah]"
-type = "i16"
-desc = "Maximum destination character count, excluding the length byte (BP+0Ch); normally <=255."
+parameters:
+  [sp+6]  destination_offset: u16 Offset of destination Pascal string's length byte (BP+8).
 
-[[params]]
-name = "source_offset"
-value = "[sp+0Ch]"
-type = "u16"
-desc = "Offset of first raw source byte, not a Pascal length prefix (BP+0Eh)."
+parameters:
+  [sp+8]  destination_segment: u16 Segment of destination Pascal string (BP+0Ah).
 
-[[params]]
-name = "source_segment"
-value = "[sp+0Eh]"
-type = "u16"
-desc = "Segment containing raw source bytes (BP+10h)."
+parameters:
+  [sp+0Ah]  capacity: i16 Maximum destination character count, excluding the length byte (BP+0Ch); normally <=255.
 
-[[params]]
-name = "count"
-value = "[sp+10h]"
-type = "u16"
-desc = "Number of bytes to insert (BP+12h); expected small and nonnegative, though not explicitly validated."
+parameters:
+  [sp+0Ch]  source_offset: u16 Offset of first raw source byte, not a Pascal length prefix (BP+0Eh).
+
+parameters:
+  [sp+0Eh]  source_segment: u16 Segment containing raw source bytes (BP+10h).
+
+parameters:
+  [sp+10h]  count: u16 Number of bytes to insert (BP+12h); expected small and nonnegative, though not explicitly validated.
 
 ---
 ; Allocate 12 local bytes through the runtime prologue; BP+6 is the first argument.

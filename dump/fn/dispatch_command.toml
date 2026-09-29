@@ -1,14 +1,15 @@
-ip = "0823:0f5b"
-len = 456
-name = "dispatch_command"
-desc = "Dispatches driver/subsystem API commands based on a function index in AL"
-details = "Saves caller context and stack pointers, then routes execution based on the function code passed in AL. Functions 0Ch and 0Dh are handled as parameter-unstacking routines that retrieve far pointers into internal storage before returning; all other commands index into an indirect far jump table."
+function 0823:0f5b (dispatch_command)
 
-[[params]]
-name = "cmd"
-value = "al"
-type = "u8"
-desc = "Command or function number"
+Dispatches driver/subsystem API commands based on a function index in AL
+
+Saves caller context and stack pointers, then routes execution based on
+the function code passed in AL. Functions 0Ch and 0Dh are handled as
+parameter-unstacking routines that retrieve far pointers into internal
+storage before returning; all other commands index into an indirect far
+jump table.
+
+parameters:
+  al  cmd: u8 Command or function number
 
 ---
 ; Save caller's SS:SP

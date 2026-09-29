@@ -1,38 +1,29 @@
-ip = "0d72:01a0"
-len = 9
-name = "conditional_advance_then_dispatch_bp"
-desc = "Conditionally advances SI and a BP-relative byte counter, then transfers control to the near address held in BP."
-details = "This is a continuation-style trampoline rather than a conventional callee: PUSH BP followed by the shared RET makes execution continue at CS:BP while leaving the original return address on the stack. If the incoming ZF is clear it dispatches immediately with CF set; if ZF is set it adds [SS:BP+0x0c] to SI twice and increments byte [SS:BP+3], with the final ADD determining the outgoing arithmetic flags."
+function 0d72:01a0 (conditional_advance_then_dispatch_bp)
 
-[[params]]
-name = "continuation_and_state_base"
-value = "bp"
-type = "u16"
-desc = "Near continuation address for the RET-based dispatch and SS-relative base of the state fields."
+Conditionally advances SI and a BP-relative byte counter, then transfers
+control to the near address held in BP.
 
-[[params]]
-name = "cursor"
-value = "si"
-type = "u16"
-desc = "Cursor advanced twice by the BP-relative stride when incoming ZF is set."
+This is a continuation-style trampoline rather than a conventional
+callee: PUSH BP followed by the shared RET makes execution continue at
+CS:BP while leaving the original return address on the stack. If the
+incoming ZF is clear it dispatches immediately with CF set; if ZF is set
+it adds [SS:BP+0x0c] to SI twice and increments byte [SS:BP+3], with the
+final ADD determining the outgoing arithmetic flags.
 
-[[params]]
-name = "condition"
-value = "flags.ZF"
-type = "u8"
-desc = "Incoming zero flag; clear selects immediate dispatch, set selects the state-update path."
+parameters:
+  bp  continuation_and_state_base: u16 Near continuation address for the RET-based dispatch and SS-relative base of the state fields.
 
-[[params]]
-name = "stride"
-value = "[bp+0x0c]"
-type = "u16"
-desc = "SS-relative increment added to SI twice on the update path."
+parameters:
+  si  cursor: u16 Cursor advanced twice by the BP-relative stride when incoming ZF is set.
 
-[[params]]
-name = "counter"
-value = "[bp+3]"
-type = "u8"
-desc = "SS-relative byte counter incremented once on the update path."
+parameters:
+  flags.ZF  condition: u8 Incoming zero flag; clear selects immediate dispatch, set selects the state-update path.
+
+parameters:
+  [bp+0x0c]  stride: u16 SS-relative increment added to SI twice on the update path.
+
+parameters:
+  [bp+3]  counter: u8 SS-relative byte counter incremented once on the update path.
 
 ---
 @mem ; [ss unknown]

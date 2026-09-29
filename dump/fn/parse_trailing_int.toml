@@ -1,20 +1,18 @@
-ip = "0935:1db1"
-len = 157
-name = "parse_trailing_int"
-desc = "Parses a trailing integer from a Pascal string right-to-left"
-details = "Iterates backwards from the end of a Pascal-style string, converting decimal digit characters into an integer using a decimal multiplier. The loop validates characters against predefined character sets via a runtime helper. If the prefix or stopping character is invalid according to a final character set check, the parsed result is reset to zero."
+function 0935:1db1 (parse_trailing_int)
 
-[[params]]
-name = "out_val"
-value = "[bp+6]"
-type = "*mut i16"
-desc = "Near pointer to the output 16-bit integer"
+Parses a trailing integer from a Pascal string right-to-left
 
-[[params]]
-name = "str"
-value = "[bp+8]"
-type = "[u8; 256]"
-desc = "Pascal-style string passed by value (byte length followed by characters)"
+Iterates backwards from the end of a Pascal-style string, converting
+decimal digit characters into an integer using a decimal multiplier. The
+loop validates characters against predefined character sets via a
+runtime helper. If the prefix or stopping character is invalid according
+to a final character set check, the parsed result is reset to zero.
+
+parameters:
+  [bp+6]  out_val: *mut i16 Near pointer to the output 16-bit integer
+
+parameters:
+  [bp+8]  str: [u8; 256] Pascal-style string passed by value (byte length followed by characters)
 
 ---
 0935:1db1 push bp

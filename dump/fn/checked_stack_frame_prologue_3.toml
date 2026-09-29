@@ -1,14 +1,17 @@
-ip = "0d72:64c8"
-len = 2204
-name = "checked_stack_frame_prologue_3"
-desc = "Establish BP frame and reserve AX bytes on stack with stack overflow checking."
-details = "Invoked via near CALL in function prologues (e.g. set_union_into_buffer). Pops the return offset into CX, sets up BP frame (push bp; mov bp, sp), then checks if allocating AX bytes (sp - ax) would cause borrow or drop below the stack limit at ds:[0792h]. If safe, updates SP and jumps back to CX. Otherwise, pushes CS:CX and jumps to the far stack-check/overflow handler at 0d72:6b88."
+function 0d72:64c8 (checked_stack_frame_prologue_3)
 
-[[params]]
-name = "local_size"
-value = "ax"
-type = "u16"
-desc = "Number of bytes of local stack space to reserve"
+Establish BP frame and reserve AX bytes on stack with stack overflow
+checking.
+
+Invoked via near CALL in function prologues (e.g.
+set_union_into_buffer). Pops the return offset into CX, sets up BP frame
+(push bp; mov bp, sp), then checks if allocating AX bytes (sp - ax)
+would cause borrow or drop below the stack limit at ds:[0792h]. If safe,
+updates SP and jumps back to CX. Otherwise, pushes CS:CX and jumps to
+the far stack-check/overflow handler at 0d72:6b88.
+
+parameters:
+  ax  local_size: u16 Number of bytes of local stack space to reserve
 
 ---
 ; pop return offset into CX

@@ -1,20 +1,17 @@
-ip = "0823:0b54"
-len = 22
-name = "toupper_string"
-desc = "Converts a buffer of characters to uppercase in-place"
-details = "Iterates through `cx` characters starting at `ds:di`. Any ASCII lowercase letter between 'a' and 'z' is converted to uppercase by clearing bit 5 (`and al, 5Fh`). Register state of `di` and `cx` is preserved."
+function 0823:0b54 (toupper_string)
 
-[[params]]
-name = "str"
-value = "di"
-type = "*mut u8"
-desc = "Pointer to character buffer"
+Converts a buffer of characters to uppercase in-place
 
-[[params]]
-name = "len"
-value = "cx"
-type = "u16"
-desc = "Number of characters to process"
+Iterates through `cx` characters starting at `ds:di`. Any ASCII
+lowercase letter between 'a' and 'z' is converted to uppercase by
+clearing bit 5 (`and al, 5Fh`). Register state of `di` and `cx` is
+preserved.
+
+parameters:
+  di  str: *mut u8 Pointer to character buffer
+
+parameters:
+  cx  len: u16 Number of characters to process
 
 ---
 0823:0b54 push di

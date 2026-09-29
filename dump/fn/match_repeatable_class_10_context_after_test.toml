@@ -1,38 +1,30 @@
-ip = "0d72:0160"
-len = 36
-name = "match_repeatable_class_10_context_after_test"
-desc = "Continues the repeatable class-0x10 context matcher after testing the current input byte."
-details = "Entry ZF is the result of ANDing the current byte's character-property value with 0x10 at 0d72:015e; a zero result rejects the current byte. On a match, this block increments the shared match count, advances SI by the signed scan stride, and checks whether the adjacent byte is also class 0x10. If repetition is permitted by property bit 0x01 on the next encoded rule token, it returns to the shared dispatcher; otherwise it saves DI as the context backtracking marker."
+function 0d72:0160 (match_repeatable_class_10_context_after_test)
 
-[[params]]
-name = "current_class_match"
-value = "flags.ZF"
-type = "u8"
-desc = "ZF from the preceding class-bit-0x10 test; clear means the current byte matched."
+Continues the repeatable class-0x10 context matcher after testing the
+current input byte.
 
-[[params]]
-name = "input_cursor"
-value = "si"
-type = "*mut u8"
-desc = "Near pointer to the current input byte; advanced by scan_stride after a match."
+Entry ZF is the result of ANDing the current byte's character-property
+value with 0x10 at 0d72:015e; a zero result rejects the current byte. On
+a match, this block increments the shared match count, advances SI by
+the signed scan stride, and checks whether the adjacent byte is also
+class 0x10. If repetition is permitted by property bit 0x01 on the next
+encoded rule token, it returns to the shared dispatcher; otherwise it
+saves DI as the context backtracking marker.
 
-[[params]]
-name = "rule_cursor"
-value = "di"
-type = "*const u8"
-desc = "Near code-segment pointer to the active encoded context token; may be saved as the backtracking marker."
+parameters:
+  flags.ZF  current_class_match: u8 ZF from the preceding class-bit-0x10 test; clear means the current byte matched.
 
-[[params]]
-name = "adjacent_byte"
-value = "ch"
-type = "u8"
-desc = "Input byte one scan_stride beyond the current byte."
+parameters:
+  si  input_cursor: *mut u8 Near pointer to the current input byte; advanced by scan_stride after a match.
 
-[[params]]
-name = "scan_stride"
-value = "[bp+0Ch]"
-type = "i16"
-desc = "Signed input direction, normally -1 for left context or +1 for right context."
+parameters:
+  di  rule_cursor: *const u8 Near code-segment pointer to the active encoded context token; may be saved as the backtracking marker.
+
+parameters:
+  ch  adjacent_byte: u8 Input byte one scan_stride beyond the current byte.
+
+parameters:
+  [bp+0Ch]  scan_stride: i16 Signed input direction, normally -1 for left context or +1 for right context.
 
 ---
 @label redispatch_context_operator

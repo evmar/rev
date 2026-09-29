@@ -1,32 +1,26 @@
-ip = "0d72:013c"
-len = 29
-name = "dispatch_pronunciation_context_operator"
-desc = "Dispatches a pronunciation-rule context metacharacter to its specialized matcher."
-details = "Uses the decoded context operator in the caller's shared frame to select a near handler from a code-segment jump table. It supplies the current input byte and the adjacent byte in the active scan direction; the selected handler updates the shared match flag, input cursor, and optional context backtracking marker before returning directly to apply_pronunciation_rules."
+function 0d72:013c (dispatch_pronunciation_context_operator)
 
-[[params]]
-name = "input_cursor"
-value = "si"
-type = "*mut u8"
-desc = "Near pointer to the current input byte; specialized handlers may advance or retreat it."
+Dispatches a pronunciation-rule context metacharacter to its specialized
+matcher.
 
-[[params]]
-name = "rule_cursor"
-value = "di"
-type = "*const u8"
-desc = "Near code-segment pointer to the current encoded rule context token."
+Uses the decoded context operator in the caller's shared frame to select
+a near handler from a code-segment jump table. It supplies the current
+input byte and the adjacent byte in the active scan direction; the
+selected handler updates the shared match flag, input cursor, and
+optional context backtracking marker before returning directly to
+apply_pronunciation_rules.
 
-[[params]]
-name = "context_operator"
-value = "[bp+1]"
-type = "u8"
-desc = "Decoded context metacharacter used to index the handler jump table."
+parameters:
+  si  input_cursor: *mut u8 Near pointer to the current input byte; specialized handlers may advance or retreat it.
 
-[[params]]
-name = "scan_stride"
-value = "[bp+0Ch]"
-type = "i16"
-desc = "Signed input scan direction, normally -1 for left context or +1 for right context."
+parameters:
+  di  rule_cursor: *const u8 Near code-segment pointer to the current encoded rule context token.
+
+parameters:
+  [bp+1]  context_operator: u8 Decoded context metacharacter used to index the handler jump table.
+
+parameters:
+  [bp+0Ch]  scan_stride: i16 Signed input scan direction, normally -1 for left context or +1 for right context.
 
 ---
 ; Clear the shared context-match/consumed-count result before testing the operator.

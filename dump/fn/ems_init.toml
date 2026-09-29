@@ -1,8 +1,12 @@
-ip = "0823:0aa0"
-len = 66
-name = "ems_init"
-desc = "Initializes Expanded Memory (EMS) and allocates pages"
-details = "Checks for the presence of an Expanded Memory Manager (EMM) by inspecting the device header name at the INT 67h interrupt handler offset 000Ah. If valid, retrieves the EMS page frame address, allocates the required number of logical pages specified at [009Ah], stores the allocated handle and page frame segment, and flags EMS as active."
+function 0823:0aa0 (ems_init)
+
+Initializes Expanded Memory (EMS) and allocates pages
+
+Checks for the presence of an Expanded Memory Manager (EMM) by
+inspecting the device header name at the INT 67h interrupt handler
+offset 000Ah. If valid, retrieves the EMS page frame address, allocates
+the required number of logical pages specified at [009Ah], stores the
+allocated handle and page frame segment, and flags EMS as active.
 
 ---
 ; Get interrupt vector for INT 67h (EMS driver) into ES:BX

@@ -1,14 +1,15 @@
-ip = "0935:23ed"
-len = 2047
-name = "parse_argument_switches"
-desc = "Parses a command-line argument, file specification, and option switches"
-details = "This function parses an input command-line or argument token stream. It handles delimiter characters including comma (','), hyphen/minus ('-'), switch slash ('/'), dot/extension ('.'), and quotes ('''), validating syntax against sets of allowed characters, processing sub-options, and displaying diagnostic or error messages via a central output routine."
+function 0935:23ed (parse_argument_switches)
 
-[[params]]
-name = "ctx"
-value = "[bp+4]"
-type = "*mut u8"
-desc = "Pointer to parser context or argument token structure"
+Parses a command-line argument, file specification, and option switches
+
+This function parses an input command-line or argument token stream. It
+handles delimiter characters including comma (','), hyphen/minus ('-'),
+switch slash ('/'), dot/extension ('.'), and quotes ('''), validating
+syntax against sets of allowed characters, processing sub-options, and
+displaying diagnostic or error messages via a central output routine.
+
+parameters:
+  [bp+4]  ctx: *mut u8 Pointer to parser context or argument token structure
 
 ---
 0935:23ed push bp

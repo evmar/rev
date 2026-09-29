@@ -1,38 +1,34 @@
-ip = "0d72:50a4"
-len = 40
-name = "copy_far_bytes_backward"
-desc = "Copy a byte count from a far source pointer to a far destination pointer, proceeding backward."
-details = "Loads DS:SI from the source and ES:DI from the destination, adds count-1 to both offsets, then sets DF and uses REP MOVSB to copy from last byte to first; count zero performs no memory transfer, and offsets wrap at 16 bits without segment adjustment. The caller pushes source segment/offset, destination segment/offset, then count; RETF 0Ah discards these five words, with no defined return value, preserving DS/BP, clobbering AX/CX/SI/DI/ES, and leaving DF clear (CX is zero and SI/DI finish at their original offsets minus one). This supports backward-safe overlapping copies, as used by 0d72:5909 to shift a length-prefixed string's suffix toward higher addresses before insertion; it does not choose the copy direction or validate bounds."
+function 0d72:50a4 (copy_far_bytes_backward)
 
-[[params]]
-name = "count"
-value = "[sp+4]"
-type = "u16"
-desc = "Number of bytes to copy; zero performs no memory transfer."
+Copy a byte count from a far source pointer to a far destination
+pointer, proceeding backward.
 
-[[params]]
-name = "destination_offset"
-value = "[sp+6]"
-type = "u16"
-desc = "Destination starting offset, loaded into DI."
+Loads DS:SI from the source and ES:DI from the destination, adds count-1
+to both offsets, then sets DF and uses REP MOVSB to copy from last byte
+to first; count zero performs no memory transfer, and offsets wrap at 16
+bits without segment adjustment. The caller pushes source
+segment/offset, destination segment/offset, then count; RETF 0Ah
+discards these five words, with no defined return value, preserving
+DS/BP, clobbering AX/CX/SI/DI/ES, and leaving DF clear (CX is zero and
+SI/DI finish at their original offsets minus one). This supports
+backward-safe overlapping copies, as used by 0d72:5909 to shift a
+length-prefixed string's suffix toward higher addresses before
+insertion; it does not choose the copy direction or validate bounds.
 
-[[params]]
-name = "destination_segment"
-value = "[sp+8]"
-type = "u16"
-desc = "Destination segment, loaded into ES."
+parameters:
+  [sp+4]  count: u16 Number of bytes to copy; zero performs no memory transfer.
 
-[[params]]
-name = "source_offset"
-value = "[sp+0Ah]"
-type = "u16"
-desc = "Source starting offset, loaded into SI."
+parameters:
+  [sp+6]  destination_offset: u16 Destination starting offset, loaded into DI.
 
-[[params]]
-name = "source_segment"
-value = "[sp+0Ch]"
-type = "u16"
-desc = "Source segment, temporarily loaded into DS."
+parameters:
+  [sp+8]  destination_segment: u16 Destination segment, loaded into ES.
+
+parameters:
+  [sp+0Ah]  source_offset: u16 Source starting offset, loaded into SI.
+
+parameters:
+  [sp+0Ch]  source_segment: u16 Source segment, temporarily loaded into DS.
 
 ---
 0d72:50a4 push bp

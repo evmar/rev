@@ -1,20 +1,21 @@
-ip = "0823:0b87"
-len = 43
-name = "parse_cmdline_d_switch"
-desc = "Parses a command-line string to locate the '/D' switch and extracts up to an 8-character argument immediately following it into an internal buffer."
-details = "Searches the string referenced by ES:DI for the forward slash ('/') character across CX bytes using REPNE SCASB. When found, it inspects the subsequent character to check if it matches 'D'. If matched, it reads up to 8 characters following '/D' until it encounters another '/' switch character or runs out of input characters, copying each character into a buffer located at CS:01AAh."
+function 0823:0b87 (parse_cmdline_d_switch)
 
-[[params]]
-name = "cmdline_ptr"
-value = "es:di"
-type = "*const u8"
-desc = "Pointer to the input string to scan"
+Parses a command-line string to locate the '/D' switch and extracts up
+to an 8-character argument immediately following it into an internal
+buffer.
 
-[[params]]
-name = "cmdline_len"
-value = "cx"
-type = "u16"
-desc = "Length of the input string"
+Searches the string referenced by ES:DI for the forward slash ('/')
+character across CX bytes using REPNE SCASB. When found, it inspects the
+subsequent character to check if it matches 'D'. If matched, it reads up
+to 8 characters following '/D' until it encounters another '/' switch
+character or runs out of input characters, copying each character into a
+buffer located at CS:01AAh.
+
+parameters:
+  es:di  cmdline_ptr: *const u8 Pointer to the input string to scan
+
+parameters:
+  cx  cmdline_len: u16 Length of the input string
 
 ---
 ; Save registers and ensure forward string traversal

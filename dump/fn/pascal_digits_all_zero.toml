@@ -1,20 +1,18 @@
-ip = "0935:16ff"
-len = 67
-name = "pascal_digits_all_zero"
-desc = "Tests whether every character in a 256-byte Pascal-style digit string is ASCII '0'."
-details = "The string is passed by value on the stack: byte 0 is its length and bytes 1..length are the characters. The function returns true for an empty string and stops at the first non-'0' byte; RET 0x102 discards the caller's extra saved-BP word plus the 256-byte value argument."
+function 0935:16ff (pascal_digits_all_zero)
 
-[[params]]
-name = "digits"
-value = "[bp+6]"
-type = "[u8; 256]"
-desc = "Stack-passed Pascal string whose first byte is the character count and whose remaining bytes contain ASCII digits"
+Tests whether every character in a 256-byte Pascal-style digit string is
+ASCII '0'.
 
-[ret]
-name = "all_zero"
-value = "al"
-type = "u8"
-desc = "1 if all characters in the string are ASCII '0' (including an empty string), otherwise 0"
+The string is passed by value on the stack: byte 0 is its length and
+bytes 1..length are the characters. The function returns true for an
+empty string and stops at the first non-'0' byte; RET 0x102 discards the
+caller's extra saved-BP word plus the 256-byte value argument.
+
+parameters:
+  [bp+6]  digits: [u8; 256] Stack-passed Pascal string whose first byte is the character count and whose remaining bytes contain ASCII digits
+
+return:
+  al  all_zero: u8 1 if all characters in the string are ASCII '0' (including an empty string), otherwise 0
 
 ---
 0935:16ff push bp

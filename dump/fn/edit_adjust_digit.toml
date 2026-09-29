@@ -1,20 +1,20 @@
-ip = "0935:0c4c"
-len = 307
-name = "edit_adjust_digit"
-desc = "Adjusts a single-digit numeric field (0-9) in an input buffer, updating the display string and cursor."
-details = "Calculates a new digit value by adding the delta parameter to a base offset, clamping the result to the range [0, 9]. If the value changed, it formats the digit to ASCII ('0'-'9'), optionally removes an existing digit from the buffer, inserts the new character via a string manipulation routine, and updates cursor/length offsets in the context structure."
+function 0935:0c4c (edit_adjust_digit)
 
-[[params]]
-name = "ctx"
-value = "[bp+4]"
-type = "*mut u8"
-desc = "Pointer to the input/editor context structure"
+Adjusts a single-digit numeric field (0-9) in an input buffer, updating
+the display string and cursor.
 
-[[params]]
-name = "delta"
-value = "[bp+6]"
-type = "i16"
-desc = "Delta to adjust the numeric digit by"
+Calculates a new digit value by adding the delta parameter to a base
+offset, clamping the result to the range [0, 9]. If the value changed,
+it formats the digit to ASCII ('0'-'9'), optionally removes an existing
+digit from the buffer, inserts the new character via a string
+manipulation routine, and updates cursor/length offsets in the context
+structure.
+
+parameters:
+  [bp+4]  ctx: *mut u8 Pointer to the input/editor context structure
+
+parameters:
+  [bp+6]  delta: i16 Delta to adjust the numeric digit by
 
 ---
 0935:0c4c push bp

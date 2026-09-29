@@ -1,8 +1,10 @@
-ip = "0823:0879"
-len = 31
-name = "restore_int15_handler"
-desc = "restores or sets the INT 15h interrupt vector"
-details = "Disables interrupts and updates the Interrupt Vector Table entry for INT 15h (at 0000:0054h) using the far pointer stored at cs:[0086h]. Interrupts are re-enabled before returning."
+function 0823:0879 (restore_int15_handler)
+
+restores or sets the INT 15h interrupt vector
+
+Disables interrupts and updates the Interrupt Vector Table entry for INT
+15h (at 0000:0054h) using the far pointer stored at cs:[0086h].
+Interrupts are re-enabled before returning.
 
 ---
 ; disable interrupts during IVT update

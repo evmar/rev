@@ -1,14 +1,15 @@
-ip = "0823:0c79"
-len = 13
-name = "print_string_with_suffix"
-desc = "Prints a '$'-terminated string passed via DS:DX, followed by a fixed suffix string at DS:[01B9h]."
-details = "Calls DOS INT 21h function 09h to output the '$'-terminated string passed in DX. It then loads DX with the offset 01B9h and invokes INT 21h function 09h again to print a secondary string (such as a newline or standard message trailer) before returning."
+function 0823:0c79 (print_string_with_suffix)
 
-[[params]]
-name = "str"
-value = "dx"
-type = "char*"
-desc = "Offset address in DS of the '$'-terminated string to print"
+Prints a '$'-terminated string passed via DS:DX, followed by a fixed
+suffix string at DS:[01B9h].
+
+Calls DOS INT 21h function 09h to output the '$'-terminated string
+passed in DX. It then loads DX with the offset 01B9h and invokes INT 21h
+function 09h again to print a secondary string (such as a newline or
+standard message trailer) before returning.
+
+parameters:
+  dx  str: char* Offset address in DS of the '$'-terminated string to print
 
 ---
 ; Print the primary string pointed to by DX using DOS INT 21h, AH=09h

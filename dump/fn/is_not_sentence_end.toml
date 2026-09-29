@@ -1,26 +1,25 @@
-ip = "0935:0b91"
-len = 187
-name = "is_not_sentence_end"
-desc = "Tests whether a period at a given string index does NOT terminate a sentence"
-details = "Inspects a Pascal-style string at a specified 1-based index. If the character is not a period ('.') or is out of bounds, the function returns 1. If it is a period, it checks whether it marks a sentence boundary: either followed immediately by a terminator/control character (from a set at ds:1CB4h), or followed by optional closing punctuation (from a set at ds:1CC4h) and then a space plus a non-space character. If either sentence-ending condition is met, it returns 0; otherwise it returns 1."
+function 0935:0b91 (is_not_sentence_end)
 
-[[params]]
-name = "pos"
-value = "[bp+4]"
-type = "u16"
-desc = "1-based character index into the Pascal string"
+Tests whether a period at a given string index does NOT terminate a
+sentence
 
-[[params]]
-name = "str"
-value = "[bp+6]"
-type = "*const [u8]"
-desc = "Far pointer to Pascal string (length-prefixed byte buffer)"
+Inspects a Pascal-style string at a specified 1-based index. If the
+character is not a period ('.') or is out of bounds, the function
+returns 1. If it is a period, it checks whether it marks a sentence
+boundary: either followed immediately by a terminator/control character
+(from a set at ds:1CB4h), or followed by optional closing punctuation
+(from a set at ds:1CC4h) and then a space plus a non-space character. If
+either sentence-ending condition is met, it returns 0; otherwise it
+returns 1.
 
-[ret]
-name = "result"
-value = "ax"
-type = "u16"
-desc = "0 if the character at pos is a period ending a sentence; 1 if not a sentence end or not a period"
+parameters:
+  [bp+4]  pos: u16 1-based character index into the Pascal string
+
+parameters:
+  [bp+6]  str: *const [u8] Far pointer to Pascal string (length-prefixed byte buffer)
+
+return:
+  ax  result: u16 0 if the character at pos is a period ending a sentence; 1 if not a sentence end or not a period
 
 ---
 0935:0b91 push bp

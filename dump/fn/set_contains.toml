@@ -1,32 +1,25 @@
-ip = "0d72:5452"
-len = 48
-name = "set_contains"
-desc = "Tests whether an unsigned element belongs to an MSB-first packed bit set."
-details = "Computes byte_index = element >> 3 and returns 0 if it exceeds the inclusive last-byte index. Otherwise returns 1 exactly when set[byte_index] & (0x80 >> (element & 7)) is nonzero; callers use this helper for character-set membership. The set is passed as a 16:16 far pointer, and RETF 8 removes the eight bytes of arguments."
+function 0d72:5452 (set_contains)
 
-[[params]]
-name = "set"
-value = "[sp+4]"
-type = "*const u8"
-desc = "16:16 far pointer to packed set bytes (offset at entry SP+4, segment at SP+6; BP+6 after prologue)."
+Tests whether an unsigned element belongs to an MSB-first packed bit
+set.
 
-[[params]]
-name = "last_byte_index"
-value = "[sp+8]"
-type = "u16"
-desc = "Inclusive maximum valid byte index in the set (BP+0Ah after prologue), not a byte count."
+Computes byte_index = element >> 3 and returns 0 if it exceeds the
+inclusive last-byte index. Otherwise returns 1 exactly when
+set[byte_index] & (0x80 >> (element & 7)) is nonzero; callers use this
+helper for character-set membership. The set is passed as a 16:16 far
+pointer, and RETF 8 removes the eight bytes of arguments.
 
-[[params]]
-name = "element"
-value = "[sp+10]"
-type = "u16"
-desc = "Unsigned zero-based element number to test (BP+0Ch after prologue)."
+parameters:
+  [sp+4]  set: *const u8 16:16 far pointer to packed set bytes (offset at entry SP+4, segment at SP+6; BP+6 after prologue).
 
-[ret]
-name = "present"
-value = "ax"
-type = "u16"
-desc = "1 when the element's bit is set; 0 when clear or outside the supplied byte bound."
+parameters:
+  [sp+8]  last_byte_index: u16 Inclusive maximum valid byte index in the set (BP+0Ah after prologue), not a byte count.
+
+parameters:
+  [sp+10]  element: u16 Unsigned zero-based element number to test (BP+0Ch after prologue).
+
+return:
+  ax  present: u16 1 when the element's bit is set; 0 when clear or outside the supplied byte bound.
 
 ---
 0d72:5452 push bp

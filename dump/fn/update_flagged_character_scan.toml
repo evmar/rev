@@ -1,38 +1,32 @@
-ip = "0d72:01f0"
-len = 50
-name = "update_flagged_character_scan"
-desc = "Update a scan counter and position for a table-flagged character, with special handling for a QU pair."
-details = "Tests bit 0 of DS:[BX+0x4A9C]; if set, increments byte SS:[BP+3] and adds word SS:[BP+0x0C] to SI. If the bit is clear, the same update occurs only when the step is not 1 and CH=0x51 ('Q'), CL=0x55 ('U'); this path adds the step twice in total. After either accepted case, replaces BL with CH (preserving BH), tests bit 0 of CS:[BX+0x4A9C], and stores DI to SS:[BP+0x0E] if set; otherwise that word is unchanged. The semantic meaning of the table flag and state fields is not established by this routine alone; AL, flags, and, on accepted cases, BL are clobbered."
+function 0d72:01f0 (update_flagged_character_scan)
 
-[[params]]
-name = "table_index"
-value = "bx"
-type = "u16"
-desc = "Initial index into the byte table at DS:0x4A9C. On an accepted case BL is replaced with CH for a second lookup in CS; BH is preserved, so a plain byte index requires BH=0."
+Update a scan counter and position for a table-flagged character, with
+special handling for a QU pair.
 
-[[params]]
-name = "character_pair"
-value = "cx"
-type = "u16"
-desc = "CH supplies the second lookup character; the fallback accepts exactly CH='Q' and CL='U'."
+Tests bit 0 of DS:[BX+0x4A9C]; if set, increments byte SS:[BP+3] and
+adds word SS:[BP+0x0C] to SI. If the bit is clear, the same update
+occurs only when the step is not 1 and CH=0x51 ('Q'), CL=0x55 ('U');
+this path adds the step twice in total. After either accepted case,
+replaces BL with CH (preserving BH), tests bit 0 of CS:[BX+0x4A9C], and
+stores DI to SS:[BP+0x0E] if set; otherwise that word is unchanged. The
+semantic meaning of the table flag and state fields is not established
+by this routine alone; AL, flags, and, on accepted cases, BL are
+clobbered.
 
-[[params]]
-name = "scan_state"
-value = "bp"
-type = "u16"
-desc = "SS-relative state base: byte +3 is a counter, word +0x0C is the scan step, and word +0x0E receives DI conditionally."
+parameters:
+  bx  table_index: u16 Initial index into the byte table at DS:0x4A9C. On an accepted case BL is replaced with CH for a second lookup in CS; BH is preserved, so a plain byte index requires BH=0.
 
-[[params]]
-name = "scan_position"
-value = "si"
-type = "u16"
-desc = "In/out scan position; unchanged on rejection, advanced by one step on ordinary acceptance or two steps on the QU fallback, with 16-bit wraparound."
+parameters:
+  cx  character_pair: u16 CH supplies the second lookup character; the fallback accepts exactly CH='Q' and CL='U'.
 
-[[params]]
-name = "candidate_position"
-value = "di"
-type = "u16"
-desc = "Value saved to SS:[BP+0x0E] when the second table lookup has bit 0 set."
+parameters:
+  bp  scan_state: u16 SS-relative state base: byte +3 is a counter, word +0x0C is the scan step, and word +0x0E receives DI conditionally.
+
+parameters:
+  si  scan_position: u16 In/out scan position; unchanged on rejection, advanced by one step on ordinary acceptance or two steps on the QU fallback, with 16-bit wraparound.
+
+parameters:
+  di  candidate_position: u16 Value saved to SS:[BP+0x0E] when the second table lookup has bit 0 set.
 
 ---
 ; Initial lookup uses DS (no segment override); test classification bit 0.

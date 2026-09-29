@@ -1,20 +1,18 @@
-ip = "0823:0b6a"
-len = 29
-name = "parse_hex_digit"
-desc = "Converts an ASCII hexadecimal character to its numeric value (0-15)"
-details = "This routine takes an ASCII character in AL and checks if it falls within the ranges '0'-'9' or uppercase 'A'-'F'. If valid, it converts the character to its 4-bit numeric value (0-15) in AL and returns AH = 0. If the input is not a valid uppercase hex digit, AH is set to 1 to signal an error."
+function 0823:0b6a (parse_hex_digit)
 
-[[params]]
-name = "c"
-value = "al"
-type = "char"
-desc = "ASCII character to convert"
+Converts an ASCII hexadecimal character to its numeric value (0-15)
 
-[ret]
-name = "result"
-value = "ax"
-type = "u16"
-desc = "On success, AH=0 and AL contains 0-15; on error, AH=1"
+This routine takes an ASCII character in AL and checks if it falls
+within the ranges '0'-'9' or uppercase 'A'-'F'. If valid, it converts
+the character to its 4-bit numeric value (0-15) in AL and returns AH =
+0. If the input is not a valid uppercase hex digit, AH is set to 1 to
+signal an error.
+
+parameters:
+  al  c: char ASCII character to convert
+
+return:
+  ax  result: u16 On success, AH=0 and AL contains 0-15; on error, AH=1
 
 ---
 ; Initialize AH to 0 (default success) and check if AL is a decimal digit ('0'-'9')

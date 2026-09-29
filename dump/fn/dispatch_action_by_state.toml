@@ -1,14 +1,16 @@
-ip = "0935:30a1"
-len = 3112
-name = "dispatch_action_by_state"
-desc = "Dispatches an action or command handler based on a state code"
-details = "Initializes flags at ds:[50h] and ds:[4Ch], then checks the action code at ds:[164h]. If the action code falls within the range 0x22 to 0x5E, it performs an indirect jump via a jump table at CS:3C40h. Otherwise, it executes the default fallback handler, which copies data from DS:1BC2h to the stack, invokes a sub-handler (109Fh), and finally calls a cleanup function (11A0h) passing a field from the parameter."
+function 0935:30a1 (dispatch_action_by_state)
 
-[[params]]
-name = "context_ptr"
-value = "[bp+4]"
-type = "*mut u8"
-desc = "Pointer to entity or context structure whose field at offset +4 is used as an argument to subroutines"
+Dispatches an action or command handler based on a state code
+
+Initializes flags at ds:[50h] and ds:[4Ch], then checks the action code
+at ds:[164h]. If the action code falls within the range 0x22 to 0x5E, it
+performs an indirect jump via a jump table at CS:3C40h. Otherwise, it
+executes the default fallback handler, which copies data from DS:1BC2h
+to the stack, invokes a sub-handler (109Fh), and finally calls a cleanup
+function (11A0h) passing a field from the parameter.
+
+parameters:
+  [bp+4]  context_ptr: *mut u8 Pointer to entity or context structure whose field at offset +4 is used as an argument to subroutines
 
 ---
 0935:30a1 push bp

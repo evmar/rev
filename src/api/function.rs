@@ -107,32 +107,41 @@ pub fn plain_text(func: &Function) -> String {
     let mut str = String::new();
     let w = &mut str;
 
-    writeln!(w, "ip = \"{}\"", func.ip).ok();
-    writeln!(w, "len = {}", func.len).ok();
-    if let Some(name) = &func.name {
-        writeln!(w, "name = {:?}", name).ok();
-    }
+    writeln!(
+        w,
+        "function {}{}",
+        func.ip,
+        func.name
+            .as_ref()
+            .map(|name| format!(" ({name})"))
+            .unwrap_or_default()
+    )
+    .ok();
+
+    let width = 72;
     if let Some(desc) = &func.desc {
-        writeln!(w, "desc = {:?}", desc).ok();
+        writeln!(w, "\n{}", textwrap::fill(desc, width)).ok();
     }
     if let Some(details) = &func.details {
-        writeln!(w, "details = {:?}", details).ok();
+        writeln!(w, "\n{}", textwrap::fill(details, width)).ok();
     }
 
-    fn p(w: &mut String, name: &str, var: &Var) -> anyhow::Result<()> {
-        writeln!(w).ok();
-        writeln!(w, "[{name}]").ok();
-        writeln!(w, "name = {:?}", var.name).ok();
-        writeln!(w, "value = {:?}", var.value).ok();
-        writeln!(w, "type = {:?}", var.typ).ok();
-        writeln!(w, "desc = {:?}", var.desc).ok();
-        Ok(())
+    fn p(w: &mut String, var: &Var) {
+        let Var {
+            name,
+            value,
+            typ,
+            desc,
+        } = var;
+        writeln!(w, "  {value}  {name}: {typ} {desc}").ok();
     }
     for param in func.params.iter() {
-        p(w, "[params]", param).ok();
+        writeln!(w, "\nparameters:").ok();
+        p(w, param);
     }
     if let Some(ret) = &func.ret {
-        p(w, "ret", ret).ok();
+        writeln!(w, "\nreturn:").ok();
+        p(w, ret);
     }
 
     writeln!(w, "\n---").ok();

@@ -1,5 +1,4 @@
-ip = "0d72:6d3e"
-len = 38
+function 0d72:6d3e
 
 ---
 0d72:6d3e push si

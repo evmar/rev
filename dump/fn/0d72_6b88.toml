@@ -1,5 +1,4 @@
-ip = "0d72:6b88"
-len = 476
+function 0d72:6b88
 
 ---
 0d72:6b88 pop cx

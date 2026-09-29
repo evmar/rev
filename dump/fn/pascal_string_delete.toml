@@ -1,38 +1,35 @@
-ip = "0d72:588e"
-len = 123
-name = "pascal_string_delete"
-desc = "Delete a character range from a far Pascal string in place, shifting the remaining suffix left."
-details = "Arguments at entry are count ([sp+4]), 1-based position ([sp+6]), string offset/segment ([sp+8]/[sp+0Ah]), and an unused capacity word ([sp+0Ch], callers pass 255); the string's first byte is its length. Checks unsigned 16-bit (position + count - 1) against the original length and calls fatal-error helper 0d72:5ca6 if greater, then stores the low byte of (length - count) and copies new_length - position + 1 bytes forward from string + position + count to string + position; no terminator is copied or cleared. The check does not independently validate position >= 1 or arithmetic overflow, so invalid inputs can pass it; the routine reserves eight local bytes, registers/unregisters its runtime stack frame, preserves SI/DI/BP and DS, has no defined return value, and discards ten argument bytes with RETF 0Ah."
+function 0d72:588e (pascal_string_delete)
 
-[[params]]
-name = "count"
-value = "[sp+4]"
-type = "u16"
-desc = "Number of characters to delete."
+Delete a character range from a far Pascal string in place, shifting the
+remaining suffix left.
 
-[[params]]
-name = "position"
-value = "[sp+6]"
-type = "u16"
-desc = "1-based position of the first character to delete."
+Arguments at entry are count ([sp+4]), 1-based position ([sp+6]), string
+offset/segment ([sp+8]/[sp+0Ah]), and an unused capacity word ([sp+0Ch],
+callers pass 255); the string's first byte is its length. Checks
+unsigned 16-bit (position + count - 1) against the original length and
+calls fatal-error helper 0d72:5ca6 if greater, then stores the low byte
+of (length - count) and copies new_length - position + 1 bytes forward
+from string + position + count to string + position; no terminator is
+copied or cleared. The check does not independently validate position >=
+1 or arithmetic overflow, so invalid inputs can pass it; the routine
+reserves eight local bytes, registers/unregisters its runtime stack
+frame, preserves SI/DI/BP and DS, has no defined return value, and
+discards ten argument bytes with RETF 0Ah.
 
-[[params]]
-name = "string_offset"
-value = "[sp+8]"
-type = "u16"
-desc = "Offset of the mutable Pascal string, pointing to its length byte."
+parameters:
+  [sp+4]  count: u16 Number of characters to delete.
 
-[[params]]
-name = "string_segment"
-value = "[sp+0Ah]"
-type = "u16"
-desc = "Segment of the mutable Pascal string."
+parameters:
+  [sp+6]  position: u16 1-based position of the first character to delete.
 
-[[params]]
-name = "capacity"
-value = "[sp+0Ch]"
-type = "u16"
-desc = "Unused string capacity argument; observed callers pass 255."
+parameters:
+  [sp+8]  string_offset: u16 Offset of the mutable Pascal string, pointing to its length byte.
+
+parameters:
+  [sp+0Ah]  string_segment: u16 Segment of the mutable Pascal string.
+
+parameters:
+  [sp+0Ch]  capacity: u16 Unused string capacity argument; observed callers pass 255.
 
 ---
 ; Allocate an 8-byte local frame through the checked prologue helper; resulting BP+6 is count.

@@ -1,8 +1,12 @@
-ip = "0823:09e5"
-len = 31
-name = "backup_ivt"
-desc = "Backs up the entire 1024-byte Interrupt Vector Table (IVT) into an internal buffer."
-details = "Preserves caller registers on the stack, sets DS:SI to point to the base of the real-mode IVT at 0000:0000 and ES:DI to internal buffer at CS:03FC, copies 200h words (1024 bytes) covering all 256 interrupt vectors, restores registers, and returns."
+function 0823:09e5 (backup_ivt)
+
+Backs up the entire 1024-byte Interrupt Vector Table (IVT) into an
+internal buffer.
+
+Preserves caller registers on the stack, sets DS:SI to point to the base
+of the real-mode IVT at 0000:0000 and ES:DI to internal buffer at
+CS:03FC, copies 200h words (1024 bytes) covering all 256 interrupt
+vectors, restores registers, and returns.
 
 ---
 ; Preserve caller registers on the stack

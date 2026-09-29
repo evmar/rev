@@ -1,14 +1,15 @@
-ip = "0935:11a0"
-len = 112
-name = "get_next_char"
-desc = "Reads and preprocesses the next character from a length-prefixed string."
-details = "Fetches the character at global index ds:[160h] from a length-prefixed string located at offset 0Ch in the provided structure. Clamps control characters under ASCII 0x20 to spaces, checks the character against a filter table at ds:1CDCh, optionally transforms it via an auxiliary routine, and increments the global character offset before returning."
+function 0935:11a0 (get_next_char)
 
-[[params]]
-name = "struct_ptr"
-value = "[bp+4]"
-type = "u16"
-desc = "Near pointer to structure containing far string reference at offset 0x0C"
+Reads and preprocesses the next character from a length-prefixed string.
+
+Fetches the character at global index ds:[160h] from a length-prefixed
+string located at offset 0Ch in the provided structure. Clamps control
+characters under ASCII 0x20 to spaces, checks the character against a
+filter table at ds:1CDCh, optionally transforms it via an auxiliary
+routine, and increments the global character offset before returning.
+
+parameters:
+  [bp+4]  struct_ptr: u16 Near pointer to structure containing far string reference at offset 0x0C
 
 ---
 0935:11a0 push bp

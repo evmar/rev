@@ -3,5 +3,5 @@
 mod func;
 mod memory;
 
-pub use func::{FunctionUpdate, Var};
+pub use func::{FunctionUpdate, Var, plain_text};
 pub use memory::read_memory;

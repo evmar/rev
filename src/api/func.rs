@@ -69,11 +69,7 @@ impl FunctionUpdate {
         func.desc = Some(self.desc);
         func.details = Some(self.details);
 
-        func.params = if self.parameters.is_empty() {
-            None
-        } else {
-            Some(self.parameters)
-        };
+        func.params = self.parameters;
         func.ret = self.ret;
 
         let mut instrs: HashMap<SegOfs, &mut Instr> = Default::default();
@@ -103,4 +99,70 @@ impl FunctionUpdate {
 
         Ok(())
     }
+}
+
+pub fn plain_text(func: &Function) -> String {
+    use std::fmt::Write;
+
+    let mut str = String::new();
+    let w = &mut str;
+
+    writeln!(w, "ip = \"{}\"", func.ip).ok();
+    writeln!(w, "len = {}", func.len).ok();
+    if let Some(name) = &func.name {
+        writeln!(w, "name = {:?}", name).ok();
+    }
+    if let Some(desc) = &func.desc {
+        writeln!(w, "desc = {:?}", desc).ok();
+    }
+    if let Some(details) = &func.details {
+        writeln!(w, "details = {:?}", details).ok();
+    }
+
+    fn p(w: &mut String, name: &str, var: &Var) -> anyhow::Result<()> {
+        writeln!(w).ok();
+        writeln!(w, "[{name}]").ok();
+        writeln!(w, "name = {:?}", var.name).ok();
+        writeln!(w, "value = {:?}", var.value).ok();
+        writeln!(w, "type = {:?}", var.typ).ok();
+        writeln!(w, "desc = {:?}", var.desc).ok();
+        Ok(())
+    }
+    for param in func.params.iter() {
+        p(w, "[params]", param).ok();
+    }
+    if let Some(ret) = &func.ret {
+        p(w, "ret", ret).ok();
+    }
+
+    writeln!(w, "\n---").ok();
+
+    for block in func.blocks.iter() {
+        for instr in block.instrs.iter() {
+            let ip = func.ip.with_ofs(instr.iced.ip16());
+            if let Some(annot) = func.annotations.get(&ip) {
+                if let Some(comment) = &annot.comment {
+                    writeln!(w, "; {comment}").ok();
+                }
+                for (reg, val) in annot.assume.iter() {
+                    writeln!(w, "@assume {reg}={val:x}").ok();
+                }
+                if let Some(label) = &annot.label {
+                    writeln!(w, "@label {label}").ok();
+                }
+                if let Some(jmp) = &annot.jmp {
+                    writeln!(w, "@jmp {jmp}").ok();
+                }
+                if let Some(mem) = &annot.memory {
+                    match mem {
+                        Ok(addr) => writeln!(w, "@mem {addr}").ok(),
+                        Err(err) => writeln!(w, "@mem ; {err}").ok(),
+                    };
+                }
+            }
+            writeln!(w, "{ip} {instr}", instr = instr.iced).ok();
+        }
+        writeln!(w).ok();
+    }
+    str
 }

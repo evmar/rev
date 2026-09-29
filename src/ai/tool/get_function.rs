@@ -1,7 +1,7 @@
 use openrouter_rs::types::TypedTool;
 use runtime::SegOfs;
 
-use crate::db::DB;
+use crate::{api, db::DB};
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct GetFunctionTool {
@@ -32,8 +32,6 @@ impl GetFunctionTool {
             params.addr,
             func.name.as_deref().unwrap_or("unknown name")
         );
-        let mut buf = String::new();
-        func.to_plain_text(&mut buf)?;
-        Ok(buf)
+        Ok(api::plain_text(func))
     }
 }

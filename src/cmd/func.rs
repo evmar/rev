@@ -53,9 +53,7 @@ fn cmd_read(db: &mut DB, ReadArgs { addr_or_name }: ReadArgs) -> anyhow::Result<
     let Some(func) = db.get_function(&addr_or_name) else {
         anyhow::bail!("unknown function {addr_or_name:?}")
     };
-    let mut buf = String::new();
-    func.to_plain_text(&mut buf)?;
-    print!("{}", buf);
+    print!("{}", api::plain_text(func));
     Ok(())
 }
 

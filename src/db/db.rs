@@ -5,8 +5,9 @@ use std::{
 
 use runtime::SegOfs;
 
-use super::{Function, Function2, Memory, xref};
+use super::{Function, Memory};
 use crate::load::{EXE, load_exe};
+use anyhow::anyhow;
 
 #[derive(Default)]
 pub struct DB {
@@ -14,7 +15,6 @@ pub struct DB {
     pub mem: Vec<u8>,
     pub exe: EXE,
     pub functions: BTreeMap<SegOfs, Function>,
-    pub functions2: BTreeMap<SegOfs, Function2>,
     pub memory: Memory,
 }
 
@@ -35,15 +35,16 @@ impl DB {
         for entry in std::fs::read_dir(fn_dir)? {
             let entry = entry?;
             let path = entry.path();
-            let buf = std::fs::read(&path)?;
-            let func = match Function2::deserialize_old(&db.mem, std::str::from_utf8(&buf)?) {
-                Ok(func) => func,
-                Err(err) => anyhow::bail!("{}: {}", path.display(), err),
-            };
-            db.functions2.insert(func.ip, func);
+            (|| {
+                let buf = std::fs::read(&path)?;
+                let func: Function = toml::from_slice(&buf)?;
+                db.functions.insert(func.ip, func);
+                Ok(())
+            })()
+            .map_err(|err: anyhow::Error| anyhow!("{}: {err}", path.display()))?;
         }
 
-        xref::update_all_xrefs(&mut db);
+        //xref::update_all_xrefs(&mut db);
 
         Ok(db)
     }
@@ -61,7 +62,7 @@ impl DB {
         let fn_dir = self.project_path("fn");
         std::fs::create_dir_all(&fn_dir)?;
         let mut names = HashSet::new();
-        for func in self.functions2.values() {
+        for func in self.functions.values() {
             let name = format!("{:04x}_{:04x}.toml", func.ip.seg, func.ip.ofs);
             let path = fn_dir.join(&name);
             write_if_changed(&path, toml::to_string(&func)?.as_bytes())?;

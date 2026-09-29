@@ -30,7 +30,9 @@ pub struct Function {
 
 impl Function {
     pub fn disasm(&mut self, mem: &[u8]) {
-        assert!(self.blocks[0].instrs.is_empty());
+        if !self.blocks[0].instrs.is_empty() {
+            return;
+        }
         let blocks = self.blocks.iter().map(|b| b.ip).collect::<Vec<_>>();
         for block in self.blocks.iter_mut() {
             Self::disasm_block(mem, &blocks, block);

@@ -16,7 +16,10 @@ use runtime::SegOfs;
 use tokio::sync::RwLock;
 use tower_http::services::ServeDir;
 
-use crate::{db::DB, db::XRef, load::EXE};
+use crate::{
+    db::{DB, Memory, XRef},
+    load::EXE,
+};
 
 #[derive(serde::Serialize, ts_rs::TS)]
 #[ts(export)]
@@ -82,14 +85,14 @@ fn function_ref(xref: &XRef) -> Option<XRefDetail> {
     }
 }
 
-fn function_detail<'a>(db: &'a DB, func: &'a crate::db::Function) -> FunctionDetail<'a> {
+fn function_detail<'a>(memory: &'a Memory, func: &'a crate::db::Function) -> FunctionDetail<'a> {
     let memory = func
         .blocks
         .iter()
         .flat_map(|block| &block.instrs)
         .filter_map(|instr| instr.memory.as_ref()?.as_ref().ok())
         .filter_map(|addr| {
-            db.memory
+            memory
                 .entries
                 .get(addr)
                 .map(|location| (*addr, location.name.clone()))
@@ -168,9 +171,10 @@ async fn get_function(
 ) -> Result<Response, StatusCode> {
     let ip = ip.strip_suffix(".json").ok_or(StatusCode::BAD_REQUEST)?;
     let ip = runtime::SegOfs::parse(ip).map_err(|_| StatusCode::BAD_REQUEST)?;
-    let db = db.read().await;
-    let func = db.functions.get(&ip).ok_or(StatusCode::NOT_FOUND)?;
-    Ok(Json(function_detail(&db, func)).into_response())
+    let db = &mut *db.write().await;
+    let func = db.functions.get_mut(&ip).ok_or(StatusCode::NOT_FOUND)?;
+    func.disasm(&db.mem);
+    Ok(Json(function_detail(&db.memory, func)).into_response())
 }
 
 async fn get_memory(State(db): State<AppState>) -> Response {
@@ -324,7 +328,7 @@ fn export_site(db: &DB, output: &Path) -> anyhow::Result<()> {
     for func in db.functions.values() {
         std::fs::write(
             api.join("functions").join(format!("{}.json", func.ip)),
-            serde_json::to_vec(&function_detail(db, func))?,
+            serde_json::to_vec(&function_detail(&db.memory, func))?,
         )?;
     }
     for addr in db.memory.entries.keys() {

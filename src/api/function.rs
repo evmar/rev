@@ -1,4 +1,4 @@
-//! Function write API.
+//! API for working with Functions.
 
 use std::collections::HashMap;
 

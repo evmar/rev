@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use runtime::SegOfs;
 
-use crate::db::{DB, Function, Instr};
+use crate::db::{Annotation, DB, Function, Instr};
 
 pub fn update_all_xrefs(db: &mut DB) -> bool {
     let names = db
@@ -43,17 +43,20 @@ pub fn update_callees(
     for (i, block) in func.blocks.iter().enumerate() {
         let ip = block.ip;
         ip_to_block.insert(ip, i);
-        block_to_label.push(block.instrs[0].label.clone());
+        block_to_label.push(func.annotations.get(&ip).map(|a| a.label.clone()).flatten());
     }
 
     let mut all_xrefs = HashSet::new();
     for block in func.blocks.iter_mut() {
         let ip = block.ip;
         for instr in block.instrs.iter_mut() {
-            let Some(xref) = xref_from_instr(ip, &instr, mem, |ip| match ip_to_block.get(&ip) {
-                Some(idx) => XRef::Block(block_to_label[*idx].clone(), *idx),
-                None => xref(ip),
-            }) else {
+            let annot = func.annotations.get(&block.ip.with_ofs(instr.iced.ip16()));
+            let Some(xref) =
+                xref_from_instr(ip, &instr, annot, mem, |ip| match ip_to_block.get(&ip) {
+                    Some(idx) => XRef::Block(block_to_label[*idx].clone(), *idx),
+                    None => xref(ip),
+                })
+            else {
                 continue;
             };
 
@@ -64,7 +67,7 @@ pub fn update_callees(
                 _ => {}
             }
 
-            instr.jmp = Some(xref);
+            func.annotations.entry(ip).or_default().jmp = Some(xref);
         }
     }
 
@@ -84,6 +87,7 @@ pub fn update_callees(
 fn xref_from_instr(
     ip: SegOfs,
     instr: &Instr,
+    annot: Option<&Annotation>,
     mem: &[u8],
     mut xref: impl FnMut(SegOfs) -> XRef,
 ) -> Option<XRef> {
@@ -103,7 +107,7 @@ fn xref_from_instr(
                     Some(xref(ip))
                 }
                 // XXX: what about far calls?
-                Memory => match instr.memory {
+                Memory => match annot.map(|a| a.memory.as_ref()).flatten() {
                     Some(Ok(addr)) => {
                         let mem = &mem[addr.abs() as usize..][..2];
                         let ofs = u16::from_le_bytes([mem[0], mem[1]]);

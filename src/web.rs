@@ -32,8 +32,9 @@ struct FunctionDetail<'a> {
     callees: Option<Vec<XRefDetail>>,
     params: &'a Vec<crate::api::Var>,
     ret: &'a Option<crate::api::Var>,
+    annotations: HashMap<SegOfs, AnnotationDetail<'a>>,
     #[ts(type = "Record<string, string>")]
-    memory: HashMap<runtime::SegOfs, String>,
+    memory: HashMap<SegOfs, &'a str>,
     blocks: Vec<BlockDetail>,
 }
 
@@ -49,11 +50,16 @@ struct BlockDetail {
 struct InstructionDetail {
     ip: SegOfs,
     text: String,
-    comment: Option<String>,
-    assume: Option<Vec<(String, u16)>>,
-    label: Option<String>,
+}
+
+#[derive(serde::Serialize, ts_rs::TS)]
+#[ts(export)]
+struct AnnotationDetail<'a> {
+    comment: Option<&'a str>,
+    label: Option<&'a str>,
     jmp: Option<XRefDetail>,
     memory: Option<MemoryDetail>,
+    assume: &'a Vec<(String, u16)>,
 }
 
 #[derive(serde::Serialize, ts_rs::TS)]
@@ -86,18 +92,6 @@ fn function_ref(xref: &XRef) -> Option<XRefDetail> {
 }
 
 fn function_detail<'a>(memory: &'a Memory, func: &'a crate::db::Function) -> FunctionDetail<'a> {
-    let memory = func
-        .blocks
-        .iter()
-        .flat_map(|block| &block.instrs)
-        .filter_map(|instr| instr.memory.as_ref()?.as_ref().ok())
-        .filter_map(|addr| {
-            memory
-                .entries
-                .get(addr)
-                .map(|location| (*addr, location.name.clone()))
-        })
-        .collect();
     FunctionDetail {
         ip: func.ip.to_string(),
         name: func.name.as_deref(),
@@ -113,7 +107,36 @@ fn function_detail<'a>(memory: &'a Memory, func: &'a crate::db::Function) -> Fun
             .map(|refs| refs.iter().filter_map(function_ref).collect()),
         params: &func.params,
         ret: &func.ret,
-        memory,
+        memory: func
+            .annotations
+            .values()
+            .filter_map(|annotation| annotation.memory.as_ref()?.as_ref().ok())
+            .filter_map(|addr| {
+                memory
+                    .entries
+                    .get(addr)
+                    .map(|location| (*addr, location.name.as_str()))
+            })
+            .collect(),
+        annotations: func
+            .annotations
+            .iter()
+            .map(|(ip, annotation)| {
+                (
+                    *ip,
+                    AnnotationDetail {
+                        comment: annotation.comment.as_deref(),
+                        label: annotation.label.as_deref(),
+                        jmp: annotation.jmp.as_ref().map(Into::into),
+                        memory: annotation.memory.as_ref().map(|memory| match memory {
+                            Ok(addr) => MemoryDetail::Address(addr.to_string()),
+                            Err(note) => MemoryDetail::Note(note.clone()),
+                        }),
+                        assume: &annotation.assume,
+                    },
+                )
+            })
+            .collect(),
         blocks: func
             .blocks
             .iter()
@@ -125,14 +148,6 @@ fn function_detail<'a>(memory: &'a Memory, func: &'a crate::db::Function) -> Fun
                     .map(|instr| InstructionDetail {
                         ip: block.ip.with_ofs(instr.iced.ip16()),
                         text: instr.iced.to_string(),
-                        comment: instr.comment.clone(),
-                        assume: instr.assume.clone(),
-                        label: instr.label.clone(),
-                        jmp: instr.jmp.as_ref().map(XRefDetail::from),
-                        memory: instr.memory.as_ref().map(|memory| match memory {
-                            Ok(address) => MemoryDetail::Address(address.to_string()),
-                            Err(note) => MemoryDetail::Note(note.clone()),
-                        }),
                     })
                     .collect(),
             })
@@ -240,14 +255,12 @@ fn memory_address_detail(db: &DB, addr: runtime::SegOfs) -> Option<MemoryAddress
         .functions
         .values()
         .filter(|func| {
-            func.blocks.iter().any(|block| {
-                block.instrs.iter().any(|instr| {
-                    instr
-                        .memory
-                        .as_ref()
-                        .and_then(|memory| memory.as_ref().ok())
-                        .is_some_and(|memory| *memory == addr)
-                })
+            func.annotations.values().any(|annot| {
+                annot
+                    .memory
+                    .as_ref()
+                    .and_then(|memory| memory.as_ref().ok())
+                    .is_some_and(|memory| *memory == addr)
             })
         })
         .map(|func| FunctionOverview {

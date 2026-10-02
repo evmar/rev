@@ -1,9 +1,9 @@
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
 use runtime::SegOfs;
 
 use crate::{
-    db::{Block, DB, Instr},
+    db::{Annotation, Block, DB, Instr},
     ir,
 };
 
@@ -14,14 +14,14 @@ pub fn eval_all(db: &mut DB, fns: Vec<SegOfs>) {
         }
         println!("eval {:?}", func.name);
         for block in func.blocks.iter_mut() {
-            eval_block(block);
+            eval_block(&mut func.annotations, block);
         }
     }
 }
 
-pub fn eval_block(block: &mut Block) {
+pub fn eval_block(annot: &mut BTreeMap<SegOfs, Annotation>, block: &mut Block) {
     let mut eval = Eval::default();
-    eval.block(block);
+    eval.block(annot, block);
 }
 
 #[derive(Default)]
@@ -31,16 +31,16 @@ struct Eval {
 }
 
 impl Eval {
-    fn block(&mut self, block: &mut Block) {
+    fn block(&mut self, annot: &mut BTreeMap<SegOfs, Annotation>, block: &mut Block) {
         self.cs = block.ip.seg;
         for instr in block.instrs.iter_mut() {
-            self.instr(instr);
+            self.instr(instr, annot.get(&block.ip.with_ofs(instr.iced.ip16())));
         }
     }
 
-    fn instr(&mut self, instr: &mut Instr) {
+    fn instr(&mut self, instr: &mut Instr, annot: Option<&Annotation>) {
         println!("instr: {}", instr.iced);
-        if let Some(assume) = &instr.assume {
+        if let Some(assume) = annot.map(|a| &a.assume) {
             for (reg, val) in assume.iter() {
                 self.regs.insert(ir::Name::new(reg), *val);
             }
@@ -53,7 +53,8 @@ impl Eval {
             }
         };
         if let Some(mem) = self.gather_memory(&stmt) {
-            instr.memory = Some(mem.map_err(|err| format!("[{err}]")));
+            // TODO
+            // instr.memory = Some(mem.map_err(|err| format!("[{err}]")));
         }
         match self.eval_stmt(&stmt) {
             Ok(_) => {}

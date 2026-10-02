@@ -104,11 +104,6 @@ mod serde_blocks {
 
 #[derive(Default)]
 pub struct Instr {
-    pub comment: Option<String>,
-    pub label: Option<String>,
-    pub jmp: Option<XRef>,
-    pub memory: Option<Result<SegOfs, String>>,
-    pub assume: Option<Vec<(String, u16)>>,
     pub iced: iced_x86::Instruction,
 }
 

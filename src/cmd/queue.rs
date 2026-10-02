@@ -30,9 +30,14 @@ pub fn next_task(db: &DB) -> Option<Task> {
 
         for block in func.blocks.iter() {
             for instr in block.instrs.iter() {
-                if let Some(Ok(addr)) = instr.memory {
-                    if !db.memory.entries.contains_key(&addr) {
-                        return Some(Task::LabelMemory(addr));
+                if let Some(Ok(addr)) = func
+                    .annotations
+                    .get(&block.ip.with_ofs(instr.iced.ip16()))
+                    .map(|a| a.memory.as_ref())
+                    .flatten()
+                {
+                    if !db.memory.entries.contains_key(addr) {
+                        return Some(Task::LabelMemory(*addr));
                     }
                 }
             }

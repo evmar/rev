@@ -56,29 +56,30 @@ export function FunctionView({ ip }: { ip: string }) {
               <section key={index}>
                 {block.instrs.length === 0 ? <p>No instructions in this block.</p> : (
                   <pre><code>{block.instrs.map((instr) => {
-                    const label = instr.label !== null ? `${instr.label}:\n` : '';
-                    const assume = instr.assume
+                    const annotation = func.annotations[instr.ip];
+                    const label = annotation?.label != null ? `${annotation.label}:\n` : '';
+                    const assume = annotation?.assume
                       ?.map(([key, val]) => `@assume ${key}=${val.toString(16)}\n`).join('') ?? '';
-                    const comment = instr.comment
-                      ? instr.comment.split('\n').map(line => `; ${line}\n`).join('')
+                    const comment = annotation?.comment
+                      ? annotation.comment.split('\n').map(line => `; ${line}\n`).join('')
                       : '';
-                    let [jumpTarget, targetIp] = instr.jmp ?? [];
+                    const [jumpTarget, targetIp] = annotation?.jmp ?? [];
                     let jump: preact.ComponentChild = jumpTarget;
-                    if (jumpTarget&&targetIp) {
+                    if (jumpTarget && targetIp) {
                       jump = <a href={`#/functions/${encodeURIComponent(targetIp)}`}>
                         {jumpTarget}
                       </a>;
                     }
                     let memory: preact.ComponentChild;
-                    if (instr.memory) {
-                      if ('Address' in instr.memory) {
-                        const address = instr.memory.Address;
+                    if (annotation?.memory) {
+                      if ('Address' in annotation.memory) {
+                        const address = annotation.memory.Address;
                         const name = func.memory[address];
                         memory = <a href={`#/memory/${encodeURIComponent(address)}`}>
                           {name ? `${name}@${address}` : address}
                         </a>;
                       } else {
-                        memory = instr.memory.Note;
+                        memory = annotation.memory.Note;
                       }
                     }
                     return <div key={instr.ip}>

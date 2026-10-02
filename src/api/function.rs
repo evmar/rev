@@ -1,10 +1,10 @@
 //! API for working with Functions.
 
-use std::collections::HashMap;
+use std::collections::HashSet;
 
 use runtime::SegOfs;
 
-use crate::db::{Function, Instr};
+use crate::db::Function;
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[schemars(inline)]
@@ -72,29 +72,29 @@ impl FunctionUpdate {
         func.params = self.parameters;
         func.ret = self.ret;
 
-        let mut instrs: HashMap<SegOfs, &mut Instr> = Default::default();
-        for block in func.blocks.iter_mut() {
-            for instr in block.instrs.iter_mut() {
-                instr.label = None;
-                instr.comment = None;
-                instrs.insert(func.ip.with_ofs(instr.iced.ip16()), instr);
+        let mut instrs: HashSet<SegOfs> = Default::default();
+        for block in &func.blocks {
+            for instr in &block.instrs {
+                instrs.insert(func.ip.with_ofs(instr.iced.ip16()));
             }
         }
 
+        func.annotations.clear();
+
         for label in self.labels {
             let (addr, label) = label.parse()?;
-            let Some(instr) = instrs.get_mut(&addr) else {
+            if !instrs.contains(&addr) {
                 anyhow::bail!("label on nonexistent {addr}");
-            };
-            instr.label = Some(label);
+            }
+            func.annotations.entry(addr).or_default().label = Some(label);
         }
 
         for comment in self.inline_comments {
             let (addr, comment) = comment.parse()?;
-            let Some(instr) = instrs.get_mut(&addr) else {
+            if !instrs.contains(&addr) {
                 anyhow::bail!("comment on nonexistent {addr}");
-            };
-            instr.comment = Some(comment);
+            }
+            func.annotations.entry(addr).or_default().comment = Some(comment);
         }
 
         Ok(())

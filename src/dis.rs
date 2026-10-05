@@ -52,23 +52,17 @@ fn gather(mem: &[u8], start: SegOfs) -> Vec<Block> {
             }
         }
 
-        let block = gather_block(
-            mem,
-            ip,
-            |ip| blocks.contains_key(&ip),
-            |ip| queue.push_back(ip),
-        );
-        blocks.insert(ip, block);
+        let instrs = gather_block(mem, ip, |ip| blocks.contains_key(&ip));
+        let last_instr = instrs.last().unwrap();
+        enqueue_control_flow(ip.with_ofs(last_instr.ip16()), last_instr, |ip| {
+            queue.push_back(ip)
+        });
+        blocks.insert(ip, Block { ip, instrs });
     }
     blocks.into_values().collect()
 }
 
-fn gather_block(
-    mem: &[u8],
-    block_ip: SegOfs,
-    visited: impl Fn(SegOfs) -> bool,
-    mut enqueue: impl FnMut(SegOfs),
-) -> Block {
+pub fn gather_block(mem: &[u8], block_ip: SegOfs, visited: impl Fn(SegOfs) -> bool) -> Vec<Instr> {
     let mut instrs = Vec::new();
     let decoder = iced_x86::Decoder::with_ip(
         16,
@@ -95,39 +89,41 @@ fn gather_block(
             Call | IndirectCall | Interrupt => {
                 // assume it returns
             }
-
-            IndirectBranch | UnconditionalBranch | ConditionalBranch => {
-                control_flow(block_ip, &instr, &mut enqueue);
-                if instr.flow_control() == ConditionalBranch {
-                    enqueue(block_ip.with_ofs(instr.next_ip16()));
-                }
-                break;
-            }
-
-            Return => break,
-
+            IndirectBranch | UnconditionalBranch | ConditionalBranch | Return => break,
             XbeginXabortXend | Exception => todo!(),
         }
     }
-    Block {
-        ip: block_ip,
-        instrs,
-    }
+    instrs
 }
 
-fn control_flow(ip: SegOfs, instr: &iced_x86::Instruction, mut enqueue: impl FnMut(SegOfs)) {
-    use iced_x86::OpKind::*;
-    assert_eq!(instr.op_count(), 1);
-    match instr.op0_kind() {
-        NearBranch16 => enqueue(ip.with_ofs(instr.near_branch16())),
-        FarBranch16 => {
-            enqueue((instr.far_branch_selector(), instr.far_branch16()).into());
+fn enqueue_control_flow(
+    ip: SegOfs,
+    instr: &iced_x86::Instruction,
+    mut enqueue: impl FnMut(SegOfs),
+) {
+    use iced_x86::FlowControl::*;
+
+    if matches!(
+        instr.flow_control(),
+        IndirectBranch | UnconditionalBranch | ConditionalBranch
+    ) {
+        assert_eq!(instr.op_count(), 1);
+        use iced_x86::OpKind::*;
+        match instr.op0_kind() {
+            NearBranch16 => enqueue(ip.with_ofs(instr.near_branch16())),
+            FarBranch16 => {
+                enqueue((instr.far_branch_selector(), instr.far_branch16()).into());
+            }
+            Memory => {}
+            Register => {
+                // jmp [reg]  for some register
+                // log::warn!("{ip} {instr}  ; indirect via register");
+            }
+            d => todo!("unhandled jmp {d:?}"),
         }
-        Memory => {}
-        Register => {
-            // jmp [reg]  for some register
-            // log::warn!("{ip} {instr}  ; indirect via register");
-        }
-        d => todo!("unhandled jmp {d:?}"),
+    }
+
+    if matches!(instr.flow_control(), ConditionalBranch) {
+        enqueue(ip.with_ofs(instr.next_ip16()));
     }
 }

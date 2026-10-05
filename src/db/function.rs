@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 
 use runtime::SegOfs;
 
-use crate::{api::Var, db::XRef};
+use crate::{api::Var, db::XRef, dis};
 
 #[derive(serde::Serialize, serde::Deserialize, Default)]
 pub struct Function {
@@ -33,38 +33,12 @@ impl Function {
         if !self.blocks[0].instrs.is_empty() {
             return;
         }
-        let blocks = self.blocks.iter().map(|b| b.ip).collect::<Vec<_>>();
+        let block_ips = self.blocks.iter().map(|b| b.ip).collect::<Vec<_>>();
         for block in self.blocks.iter_mut() {
-            Self::disasm_block(mem, &blocks, block);
+            block.instrs = dis::gather_block(mem, block.ip, |ip| {
+                ip != block.ip && block_ips.contains(&ip)
+            });
         }
-    }
-
-    fn disasm_block(mem: &[u8], blocks: &[SegOfs], block: &mut Block) {
-        // TODO: share code with dis?
-        let mut instrs = Vec::new();
-        let decoder = iced_x86::Decoder::with_ip(
-            16,
-            &mem[block.ip.abs() as usize..],
-            block.ip.ofs as u64,
-            iced_x86::DecoderOptions::NONE,
-        );
-        for instr in decoder.into_iter() {
-            if !instrs.is_empty() && blocks.contains(&block.ip.with_ofs(instr.ip16())) {
-                break;
-            }
-
-            instrs.push(instr);
-
-            use iced_x86::FlowControl::*;
-            match instr.flow_control() {
-                Next | Call | IndirectCall | Interrupt => {
-                    // assume it returns
-                }
-                IndirectBranch | UnconditionalBranch | ConditionalBranch | Return => break,
-                XbeginXabortXend | Exception => todo!(),
-            }
-        }
-        block.instrs = instrs;
     }
 }
 

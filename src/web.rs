@@ -77,8 +77,8 @@ struct XRefDetail(String, SegOfs);
 impl From<&XRef> for XRefDetail {
     fn from(xref: &XRef) -> Self {
         match xref {
-            XRef::External(name, ip) => Self(name.clone().unwrap_or_else(|| ip.to_string()), *ip),
-            XRef::Block(Some(label), _) => Self(label.clone(), SegOfs::default()),
+            XRef::External(ip) => Self("todo".into(), *ip),
+            XRef::Block(_) => Self("todo".into(), SegOfs::default()),
             _ => Self(xref.to_string(), SegOfs::default()),
         }
     }
@@ -86,7 +86,7 @@ impl From<&XRef> for XRefDetail {
 
 fn function_ref(xref: &XRef) -> Option<XRefDetail> {
     match xref {
-        XRef::External(_, _) => Some(xref.into()),
+        XRef::External(_) => Some(xref.into()),
         _ => None,
     }
 }
@@ -97,14 +97,8 @@ fn function_detail<'a>(memory: &'a Memory, func: &'a crate::db::Function) -> Fun
         name: func.name.as_deref(),
         desc: func.desc.as_deref(),
         details: func.details.as_deref(),
-        callers: func
-            .callers
-            .as_ref()
-            .map(|refs| refs.iter().filter_map(function_ref).collect()),
-        callees: func
-            .callees
-            .as_ref()
-            .map(|refs| refs.iter().filter_map(function_ref).collect()),
+        callers: None, // TODO
+        callees: None, // TODO
         params: &func.params,
         ret: &func.ret,
         memory: func

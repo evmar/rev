@@ -2,7 +2,7 @@ use runtime::SegOfs;
 
 use crate::{
     api,
-    db::{DB, xref::update_all_xrefs},
+    db::{DB, xref},
     dis::dis_func,
 };
 
@@ -40,7 +40,8 @@ struct NewArgs {
 
 fn cmd_new(db: &mut DB, NewArgs { addr }: NewArgs) -> anyhow::Result<()> {
     dis_func(db, addr);
-    update_all_xrefs(db);
+    let func = db.functions.get_mut(&addr).unwrap();
+    xref::update_xrefs(func, &db.mem);
     db.write()?;
     Ok(())
 }

@@ -20,12 +20,9 @@ pub fn run(db: &mut DB, _args: Args) -> anyhow::Result<()> {
 pub fn crawl(db: &mut DB) -> anyhow::Result<bool> {
     let mut queue = VecDeque::new();
     for func in db.functions.values() {
-        let Some(callees) = &func.callees else {
-            continue;
-        };
-        for xref in callees.iter() {
+        for xref in func.annotations.values().filter_map(|a| a.jmp.as_ref()) {
             let ip = match xref {
-                XRef::External(_, ip) => *ip,
+                XRef::External(ip) => *ip,
                 _ => continue,
             };
             if db.functions.contains_key(&ip) {
@@ -46,12 +43,8 @@ pub fn crawl(db: &mut DB) -> anyhow::Result<bool> {
         println!("visiting {ip}");
         dis_func(db, ip);
         let func = db.functions.get_mut(&ip).unwrap();
-        xref::update_callees(func, &db.mem, |ip| XRef::External(None, ip));
+        xref::update_xrefs(func, &db.mem);
         db.write()?;
-        changed = true;
-    }
-
-    if xref::update_all_xrefs(db) {
         changed = true;
     }
 

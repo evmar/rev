@@ -2,7 +2,11 @@ use std::path::PathBuf;
 
 use runtime::SegOfs;
 
-use crate::{ai, crawl::crawl, db::DB};
+use crate::{
+    ai,
+    crawl::crawl,
+    db::{DB, xref::XRefs},
+};
 
 /// agentically process queue
 #[derive(argh::FromArgs)]
@@ -19,8 +23,9 @@ pub enum Task {
 }
 
 pub fn next_task(db: &DB) -> Option<Task> {
+    let xrefs = XRefs::gather(db);
     for func in db.functions.values() {
-        if func.callers.is_none() && func.callees.is_none() {
+        if xrefs.callers.get(&func.ip).is_none() && xrefs.callees.get(&func.ip).is_none() {
             continue;
         }
 

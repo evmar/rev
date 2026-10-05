@@ -21,11 +21,6 @@ pub struct Function {
 
     #[serde(skip_serializing_if = "BTreeMap::is_empty", default)]
     pub annotations: BTreeMap<SegOfs, Annotation>,
-
-    #[serde(skip)]
-    pub callers: Option<Vec<XRef>>,
-    #[serde(skip)]
-    pub callees: Option<Vec<XRef>>,
 }
 
 impl Function {

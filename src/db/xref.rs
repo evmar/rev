@@ -105,7 +105,7 @@ fn xref_from_instr(
                     };
                     Some(xref(ip))
                 }
-                // XXX: what about far calls?
+                // XXX: what about far calls via memory?
                 Memory => match annot.map(|a| a.memory.as_ref()).flatten() {
                     Some(Ok(addr)) => {
                         let mem = &mem[addr.abs() as usize..][..2];

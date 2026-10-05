@@ -53,10 +53,7 @@ impl Function {
                 break;
             }
 
-            instrs.push(Instr {
-                iced: instr,
-                ..Default::default()
-            });
+            instrs.push(instr);
 
             use iced_x86::FlowControl::*;
             match instr.flow_control() {
@@ -78,7 +75,7 @@ pub struct Block {
 
 impl Block {
     pub fn span(&self) -> std::ops::Range<SegOfs> {
-        let end_ofs = self.instrs.last().unwrap().iced.next_ip16();
+        let end_ofs = self.instrs.last().unwrap().next_ip16();
         self.ip..self.ip.with_ofs(end_ofs)
     }
 
@@ -102,10 +99,7 @@ mod serde_blocks {
     }
 }
 
-#[derive(Default)]
-pub struct Instr {
-    pub iced: iced_x86::Instruction,
-}
+pub type Instr = iced_x86::Instruction;
 
 #[derive(serde::Serialize, serde::Deserialize, Default)]
 pub struct Annotation {

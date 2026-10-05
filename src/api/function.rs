@@ -75,7 +75,7 @@ impl FunctionUpdate {
         let mut instrs: HashSet<SegOfs> = Default::default();
         for block in &func.blocks {
             for instr in &block.instrs {
-                instrs.insert(func.ip.with_ofs(instr.iced.ip16()));
+                instrs.insert(func.ip.with_ofs(instr.ip16()));
             }
         }
 
@@ -148,7 +148,7 @@ pub fn plain_text(func: &Function) -> String {
 
     for block in func.blocks.iter() {
         for instr in block.instrs.iter() {
-            let ip = func.ip.with_ofs(instr.iced.ip16());
+            let ip = func.ip.with_ofs(instr.ip16());
             if let Some(annot) = func.annotations.get(&ip) {
                 if let Some(comment) = &annot.comment {
                     writeln!(w, "; {comment}").ok();
@@ -169,7 +169,7 @@ pub fn plain_text(func: &Function) -> String {
                     };
                 }
             }
-            writeln!(w, "{ip} {instr}", instr = instr.iced).ok();
+            writeln!(w, "{ip} {instr}").ok();
         }
         writeln!(w).ok();
     }

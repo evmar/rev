@@ -50,7 +50,7 @@ pub fn update_callees(
     for block in func.blocks.iter_mut() {
         let ip = block.ip;
         for instr in block.instrs.iter_mut() {
-            let annot = func.annotations.get(&block.ip.with_ofs(instr.iced.ip16()));
+            let annot = func.annotations.get(&block.ip.with_ofs(instr.ip16()));
             let Some(xref) =
                 xref_from_instr(ip, &instr, annot, mem, |ip| match ip_to_block.get(&ip) {
                     Some(idx) => XRef::Block(block_to_label[*idx].clone(), *idx),
@@ -92,16 +92,15 @@ fn xref_from_instr(
     mut xref: impl FnMut(SegOfs) -> XRef,
 ) -> Option<XRef> {
     use iced_x86::FlowControl::*;
-    let iced = &instr.iced;
-    match iced.flow_control() {
+    match instr.flow_control() {
         Next | Return | Interrupt => None,
         Call | IndirectCall | IndirectBranch | UnconditionalBranch | ConditionalBranch => {
             use iced_x86::OpKind::*;
-            match iced.op0_kind() {
+            match instr.op0_kind() {
                 NearBranch16 | FarBranch16 => {
-                    let ip = match iced.op0_kind() {
-                        NearBranch16 => ip.with_ofs(iced.near_branch16()),
-                        FarBranch16 => (iced.far_branch_selector(), iced.far_branch16()).into(),
+                    let ip = match instr.op0_kind() {
+                        NearBranch16 => ip.with_ofs(instr.near_branch16()),
+                        FarBranch16 => (instr.far_branch_selector(), instr.far_branch16()).into(),
                         _ => unreachable!(),
                     };
                     Some(xref(ip))

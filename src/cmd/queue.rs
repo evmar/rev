@@ -32,7 +32,7 @@ pub fn next_task(db: &DB) -> Option<Task> {
             for instr in block.instrs.iter() {
                 if let Some(Ok(addr)) = func
                     .annotations
-                    .get(&block.ip.with_ofs(instr.iced.ip16()))
+                    .get(&block.ip.with_ofs(instr.ip16()))
                     .map(|a| a.memory.as_ref())
                     .flatten()
                 {

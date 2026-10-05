@@ -146,8 +146,8 @@ fn function_detail<'a>(memory: &'a Memory, func: &'a crate::db::Function) -> Fun
                     .instrs
                     .iter()
                     .map(|instr| InstructionDetail {
-                        ip: block.ip.with_ofs(instr.iced.ip16()),
-                        text: instr.iced.to_string(),
+                        ip: block.ip.with_ofs(instr.ip16()),
+                        text: instr.to_string(),
                     })
                     .collect(),
             })

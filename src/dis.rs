@@ -18,13 +18,13 @@ pub fn dis_func<'db>(db: &'db mut DB, ip: SegOfs) {
 }
 
 fn check_coverage(func: &Function) {
-    let start = func.blocks[0].instrs[0].iced.ip16() as usize;
+    let start = func.blocks[0].instrs[0].ip16() as usize;
     let mut covered = vec![];
     for block in func.blocks.iter() {
         for instr in block.instrs.iter() {
-            let end = instr.iced.ip16() as usize + instr.iced.len();
+            let end = instr.ip16() as usize + instr.len();
             covered.resize(end - start, false);
-            covered[instr.iced.ip16() as usize - start..][..instr.iced.len()].fill(true);
+            covered[instr.ip16() as usize - start..][..instr.len()].fill(true);
         }
     }
 
@@ -87,10 +87,7 @@ fn gather_block(
         //     addr = block_ip.with_ofs(instr.ip16()),
         //     code = instr
         // );
-        instrs.push(Instr {
-            iced: instr,
-            ..Default::default()
-        });
+        instrs.push(instr);
 
         use iced_x86::FlowControl::*;
         match instr.flow_control() {

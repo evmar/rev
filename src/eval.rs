@@ -34,18 +34,18 @@ impl Eval {
     fn block(&mut self, annot: &mut BTreeMap<SegOfs, Annotation>, block: &mut Block) {
         self.cs = block.ip.seg;
         for instr in block.instrs.iter_mut() {
-            self.instr(instr, annot.get(&block.ip.with_ofs(instr.iced.ip16())));
+            self.instr(instr, annot.get(&block.ip.with_ofs(instr.ip16())));
         }
     }
 
-    fn instr(&mut self, instr: &mut Instr, annot: Option<&Annotation>) {
-        println!("instr: {}", instr.iced);
+    fn instr(&mut self, instr: &Instr, annot: Option<&Annotation>) {
+        println!("instr: {}", instr);
         if let Some(assume) = annot.map(|a| &a.assume) {
             for (reg, val) in assume.iter() {
                 self.regs.insert(ir::Name::new(reg), *val);
             }
         }
-        let stmt = match ir::Stmt::try_from(&instr.iced) {
+        let stmt = match ir::Stmt::try_from(instr) {
             Ok(stmt) => stmt,
             Err(err) => {
                 println!("err: {err}");
@@ -58,7 +58,7 @@ impl Eval {
         }
         match self.eval_stmt(&stmt) {
             Ok(_) => {}
-            Err(err) => println!("{}: {}", instr.iced, err),
+            Err(err) => println!("{}: {}", instr, err),
         }
     }
 

@@ -14,6 +14,15 @@ pub fn dis_func<'db>(db: &'db mut DB, ip: SegOfs) {
     }
     let func = db.functions.get_mut(&ip).unwrap();
     func.blocks = gather(&db.mem, ip);
+    func.len = (func
+        .blocks
+        .last()
+        .unwrap()
+        .instrs
+        .last()
+        .unwrap()
+        .next_ip16()
+        - func.ip.ofs) as usize;
     check_coverage(func);
 }
 
@@ -112,7 +121,8 @@ fn enqueue_control_flow(
         match instr.op0_kind() {
             NearBranch16 => enqueue(ip.with_ofs(instr.near_branch16())),
             FarBranch16 => {
-                enqueue((instr.far_branch_selector(), instr.far_branch16()).into());
+                // Don't enqueue far branches as part of this function, they're surely unrelated(?)
+                // enqueue((instr.far_branch_selector(), instr.far_branch16()).into());
             }
             Memory => {}
             Register => {

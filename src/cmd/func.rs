@@ -1,6 +1,10 @@
 use runtime::SegOfs;
 
-use crate::{api, db::DB, dis::dis_func};
+use crate::{
+    api,
+    db::{DB, xref::update_all_xrefs},
+    dis::dis_func,
+};
 
 /// functions: reading, writing
 #[derive(argh::FromArgs)]
@@ -36,6 +40,7 @@ struct NewArgs {
 
 fn cmd_new(db: &mut DB, NewArgs { addr }: NewArgs) -> anyhow::Result<()> {
     dis_func(db, addr);
+    update_all_xrefs(db);
     db.write()?;
     Ok(())
 }

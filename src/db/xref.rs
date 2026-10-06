@@ -48,9 +48,9 @@ pub fn update_xrefs(func: &mut Function, mem: &[u8]) {
     }
 
     for block in func.blocks.iter_mut() {
-        let ip = block.ip;
         for instr in block.instrs.iter_mut() {
-            let annot = func.annotations.get(&block.ip.with_ofs(instr.ip16()));
+            let ip = block.ip.with_ofs(instr.ip16());
+            let annot = func.annotations.get(&ip);
             let Some(xref) =
                 xref_from_instr(ip, &instr, annot, mem, |ip| match ip_to_block.get(&ip) {
                     Some(idx) => XRef::Block(*idx),

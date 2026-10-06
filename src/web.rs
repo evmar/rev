@@ -17,7 +17,7 @@ use tokio::sync::RwLock;
 use tower_http::services::ServeDir;
 
 use crate::{
-    db::{DB, Memory, XRef},
+    db::{DB, XRef, xref::XRefs},
     load::EXE,
 };
 
@@ -74,31 +74,38 @@ enum MemoryDetail {
 #[ts(export)]
 struct XRefDetail(String, SegOfs);
 
-impl From<&XRef> for XRefDetail {
-    fn from(xref: &XRef) -> Self {
+impl XRefDetail {
+    fn function(db: &DB, ip: SegOfs) -> Self {
+        let name = db.functions.get(&ip).and_then(|func| func.name.clone());
+        Self(name.unwrap_or_else(|| ip.to_string()), ip)
+    }
+
+    fn from_xref(db: &DB, xref: &XRef) -> Self {
         match xref {
-            XRef::External(ip) => Self("todo".into(), *ip),
-            XRef::Block(_) => Self("todo".into(), SegOfs::default()),
+            XRef::External(ip) => Self::function(db, *ip),
             _ => Self(xref.to_string(), SegOfs::default()),
         }
     }
 }
 
-fn function_ref(xref: &XRef) -> Option<XRefDetail> {
-    match xref {
-        XRef::External(_) => Some(xref.into()),
-        _ => None,
-    }
-}
-
-fn function_detail<'a>(memory: &'a Memory, func: &'a crate::db::Function) -> FunctionDetail<'a> {
+fn function_detail<'a>(
+    db: &'a DB,
+    xrefs: &XRefs,
+    func: &'a crate::db::Function,
+) -> FunctionDetail<'a> {
     FunctionDetail {
         ip: func.ip.to_string(),
         name: func.name.as_deref(),
         desc: func.desc.as_deref(),
         details: func.details.as_deref(),
-        callers: None, // TODO
-        callees: None, // TODO
+        callers: xrefs
+            .callers
+            .get(&func.ip)
+            .map(|ips| ips.iter().map(|ip| XRefDetail::function(db, *ip)).collect()),
+        callees: xrefs
+            .callees
+            .get(&func.ip)
+            .map(|ips| ips.iter().map(|ip| XRefDetail::function(db, *ip)).collect()),
         params: &func.params,
         ret: &func.ret,
         memory: func
@@ -106,7 +113,7 @@ fn function_detail<'a>(memory: &'a Memory, func: &'a crate::db::Function) -> Fun
             .values()
             .filter_map(|annotation| annotation.memory.as_ref()?.as_ref().ok())
             .filter_map(|addr| {
-                memory
+                db.memory
                     .entries
                     .get(addr)
                     .map(|location| (*addr, location.name.as_str()))
@@ -121,7 +128,10 @@ fn function_detail<'a>(memory: &'a Memory, func: &'a crate::db::Function) -> Fun
                     AnnotationDetail {
                         comment: annotation.comment.as_deref(),
                         label: annotation.label.as_deref(),
-                        jmp: annotation.jmp.as_ref().map(Into::into),
+                        jmp: annotation
+                            .jmp
+                            .as_ref()
+                            .map(|xref| XRefDetail::from_xref(db, xref)),
                         memory: annotation.memory.as_ref().map(|memory| match memory {
                             Ok(addr) => MemoryDetail::Address(addr.to_string()),
                             Err(note) => MemoryDetail::Note(note.clone()),
@@ -149,7 +159,19 @@ fn function_detail<'a>(memory: &'a Memory, func: &'a crate::db::Function) -> Fun
     }
 }
 
-type AppState = Arc<RwLock<DB>>;
+struct WebState {
+    db: DB,
+    xrefs: XRefs,
+}
+
+impl WebState {
+    fn new(db: DB) -> Self {
+        let xrefs = XRefs::gather(&db);
+        Self { db, xrefs }
+    }
+}
+
+type AppState = Arc<RwLock<WebState>>;
 
 const MEMORY_PAGE_SIZE: usize = 4096;
 
@@ -159,46 +181,51 @@ fn memory_bytes(db: &DB, addr: SegOfs) -> &[u8] {
 }
 
 async fn get_memory_bytes(
-    State(db): State<AppState>,
+    State(state): State<AppState>,
     axum::extract::Path(addr): axum::extract::Path<String>,
 ) -> Result<Response, StatusCode> {
     let addr = addr.strip_suffix(".json").ok_or(StatusCode::BAD_REQUEST)?;
     let addr = SegOfs::parse(addr).map_err(|_| StatusCode::BAD_REQUEST)?;
-    let db = db.read().await;
-    let bytes = memory_bytes(&db, addr);
+    let state = state.read().await;
+    let bytes = memory_bytes(&state.db, addr);
     Ok(Json(bytes).into_response())
 }
 
-async fn get_overview(State(db): State<AppState>) -> Response {
-    let db = db.read().await;
-    Json(overview(&db)).into_response()
+async fn get_overview(State(state): State<AppState>) -> Response {
+    let state = state.read().await;
+    Json(overview(&state.db)).into_response()
 }
 
 async fn get_function(
-    State(db): State<AppState>,
+    State(state): State<AppState>,
     axum::extract::Path(ip): axum::extract::Path<String>,
 ) -> Result<Response, StatusCode> {
     let ip = ip.strip_suffix(".json").ok_or(StatusCode::BAD_REQUEST)?;
     let ip = runtime::SegOfs::parse(ip).map_err(|_| StatusCode::BAD_REQUEST)?;
-    let db = &mut *db.write().await;
-    let func = db.functions.get_mut(&ip).ok_or(StatusCode::NOT_FOUND)?;
-    func.disasm(&db.mem);
-    Ok(Json(function_detail(&db.memory, func)).into_response())
+    let state = &mut *state.write().await;
+    let func = state
+        .db
+        .functions
+        .get_mut(&ip)
+        .ok_or(StatusCode::NOT_FOUND)?;
+    func.disasm(&state.db.mem);
+    let func = &state.db.functions[&ip];
+    Ok(Json(function_detail(&state.db, &state.xrefs, func)).into_response())
 }
 
-async fn get_memory(State(db): State<AppState>) -> Response {
-    let db = db.read().await;
-    Json(memory_entries(&db)).into_response()
+async fn get_memory(State(state): State<AppState>) -> Response {
+    let state = state.read().await;
+    Json(memory_entries(&state.db)).into_response()
 }
 
 async fn get_memory_address(
-    State(db): State<AppState>,
+    State(state): State<AppState>,
     axum::extract::Path(addr): axum::extract::Path<String>,
 ) -> Result<Response, StatusCode> {
     let addr = addr.strip_suffix(".json").ok_or(StatusCode::BAD_REQUEST)?;
     let addr = runtime::SegOfs::parse(addr).map_err(|_| StatusCode::BAD_REQUEST)?;
-    let db = db.read().await;
-    let detail = memory_address_detail(&db, addr).ok_or(StatusCode::NOT_FOUND)?;
+    let state = state.read().await;
+    let detail = memory_address_detail(&state.db, addr).ok_or(StatusCode::NOT_FOUND)?;
     Ok(Json(detail).into_response())
 }
 
@@ -317,7 +344,8 @@ pub struct Args {
     pub export: Option<PathBuf>,
 }
 
-fn export_site(db: &DB, output: &Path) -> anyhow::Result<()> {
+fn export_site(state: &WebState, output: &Path) -> anyhow::Result<()> {
+    let WebState { db, xrefs } = state;
     std::fs::create_dir_all(output)?;
     let api = output.join("api");
     // Require fresh API data so old functions cannot survive an export.
@@ -335,7 +363,7 @@ fn export_site(db: &DB, output: &Path) -> anyhow::Result<()> {
     for func in db.functions.values() {
         std::fs::write(
             api.join("functions").join(format!("{}.json", func.ip)),
-            serde_json::to_vec(&function_detail(&db.memory, func))?,
+            serde_json::to_vec(&function_detail(db, xrefs, func))?,
         )?;
     }
     for addr in db.memory.entries.keys() {
@@ -349,14 +377,15 @@ fn export_site(db: &DB, output: &Path) -> anyhow::Result<()> {
 }
 
 pub async fn run(db: DB, args: Args) -> anyhow::Result<()> {
+    let state = WebState::new(db);
     let dist = Path::new(env!("CARGO_MANIFEST_DIR")).join("web/dist");
     if let Some(output) = args.export {
         anyhow::ensure!(!args.dev, "--export cannot be combined with --dev");
-        export_site(&db, &output)?;
+        export_site(&state, &output)?;
         println!("exported site to {}", output.display());
         return Ok(());
     }
-    let db = Arc::new(RwLock::new(db));
+    let state = Arc::new(RwLock::new(state));
     let app = if args.dev {
         anyhow::ensure!(
             cfg!(debug_assertions),
@@ -382,7 +411,7 @@ pub async fn run(db: DB, args: Args) -> anyhow::Result<()> {
         .route("/api/memory/{addr}", get(get_memory_address))
         .route("/api/bytes/{addr}", get(get_memory_bytes))
         .route("/api/functions/{ip}", get(get_function))
-        .with_state(db);
+        .with_state(state);
     let listener = tokio::net::TcpListener::bind("127.0.0.1:3000").await?;
     eprintln!("Listening on http://{}", listener.local_addr()?);
     axum::serve(listener, app).await?;

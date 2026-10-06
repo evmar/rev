@@ -17,7 +17,7 @@ use tokio::sync::RwLock;
 use tower_http::services::ServeDir;
 
 use crate::{
-    db::{DB, XRef, xref::XRefs},
+    db::{DB, XRef},
     load::EXE,
 };
 
@@ -88,21 +88,19 @@ impl XRefDetail {
     }
 }
 
-fn function_detail<'a>(
-    db: &'a DB,
-    xrefs: &XRefs,
-    func: &'a crate::db::Function,
-) -> FunctionDetail<'a> {
+fn function_detail<'a>(db: &'a DB, func: &'a crate::db::Function) -> FunctionDetail<'a> {
     FunctionDetail {
         ip: func.ip.to_string(),
         name: func.name.as_deref(),
         desc: func.desc.as_deref(),
         details: func.details.as_deref(),
-        callers: xrefs
+        callers: db
+            .xrefs
             .callers
             .get(&func.ip)
             .map(|ips| ips.iter().map(|ip| XRefDetail::function(db, *ip)).collect()),
-        callees: xrefs
+        callees: db
+            .xrefs
             .callees
             .get(&func.ip)
             .map(|ips| ips.iter().map(|ip| XRefDetail::function(db, *ip)).collect()),
@@ -159,19 +157,7 @@ fn function_detail<'a>(
     }
 }
 
-struct WebState {
-    db: DB,
-    xrefs: XRefs,
-}
-
-impl WebState {
-    fn new(db: DB) -> Self {
-        let xrefs = XRefs::gather(&db);
-        Self { db, xrefs }
-    }
-}
-
-type AppState = Arc<RwLock<WebState>>;
+type AppState = Arc<RwLock<DB>>;
 
 const MEMORY_PAGE_SIZE: usize = 4096;
 
@@ -186,14 +172,14 @@ async fn get_memory_bytes(
 ) -> Result<Response, StatusCode> {
     let addr = addr.strip_suffix(".json").ok_or(StatusCode::BAD_REQUEST)?;
     let addr = SegOfs::parse(addr).map_err(|_| StatusCode::BAD_REQUEST)?;
-    let state = state.read().await;
-    let bytes = memory_bytes(&state.db, addr);
+    let db = state.read().await;
+    let bytes = memory_bytes(&db, addr);
     Ok(Json(bytes).into_response())
 }
 
 async fn get_overview(State(state): State<AppState>) -> Response {
-    let state = state.read().await;
-    Json(overview(&state.db)).into_response()
+    let db = state.read().await;
+    Json(overview(&db)).into_response()
 }
 
 async fn get_function(
@@ -202,20 +188,16 @@ async fn get_function(
 ) -> Result<Response, StatusCode> {
     let ip = ip.strip_suffix(".json").ok_or(StatusCode::BAD_REQUEST)?;
     let ip = runtime::SegOfs::parse(ip).map_err(|_| StatusCode::BAD_REQUEST)?;
-    let state = &mut *state.write().await;
-    let func = state
-        .db
-        .functions
-        .get_mut(&ip)
-        .ok_or(StatusCode::NOT_FOUND)?;
-    func.disasm(&state.db.mem);
-    let func = &state.db.functions[&ip];
-    Ok(Json(function_detail(&state.db, &state.xrefs, func)).into_response())
+    let db = &mut *state.write().await;
+    let func = db.functions.get_mut(&ip).ok_or(StatusCode::NOT_FOUND)?;
+    func.disasm(&db.mem);
+    let func = &db.functions[&ip];
+    Ok(Json(function_detail(&db, func)).into_response())
 }
 
 async fn get_memory(State(state): State<AppState>) -> Response {
-    let state = state.read().await;
-    Json(memory_entries(&state.db)).into_response()
+    let db = state.read().await;
+    Json(memory_entries(&db)).into_response()
 }
 
 async fn get_memory_address(
@@ -224,8 +206,8 @@ async fn get_memory_address(
 ) -> Result<Response, StatusCode> {
     let addr = addr.strip_suffix(".json").ok_or(StatusCode::BAD_REQUEST)?;
     let addr = runtime::SegOfs::parse(addr).map_err(|_| StatusCode::BAD_REQUEST)?;
-    let state = state.read().await;
-    let detail = memory_address_detail(&state.db, addr).ok_or(StatusCode::NOT_FOUND)?;
+    let db = state.read().await;
+    let detail = memory_address_detail(&db, addr).ok_or(StatusCode::NOT_FOUND)?;
     Ok(Json(detail).into_response())
 }
 
@@ -344,8 +326,7 @@ pub struct Args {
     pub export: Option<PathBuf>,
 }
 
-fn export_site(state: &WebState, output: &Path) -> anyhow::Result<()> {
-    let WebState { db, xrefs } = state;
+fn export_site(db: &DB, output: &Path) -> anyhow::Result<()> {
     std::fs::create_dir_all(output)?;
     let api = output.join("api");
     // Require fresh API data so old functions cannot survive an export.
@@ -363,7 +344,7 @@ fn export_site(state: &WebState, output: &Path) -> anyhow::Result<()> {
     for func in db.functions.values() {
         std::fs::write(
             api.join("functions").join(format!("{}.json", func.ip)),
-            serde_json::to_vec(&function_detail(db, xrefs, func))?,
+            serde_json::to_vec(&function_detail(db, func))?,
         )?;
     }
     for addr in db.memory.entries.keys() {
@@ -377,15 +358,14 @@ fn export_site(state: &WebState, output: &Path) -> anyhow::Result<()> {
 }
 
 pub async fn run(db: DB, args: Args) -> anyhow::Result<()> {
-    let state = WebState::new(db);
     let dist = Path::new(env!("CARGO_MANIFEST_DIR")).join("web/dist");
     if let Some(output) = args.export {
         anyhow::ensure!(!args.dev, "--export cannot be combined with --dev");
-        export_site(&state, &output)?;
+        export_site(&db, &output)?;
         println!("exported site to {}", output.display());
         return Ok(());
     }
-    let state = Arc::new(RwLock::new(state));
+    let state = Arc::new(RwLock::new(db));
     let app = if args.dev {
         anyhow::ensure!(
             cfg!(debug_assertions),

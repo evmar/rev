@@ -6,4 +6,4 @@ pub mod xref;
 pub use db::DB;
 pub use function::{Annotation, Block, Function, Instr};
 pub use memory::Memory;
-pub use xref::XRef;
+pub use xref::{XRef, XRefs};

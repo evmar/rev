@@ -2,11 +2,7 @@ use std::path::PathBuf;
 
 use runtime::SegOfs;
 
-use crate::{
-    ai,
-    crawl::crawl,
-    db::{DB, xref::XRefs},
-};
+use crate::{ai, crawl::crawl, db::DB};
 
 /// agentically process queue
 #[derive(argh::FromArgs)]
@@ -22,10 +18,9 @@ pub enum Task {
     LabelMemory(SegOfs),
 }
 
-pub fn next_task(db: &DB) -> Option<Task> {
-    let xrefs = XRefs::gather(db);
+pub fn next_task(db: &mut DB) -> Option<Task> {
     for func in db.functions.values() {
-        if xrefs.callers.get(&func.ip).is_none() && xrefs.callees.get(&func.ip).is_none() {
+        if db.xrefs.callers.get(&func.ip).is_none() && db.xrefs.callees.get(&func.ip).is_none() {
             continue;
         }
 
@@ -90,7 +85,7 @@ pub async fn run(path: PathBuf, args: Args) -> anyhow::Result<()> {
             println!("crawl found new code, looping");
             continue;
         }
-        let Some(task) = next_task(&db) else {
+        let Some(task) = next_task(&mut db) else {
             return Ok(());
         };
         run_task(&mut db, &task).await?;

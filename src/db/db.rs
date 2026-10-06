@@ -5,7 +5,7 @@ use std::{
 
 use runtime::SegOfs;
 
-use super::{Function, Memory};
+use super::{Function, Memory, XRefs};
 use crate::load::{EXE, load_exe};
 use anyhow::anyhow;
 
@@ -16,6 +16,7 @@ pub struct DB {
     pub exe: EXE,
     pub functions: BTreeMap<SegOfs, Function>,
     pub memory: Memory,
+    pub xrefs: XRefs,
 }
 
 impl DB {
@@ -44,7 +45,7 @@ impl DB {
             .map_err(|err: anyhow::Error| anyhow!("{}: {err}", path.display()))?;
         }
 
-        //xref::update_all_xrefs(&mut db);
+        db.xrefs = XRefs::gather(&mut db);
 
         Ok(db)
     }

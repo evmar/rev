@@ -1,6 +1,8 @@
 use std::collections::VecDeque;
 
-use crate::db::{DB, XRef};
+use runtime::SegOfs;
+
+use crate::db::{DB, Function};
 
 /// crawl references
 #[derive(argh::FromArgs)]
@@ -15,21 +17,18 @@ pub fn run(db: &mut DB, _args: Args) -> anyhow::Result<()> {
 }
 
 pub fn crawl(db: &mut DB) -> anyhow::Result<bool> {
-    let mut queue = VecDeque::new();
-    for func in db.functions.values() {
-        for xref in func.annotations.values().filter_map(|a| a.jmp.as_ref()) {
-            let ip = match xref {
-                XRef::External(ip) => *ip,
-                _ => continue,
-            };
-            if db.functions.contains_key(&ip) {
-                continue;
-            }
+    fn enqueue_callees(queue: &mut VecDeque<SegOfs>, func: &Function) {
+        for ip in func.gather_callees() {
             if queue.contains(&ip) {
                 continue;
             }
             queue.push_back(ip);
         }
+    }
+
+    let mut queue = VecDeque::new();
+    for func in db.functions.values() {
+        enqueue_callees(&mut queue, func);
     }
 
     let mut changed = false;
@@ -38,8 +37,8 @@ pub fn crawl(db: &mut DB) -> anyhow::Result<bool> {
             continue;
         };
         println!("visiting {ip}");
-        db.import_function(ip);
-        db.write()?;
+        let func = db.import_function(ip);
+        enqueue_callees(&mut queue, func);
         changed = true;
     }
 

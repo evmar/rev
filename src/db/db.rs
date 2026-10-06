@@ -109,11 +109,12 @@ impl DB {
         }
     }
 
-    pub fn import_function(&mut self, addr: SegOfs) {
+    pub fn import_function(&mut self, addr: SegOfs) -> &Function {
         let func = self.functions.entry(addr).or_default();
         func.ip = addr;
         dis::gather_blocks(func, &self.mem);
         xref::update_xrefs(func, &self.mem);
+        func
     }
 }
 

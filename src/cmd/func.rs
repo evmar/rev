@@ -42,7 +42,6 @@ struct NewArgs {
 fn cmd_new(db: &mut DB, NewArgs { addr }: NewArgs) -> anyhow::Result<()> {
     dis_func(db, addr);
     let func = db.functions.get_mut(&addr).unwrap();
-    xref::update_xrefs(func, &db.mem);
     db.write()?;
     Ok(())
 }
@@ -56,15 +55,14 @@ struct ReadArgs {
     addr_or_name: String,
 }
 
-fn cmd_read(db: &mut DB, ReadArgs { addr_or_name }: ReadArgs) -> anyhow::Result<()> {
+fn cmd_read(db: &DB, ReadArgs { addr_or_name }: ReadArgs) -> anyhow::Result<()> {
     let Some(addr) = db.function_from_name(&addr_or_name) else {
         anyhow::bail!("unknown function {addr_or_name:?}")
     };
     let func = db
         .functions
-        .get_mut(&addr)
+        .get(&addr)
         .ok_or_else(|| anyhow!("unknown function {addr}"))?;
-    func.disasm(&db.mem);
     print!("{}", api::plain_text(func, true));
     Ok(())
 }

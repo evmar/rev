@@ -26,7 +26,6 @@ pub fn dump(db: &mut DB, Args { out_dir }: Args) -> anyhow::Result<()> {
     let fn_dir = out_dir.join("fn");
     std::fs::create_dir_all(&fn_dir)?;
     for func in db.functions.values_mut() {
-        func.disasm(&db.mem);
         let name = match &func.name {
             Some(name) => format!("{name}.toml"),
             None => format!("{:04x}_{:04x}.toml", func.ip.seg, func.ip.ofs),

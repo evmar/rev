@@ -6,7 +6,10 @@ use std::{
 use runtime::SegOfs;
 
 use super::{Function, Memory, XRefs};
-use crate::load::{EXE, load_exe};
+use crate::{
+    db::xref,
+    load::{EXE, load_exe},
+};
 use anyhow::anyhow;
 
 #[derive(Default)]
@@ -36,18 +39,22 @@ impl DB {
         for entry in std::fs::read_dir(fn_dir)? {
             let entry = entry?;
             let path = entry.path();
-            (|| {
-                let buf = std::fs::read(&path)?;
-                let func: Function = toml::from_slice(&buf)?;
-                db.functions.insert(func.ip, func);
-                Ok(())
-            })()
-            .map_err(|err: anyhow::Error| anyhow!("{}: {err}", path.display()))?;
+            db.load_function(&path)
+                .map_err(|err| anyhow!("{}: {err}", path.display()))?;
         }
 
         db.xrefs = XRefs::gather(&mut db);
 
         Ok(db)
+    }
+
+    fn load_function(&mut self, path: &Path) -> anyhow::Result<()> {
+        let buf = std::fs::read(path)?;
+        let mut func: Function = toml::from_slice(&buf)?;
+        func.load_blocks(&self.mem);
+        xref::update_xrefs(&mut func, &self.mem);
+        self.functions.insert(func.ip, func);
+        Ok(())
     }
 
     pub fn write(&self) -> anyhow::Result<()> {

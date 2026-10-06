@@ -25,15 +25,14 @@ impl TypedTool for GetFunctionTool {
 
 impl GetFunctionTool {
     pub fn call(
-        db: &mut DB,
+        db: &DB,
         GetFunctionTool { addr, include_body }: GetFunctionTool,
     ) -> anyhow::Result<String> {
         let addr = SegOfs::parse(&addr).map_err(|_| anyhow::anyhow!("bad address {:?}", addr))?;
         let func = db
             .functions
-            .get_mut(&addr)
+            .get(&addr)
             .ok_or_else(|| anyhow::anyhow!("unknown function {addr}"))?;
-        func.disasm(&db.mem);
         assert!(!func.blocks.is_empty());
         println!(
             "Reading function {addr} ({name}), include_body={include_body}",

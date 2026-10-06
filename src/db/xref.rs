@@ -14,20 +14,7 @@ impl XRefs {
     pub fn gather(db: &DB) -> Self {
         let mut xrefs = XRefs::default();
         for func in db.functions.values() {
-            let mut callees = Vec::new();
-            for annot in func.annotations.values() {
-                if let Some(jmp) = &annot.jmp {
-                    match jmp {
-                        XRef::External(ip) => {
-                            if !callees.contains(ip) {
-                                callees.push(*ip);
-                            }
-                        }
-                        _ => {}
-                    }
-                }
-            }
-            callees.sort();
+            let callees = func.gather_callees();
             for callee in callees.iter() {
                 xrefs.callers.entry(*callee).or_default().push(func.ip);
             }

@@ -189,9 +189,7 @@ async fn get_function(
     let ip = ip.strip_suffix(".json").ok_or(StatusCode::BAD_REQUEST)?;
     let ip = runtime::SegOfs::parse(ip).map_err(|_| StatusCode::BAD_REQUEST)?;
     let db = &mut *state.write().await;
-    let func = db.functions.get_mut(&ip).ok_or(StatusCode::NOT_FOUND)?;
-    func.disasm(&db.mem);
-    let func = &db.functions[&ip];
+    let func = db.functions.get(&ip).ok_or(StatusCode::NOT_FOUND)?;
     Ok(Json(function_detail(&db, func)).into_response())
 }
 

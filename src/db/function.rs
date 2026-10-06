@@ -24,16 +24,32 @@ pub struct Function {
 }
 
 impl Function {
-    pub fn disasm(&mut self, mem: &[u8]) {
-        if !self.blocks[0].instrs.is_empty() {
-            return;
-        }
+    pub fn load_blocks(&mut self, mem: &[u8]) {
+        assert!(self.blocks[0].instrs.is_empty());
         let block_ips = self.blocks.iter().map(|b| b.ip).collect::<Vec<_>>();
         for block in self.blocks.iter_mut() {
             block.instrs = dis::gather_block(mem, block.ip, |ip| {
                 ip != block.ip && block_ips.contains(&ip)
             });
         }
+    }
+
+    pub fn gather_callees(&self) -> Vec<SegOfs> {
+        let mut callees = Vec::new();
+        for annot in self.annotations.values() {
+            if let Some(jmp) = &annot.jmp {
+                match jmp {
+                    XRef::External(ip) => {
+                        if !callees.contains(ip) {
+                            callees.push(*ip);
+                        }
+                    }
+                    _ => {}
+                }
+            }
+        }
+        callees.sort();
+        callees
     }
 }
 

@@ -57,11 +57,17 @@ pub async fn run_task(db: &mut DB, task: &Task) -> anyhow::Result<()> {
         Task::DescribeFunction(ip) => {
             println!("task: describe function {ip}");
             indoc::formatdoc! {"
-                ## program description
+                ## high-level program description
                 {desc}
 
                 ## task
-                analyze function {ip} and write analysis back to database using write_function()
+                analyze function {ip} and write analysis of its name, arguments, etc.
+                back to database using write_function().
+
+                you may inspect other functions using get_function() when necessary for
+                understanding {ip}.  do not speculate about {ip} while an important
+                dependency remains unresolved.  stop once additional exploration will not
+                improve the understanding of {ip}.
                 ",
                 desc = db.exe.description.as_deref().unwrap_or("none"),
             }

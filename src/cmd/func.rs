@@ -65,7 +65,7 @@ fn cmd_read(db: &mut DB, ReadArgs { addr_or_name }: ReadArgs) -> anyhow::Result<
         .get_mut(&addr)
         .ok_or_else(|| anyhow!("unknown function {addr}"))?;
     func.disasm(&db.mem);
-    print!("{}", api::plain_text(func));
+    print!("{}", api::plain_text(func, true));
     Ok(())
 }
 

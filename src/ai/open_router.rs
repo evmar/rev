@@ -117,7 +117,7 @@ impl<'client> AgentLoop<'client> {
             for call in tool_calls.iter() {
                 let out = if call.is_tool::<GetFunctionTool>() {
                     let params = call.parse_params::<GetFunctionTool>()?;
-                    GetFunctionTool::call(self.db, &params)
+                    GetFunctionTool::call(self.db, params)
                 } else if call.is_tool::<ReadMemoryTool>() {
                     let params = call.parse_params::<ReadMemoryTool>()?;
                     ReadMemoryTool::call(self.db, params)

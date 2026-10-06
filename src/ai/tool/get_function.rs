@@ -7,6 +7,10 @@ use crate::{api, db::DB};
 pub struct GetFunctionTool {
     /// address of function to get
     addr: String,
+
+    /// when false, return only name/arguments/description.
+    /// when true, include the function's body assembly.
+    include_body: bool,
 }
 
 impl TypedTool for GetFunctionTool {
@@ -15,14 +19,16 @@ impl TypedTool for GetFunctionTool {
     }
 
     fn description() -> &'static str {
-        "get a function's name, description, and a dump of its assembly code"
+        "get a function's name, description, and optionally a dump of its assembly code"
     }
 }
 
 impl GetFunctionTool {
-    pub fn call(db: &mut DB, params: &GetFunctionTool) -> anyhow::Result<String> {
-        let addr = SegOfs::parse(&params.addr)
-            .map_err(|_| anyhow::anyhow!("bad address {:?}", params.addr))?;
+    pub fn call(
+        db: &mut DB,
+        GetFunctionTool { addr, include_body }: GetFunctionTool,
+    ) -> anyhow::Result<String> {
+        let addr = SegOfs::parse(&addr).map_err(|_| anyhow::anyhow!("bad address {:?}", addr))?;
         let func = db
             .functions
             .get_mut(&addr)
@@ -30,10 +36,9 @@ impl GetFunctionTool {
         func.disasm(&db.mem);
         assert!(!func.blocks.is_empty());
         println!(
-            "Reading function {} ({})",
-            params.addr,
-            func.name.as_deref().unwrap_or("unknown name")
+            "Reading function {addr} ({name}), include_body={include_body}",
+            name = func.name.as_deref().unwrap_or("unknown name")
         );
-        Ok(api::plain_text(func))
+        Ok(api::plain_text(func, include_body))
     }
 }

@@ -32,7 +32,7 @@ pub fn dump(db: &mut DB, Args { out_dir }: Args) -> anyhow::Result<()> {
             None => format!("{:04x}_{:04x}.toml", func.ip.seg, func.ip.ofs),
         };
         let path = fn_dir.join(name);
-        std::fs::write(&path, api::plain_text(func).as_bytes())?;
+        std::fs::write(&path, api::plain_text(func, true).as_bytes())?;
     }
 
     Ok(())

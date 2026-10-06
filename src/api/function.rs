@@ -101,7 +101,7 @@ impl FunctionUpdate {
     }
 }
 
-pub fn plain_text(func: &Function) -> String {
+pub fn plain_text(func: &Function, include_body: bool) -> String {
     use std::fmt::Write;
 
     let mut str = String::new();
@@ -142,6 +142,10 @@ pub fn plain_text(func: &Function) -> String {
     if let Some(ret) = &func.ret {
         writeln!(w, "\nreturn:").ok();
         p(w, ret);
+    }
+
+    if !include_body {
+        return str;
     }
 
     writeln!(w, "\n---").ok();

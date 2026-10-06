@@ -17,7 +17,7 @@ impl TypedTool for ReadMemoryTool {
     }
 
     fn description() -> &'static str {
-        "read the program's initial memory at a given offset, returns an error message or hex bytes"
+        "read the program's initial memory at a given offset. returns an error message or hex bytes"
     }
 }
 

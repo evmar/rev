@@ -8,6 +8,7 @@ use runtime::SegOfs;
 use super::{Function, Memory, XRefs};
 use crate::{
     db::xref,
+    dis,
     load::{EXE, load_exe},
 };
 use anyhow::anyhow;
@@ -106,6 +107,13 @@ impl DB {
                 .find(|func| func.name.as_deref() == Some(key))
                 .map(|func| func.ip),
         }
+    }
+
+    pub fn import_function(&mut self, addr: SegOfs) {
+        let func = self.functions.entry(addr).or_default();
+        func.ip = addr;
+        dis::gather_blocks(func, &self.mem);
+        xref::update_xrefs(func, &self.mem);
     }
 }
 

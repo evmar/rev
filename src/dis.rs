@@ -2,18 +2,10 @@ use std::collections::{BTreeMap, VecDeque};
 
 use runtime::SegOfs;
 
-use crate::db::{Block, DB, Function, Instr};
+use crate::db::{Block, Function, Instr};
 
-pub fn dis_func<'db>(db: &'db mut DB, ip: SegOfs) {
-    if !db.functions.contains_key(&ip) {
-        let func = Function {
-            ip,
-            ..Default::default()
-        };
-        db.functions.insert(ip, func);
-    }
-    let func = db.functions.get_mut(&ip).unwrap();
-    func.blocks = gather(&db.mem, ip);
+pub fn gather_blocks<'db>(func: &mut Function, mem: &[u8]) {
+    func.blocks = gather(mem, func.ip);
     func.len = (func
         .blocks
         .last()
@@ -23,9 +15,9 @@ pub fn dis_func<'db>(db: &'db mut DB, ip: SegOfs) {
         .unwrap()
         .next_ip16()
         - func.ip.ofs) as usize;
-    check_coverage(func);
 }
 
+#[allow(unused)]
 fn check_coverage(func: &Function) {
     let start = func.blocks[0].instrs[0].ip16() as usize;
     let mut covered = vec![];

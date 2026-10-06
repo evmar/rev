@@ -1,11 +1,7 @@
 use anyhow::anyhow;
 use runtime::SegOfs;
 
-use crate::{
-    api,
-    db::{DB, xref},
-    dis::dis_func,
-};
+use crate::{api, db::DB};
 
 /// functions: reading, writing
 #[derive(argh::FromArgs)]
@@ -40,8 +36,7 @@ struct NewArgs {
 }
 
 fn cmd_new(db: &mut DB, NewArgs { addr }: NewArgs) -> anyhow::Result<()> {
-    dis_func(db, addr);
-    let func = db.functions.get_mut(&addr).unwrap();
+    db.import_function(addr);
     db.write()?;
     Ok(())
 }

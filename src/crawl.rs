@@ -1,9 +1,6 @@
 use std::collections::VecDeque;
 
-use crate::{
-    db::{DB, XRef, xref},
-    dis::dis_func,
-};
+use crate::db::{DB, XRef};
 
 /// crawl references
 #[derive(argh::FromArgs)]
@@ -41,9 +38,7 @@ pub fn crawl(db: &mut DB) -> anyhow::Result<bool> {
             continue;
         };
         println!("visiting {ip}");
-        dis_func(db, ip);
-        let func = db.functions.get_mut(&ip).unwrap();
-        xref::update_xrefs(func, &db.mem);
+        db.import_function(ip);
         db.write()?;
         changed = true;
     }

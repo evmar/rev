@@ -79,7 +79,7 @@ impl<'client> AgentLoop<'client> {
 
     pub async fn run(&mut self) -> anyhow::Result<String> {
         for i in 1..100 {
-            println!("agent turn {i}:");
+            println!("${:.3} agent turn {i}:", self.usage.cost);
             if let Some(content) = self.run_one().await? {
                 self.usage.print();
                 return Ok(content);
@@ -107,12 +107,19 @@ impl<'client> AgentLoop<'client> {
         }
 
         let choice = &resp.choices[0];
+        // TODO: seems we should just include whole message
+        //messages.push(Message::new(Role::Assistant, &choice.message));
+
+        if let Some(content) = choice.content() {
+            print!("content: {content}")
+        }
 
         if let Some(reasoning) = choice.reasoning() {
-            print!("{reasoning}")
+            print!("reasoning: {reasoning}")
         }
 
         if let Some(tool_calls) = choice.tool_calls() {
+            // TODO: seems we should just include whole message
             self.messages
                 .push(Message::assistant_with_tool_calls("", tool_calls.to_vec()));
             for call in tool_calls.iter() {

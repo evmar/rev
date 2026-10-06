@@ -1,3 +1,4 @@
+use anyhow::anyhow;
 use runtime::SegOfs;
 
 use crate::{
@@ -56,9 +57,14 @@ struct ReadArgs {
 }
 
 fn cmd_read(db: &mut DB, ReadArgs { addr_or_name }: ReadArgs) -> anyhow::Result<()> {
-    let Some(func) = db.get_function(&addr_or_name) else {
+    let Some(addr) = db.function_from_name(&addr_or_name) else {
         anyhow::bail!("unknown function {addr_or_name:?}")
     };
+    let func = db
+        .functions
+        .get_mut(&addr)
+        .ok_or_else(|| anyhow!("unknown function {addr}"))?;
+    func.disasm(&db.mem);
     print!("{}", api::plain_text(func));
     Ok(())
 }

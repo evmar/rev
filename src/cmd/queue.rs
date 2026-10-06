@@ -64,7 +64,6 @@ pub async fn run_task(db: &mut DB, task: &Task) -> anyhow::Result<()> {
                 analyze function {ip} and write analysis back to database using write_function()
                 ",
                 desc = db.exe.description.as_deref().unwrap_or("none"),
-                ip = "test",
             }
         }
         Task::LabelMemory(_addr) => todo!(),

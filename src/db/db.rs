@@ -89,14 +89,14 @@ impl DB {
         self.project_path("db.toml")
     }
 
-    pub fn get_function<'a>(&'a self, key: &str) -> Option<&'a Function> {
+    pub fn function_from_name(&self, key: &str) -> Option<SegOfs> {
         match SegOfs::parse(key) {
-            Ok(addr) => self.functions.get(&addr),
+            Ok(addr) => Some(addr),
             Err(_) => self
                 .functions
                 .values()
                 .find(|func| func.name.as_deref() == Some(key))
-                .map(|func| func),
+                .map(|func| func.ip),
         }
     }
 }

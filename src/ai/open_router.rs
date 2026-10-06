@@ -89,6 +89,9 @@ impl<'client> AgentLoop<'client> {
     }
 
     async fn run_one(&mut self) -> anyhow::Result<Option<String>> {
+        let as_text = serde_json::to_string(&self.messages).unwrap();
+        std::fs::write("ai-trace.json", as_text.as_bytes()).unwrap();
+
         let request = ChatCompletionRequest::builder()
             .model("google/gemini-3.8-flash")
             .typed_tool::<GetFunctionTool>()
@@ -126,7 +129,10 @@ impl<'client> AgentLoop<'client> {
                 };
                 let out = match out {
                     Ok(out) => out,
-                    Err(err) => format!("error: {err}"),
+                    Err(err) => {
+                        println!("tool failed: {err}");
+                        format!("error: {err}")
+                    }
                 };
                 self.messages.push(Message::tool_response(call.id(), out))
             }

@@ -6,6 +6,9 @@ use crate::db::DB;
 #[ts(export)]
 pub struct EXE {
     pub filename: String,
+
+    pub description: Option<String>,
+
     #[serde(skip_serializing_if = "SegOfs::is_null")]
     #[ts(as = "String")]
     pub entry_point: SegOfs,

@@ -6,6 +6,13 @@ function OverviewDetails({ overview }: { overview: Overview }) {
     <dl class="panel">
       <dt>Executable</dt>
       <dd>{overview.exe.filename}</dd>
+      {overview.exe.description && (
+        <>
+        <dt>Description</dt>
+        <dd style={{ whiteSpace: 'pre-wrap' }}>{overview.exe.description}</dd>
+        </>
+      )}
+
       <dt>Memory size</dt>
       <dd>{overview.mem_size.toLocaleString()} bytes</dd>
       <dt>Entry point</dt>

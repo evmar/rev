@@ -5,7 +5,7 @@ use openrouter_rs::{
 };
 
 use crate::{
-    ai::tool::{GetFunctionTool, ReadMemoryTool, WriteFunctionTool},
+    ai::tool::{GetFunctionTool, LabelMemoryTool, ReadMemoryTool, WriteFunctionTool},
     db::DB,
 };
 
@@ -97,6 +97,7 @@ impl<'client> AgentLoop<'client> {
             .typed_tool::<GetFunctionTool>()
             .typed_tool::<ReadMemoryTool>()
             .typed_tool::<WriteFunctionTool>()
+            .typed_tool::<LabelMemoryTool>()
             .messages(self.messages.clone())
             .build()?;
 
@@ -124,6 +125,9 @@ impl<'client> AgentLoop<'client> {
                 } else if call.is_tool::<WriteFunctionTool>() {
                     let params = call.parse_params::<WriteFunctionTool>()?;
                     WriteFunctionTool::call(self.db, params)
+                } else if call.is_tool::<LabelMemoryTool>() {
+                    let params = call.parse_params::<LabelMemoryTool>()?;
+                    LabelMemoryTool::call(self.db, params)
                 } else {
                     panic!("unexpected call {call:?}");
                 };

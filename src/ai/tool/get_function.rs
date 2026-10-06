@@ -28,16 +28,14 @@ impl GetFunctionTool {
         db: &DB,
         GetFunctionTool { addr, include_body }: GetFunctionTool,
     ) -> anyhow::Result<String> {
+        println!("get_func({addr}, include_body={include_body})");
         let addr = SegOfs::parse(&addr).map_err(|_| anyhow::anyhow!("bad address {:?}", addr))?;
         let func = db
             .functions
             .get(&addr)
             .ok_or_else(|| anyhow::anyhow!("unknown function {addr}"))?;
         assert!(!func.blocks.is_empty());
-        println!(
-            "Reading function {addr} ({name}), include_body={include_body}",
-            name = func.name.as_deref().unwrap_or("unknown name")
-        );
+        println!("-> success");
         Ok(api::plain_text(func, include_body))
     }
 }

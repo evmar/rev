@@ -25,6 +25,7 @@ pub struct DB {
 
 impl DB {
     pub fn load(project_path: PathBuf) -> anyhow::Result<Self> {
+        let now = std::time::Instant::now();
         let exe: EXE = toml::from_slice(&std::fs::read(project_path.join("db.toml"))?)?;
         let memory: Memory = toml::from_slice(&std::fs::read(project_path.join("memory.toml"))?)?;
 
@@ -45,6 +46,8 @@ impl DB {
         }
 
         db.xrefs = XRefs::gather(&mut db);
+
+        println!("db loaded in {}ms", now.elapsed().as_millis());
 
         Ok(db)
     }

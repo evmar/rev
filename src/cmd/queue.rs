@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use runtime::SegOfs;
 
-use crate::{ai, crawl::crawl, db::DB};
+use crate::{ai, db::DB};
 
 /// agentically process queue
 #[derive(argh::FromArgs)]
@@ -59,6 +59,9 @@ pub async fn run_task(db: &mut DB, task: &Task) -> anyhow::Result<()> {
                 analyze function {ip} and write analysis of its name, arguments, etc.
                 back to database using write_function().
 
+                if while analyzing the function you discover information about any
+                static memory locations used by {ip}, label them with label_memory().
+
                 you may inspect other functions using get_function() when necessary for
                 understanding {ip}.  do not speculate about {ip} while an important
                 dependency remains unresolved.  stop once additional exploration will not
@@ -80,11 +83,6 @@ pub async fn run(path: PathBuf, args: Args) -> anyhow::Result<()> {
     let count = args.count.unwrap_or(1000);
     for _ in 0..count {
         let mut db = DB::load(path.clone())?;
-        if crawl(&mut db)? {
-            db.write()?;
-            println!("crawl found new code, looping");
-            continue;
-        }
         let Some(task) = next_task(&mut db) else {
             return Ok(());
         };

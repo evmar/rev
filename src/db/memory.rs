@@ -4,11 +4,11 @@ use runtime::SegOfs;
 
 #[derive(Default, Debug, serde::Serialize, serde::Deserialize)]
 pub struct Memory {
-    pub entries: BTreeMap<SegOfs, MemoryLocation>,
+    pub entries: BTreeMap<SegOfs, MemoryAnnotation>,
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
-pub struct MemoryLocation {
+pub struct MemoryAnnotation {
     /// short name for the memory location
     pub name: String,
     /// description of what the memory holds

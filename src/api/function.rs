@@ -121,12 +121,7 @@ pub fn plain_text(db: &DB, func: &Function, include_body: bool) -> String {
     if let Some(callers) = db.xrefs.callers.get(&func.ip) {
         writeln!(w, "called by:").ok();
         for addr in callers {
-            if let Some(name) = db
-                .functions
-                .get(&addr)
-                .map(|func| func.name.as_ref())
-                .flatten()
-            {
+            if let Some(name) = db.functions.get(&addr).and_then(|func| func.name.as_ref()) {
                 writeln!(w, "  {addr} ({name})").ok();
             } else {
                 writeln!(w, "  {addr}").ok();
@@ -207,11 +202,8 @@ pub fn plain_text(db: &DB, func: &Function, include_body: bool) -> String {
                 if let Some(jmp) = &annot.jmp {
                     let target = match jmp {
                         XRef::External(addr) => {
-                            if let Some(name) = db
-                                .functions
-                                .get(&addr)
-                                .map(|func| func.name.as_ref())
-                                .flatten()
+                            if let Some(name) =
+                                db.functions.get(&addr).and_then(|func| func.name.as_ref())
                             {
                                 format!("fn {name}()")
                             } else {

@@ -33,8 +33,7 @@ pub fn next_task(db: &mut DB) -> Option<Task> {
                 if let Some(Ok(addr)) = func
                     .annotations
                     .get(&block.ip.with_ofs(instr.ip16()))
-                    .map(|a| a.memory.as_ref())
-                    .flatten()
+                    .and_then(|a| a.memory.as_ref())
                 {
                     if !db.memory.entries.contains_key(addr) {
                         return Some(Task::LabelMemory(*addr));

@@ -116,6 +116,11 @@ impl std::str::FromStr for XRef {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let xref = if let Some(block) = s.strip_prefix("'") {
             XRef::Block(usize::from_str(block).map_err(|err| format!("xref {:?}: {}", s, err))?)
+        } else if let Some(block) = s.strip_suffix(":") {
+            let block = block
+                .strip_prefix("block")
+                .ok_or_else(|| format!("bad xref"))?;
+            XRef::Block(usize::from_str(block).map_err(|err| format!("xref {:?}: {}", s, err))?)
         } else if let Some(unk) = s.strip_prefix("unknown:") {
             XRef::Unknown(unk.to_owned())
         } else {

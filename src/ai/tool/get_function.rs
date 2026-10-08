@@ -36,6 +36,6 @@ impl GetFunctionTool {
             .ok_or_else(|| anyhow::anyhow!("unknown function {addr}"))?;
         assert!(!func.blocks.is_empty());
         println!("-> success");
-        Ok(api::plain_text(func, include_body))
+        Ok(api::plain_text(db, func, include_body))
     }
 }

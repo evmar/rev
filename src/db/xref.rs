@@ -129,7 +129,7 @@ impl std::fmt::Display for XRef {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             XRef::External(ip) => write!(f, "{ip}"),
-            XRef::Block(idx) => write!(f, "'{idx}"),
+            XRef::Block(idx) => write!(f, "block{idx}:"),
             XRef::Unknown(label) => write!(f, "unknown:{label}"),
         }
     }

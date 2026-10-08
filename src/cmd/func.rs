@@ -58,7 +58,7 @@ fn cmd_read(db: &DB, ReadArgs { addr_or_name }: ReadArgs) -> anyhow::Result<()> 
         .functions
         .get(&addr)
         .ok_or_else(|| anyhow!("unknown function {addr}"))?;
-    print!("{}", api::plain_text(func, true));
+    print!("{}", api::plain_text(db, func, true));
     Ok(())
 }
 

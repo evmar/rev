@@ -25,13 +25,13 @@ pub fn dump(db: &mut DB, Args { out_dir }: Args) -> anyhow::Result<()> {
 
     let fn_dir = out_dir.join("fn");
     std::fs::create_dir_all(&fn_dir)?;
-    for func in db.functions.values_mut() {
+    for func in db.functions.values() {
         let name = match &func.name {
             Some(name) => format!("{name}.toml"),
             None => format!("{:04x}_{:04x}.toml", func.ip.seg, func.ip.ofs),
         };
         let path = fn_dir.join(name);
-        std::fs::write(&path, api::plain_text(func, true).as_bytes())?;
+        std::fs::write(&path, api::plain_text(db, func, true).as_bytes())?;
     }
 
     Ok(())

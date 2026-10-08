@@ -4,7 +4,7 @@ use std::collections::HashSet;
 
 use runtime::SegOfs;
 
-use crate::db::Function;
+use crate::db::{DB, Function, XRef};
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[schemars(inline)]
@@ -101,7 +101,7 @@ impl FunctionUpdate {
     }
 }
 
-pub fn plain_text(func: &Function, include_body: bool) -> String {
+pub fn plain_text(db: &DB, func: &Function, include_body: bool) -> String {
     use std::fmt::Write;
 
     let mut str = String::new();
@@ -150,7 +150,29 @@ pub fn plain_text(func: &Function, include_body: bool) -> String {
 
     writeln!(w, "\n---").ok();
 
+    let mut block_labels = vec![];
     for block in func.blocks.iter() {
+        if let Some(annot) = func.annotations.get(&block.ip) {
+            if let Some(label) = &annot.label {
+                block_labels.push(Some(label.clone()));
+                continue;
+            }
+        }
+        block_labels.push(None);
+    }
+    for (_, annot) in func.annotations.iter() {
+        if let Some(XRef::Block(i)) = &annot.jmp {
+            if block_labels[*i].is_none() {
+                block_labels[*i] = Some(format!("block{i}"));
+            }
+        }
+    }
+
+    for (label, block) in block_labels.iter().zip(func.blocks.iter()) {
+        if let Some(label) = label {
+            writeln!(w, "{label}:").ok();
+        }
+        let mut post_comment = None;
         for instr in block.instrs.iter() {
             let ip = func.ip.with_ofs(instr.ip16());
             if let Some(annot) = func.annotations.get(&ip) {
@@ -158,22 +180,40 @@ pub fn plain_text(func: &Function, include_body: bool) -> String {
                     writeln!(w, "; {comment}").ok();
                 }
                 for (reg, val) in annot.assume.iter() {
-                    writeln!(w, "@assume {reg}={val:x}").ok();
-                }
-                if let Some(label) = &annot.label {
-                    writeln!(w, "@label {label}").ok();
-                }
-                if let Some(jmp) = &annot.jmp {
-                    writeln!(w, "@jmp {jmp}").ok();
+                    writeln!(w, "; assume {reg}={val:x}").ok();
                 }
                 if let Some(mem) = &annot.memory {
                     match mem {
-                        Ok(addr) => writeln!(w, "@mem {addr}").ok(),
-                        Err(err) => writeln!(w, "@mem ; {err}").ok(),
+                        Ok(addr) => post_comment = Some(format!("memory: {addr}")),
+                        Err(err) => post_comment = Some(format!("memory: {err}")),
                     };
                 }
+                if let Some(jmp) = &annot.jmp {
+                    let target = match jmp {
+                        XRef::External(addr) => {
+                            if let Some(name) = db
+                                .functions
+                                .get(&addr)
+                                .map(|func| func.name.as_ref())
+                                .flatten()
+                            {
+                                format!("fn {name}()")
+                            } else {
+                                format!("{addr}")
+                            }
+                        }
+                        XRef::Block(i) => format!("label {}:", block_labels[*i].as_ref().unwrap()),
+                        XRef::Unknown(err) => format!("[{err}]"),
+                    };
+                    post_comment = Some(format!("=> {target}"));
+                }
             }
-            writeln!(w, "{ip} {instr}").ok();
+
+            write!(w, "{ip} {instr}").ok();
+            if let Some(c) = std::mem::take(&mut post_comment) {
+                write!(w, " ; {c}").ok();
+            };
+            writeln!(w).ok();
         }
         writeln!(w).ok();
     }

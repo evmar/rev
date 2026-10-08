@@ -19,7 +19,7 @@ impl TypedTool for GetFunctionTool {
     }
 
     fn description() -> &'static str {
-        "get a function's name, description, and optionally a dump of its assembly code"
+        "get a function's name, description, arguments, and optionally a dump of its assembly code"
     }
 }
 

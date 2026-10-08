@@ -118,6 +118,22 @@ pub fn plain_text(db: &DB, func: &Function, include_body: bool) -> String {
     )
     .ok();
 
+    if let Some(callers) = db.xrefs.callers.get(&func.ip) {
+        writeln!(w, "called by:").ok();
+        for addr in callers {
+            if let Some(name) = db
+                .functions
+                .get(&addr)
+                .map(|func| func.name.as_ref())
+                .flatten()
+            {
+                writeln!(w, "  {addr} ({name})").ok();
+            } else {
+                writeln!(w, "  {addr}").ok();
+            }
+        }
+    }
+
     let width = 72;
     if let Some(desc) = &func.desc {
         writeln!(w, "\n{}", textwrap::fill(desc, width)).ok();

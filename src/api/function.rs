@@ -184,10 +184,14 @@ pub fn plain_text(db: &DB, func: &Function, include_body: bool) -> String {
                     writeln!(w, "; assume {reg}={val:x}").ok();
                 }
                 if let Some(mem) = &annot.memory {
-                    match mem {
-                        Ok(addr) => post_comment = Some(format!("memory: {addr}")),
-                        Err(err) => post_comment = Some(format!("memory: {err}")),
+                    let label = match mem {
+                        Ok(addr) => match db.memory.entries.get(addr).map(|m| &m.name) {
+                            Some(name) => format!("{addr} ({name})"),
+                            None => format!("{addr}"),
+                        },
+                        Err(err) => err.clone(),
                     };
+                    post_comment = Some(format!("memory: {label}"));
                 }
                 if let Some(jmp) = &annot.jmp {
                     let target = match jmp {

@@ -65,7 +65,7 @@ struct AnnotationDetail<'a> {
 #[derive(serde::Serialize, ts_rs::TS)]
 #[ts(export)]
 enum MemoryDetail {
-    Address(String),
+    Address(SegOfs),
     Note(String),
 }
 
@@ -131,7 +131,7 @@ fn function_detail<'a>(db: &'a DB, func: &'a crate::db::Function) -> FunctionDet
                             .as_ref()
                             .map(|xref| XRefDetail::from_xref(db, xref)),
                         memory: annotation.memory.as_ref().map(|memory| match memory {
-                            Ok(addr) => MemoryDetail::Address(addr.to_string()),
+                            Ok(addr) => MemoryDetail::Address(*addr),
                             Err(note) => MemoryDetail::Note(note.clone()),
                         }),
                         assume: &annotation.assume,

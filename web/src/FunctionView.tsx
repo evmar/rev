@@ -76,7 +76,7 @@ export function FunctionView({ ip }: { ip: string }) {
                         const address = annotation.memory.Address;
                         const name = func.memory[address];
                         memory = <a href={`#/memory/${encodeURIComponent(address)}`}>
-                          {name ? `${name}@${address}` : address}
+                          {name ? `${address} (${name})` : address}
                         </a>;
                       } else {
                         memory = annotation.memory.Note;

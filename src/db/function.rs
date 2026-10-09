@@ -51,6 +51,29 @@ impl Function {
         callees.sort();
         callees
     }
+
+    /// Gather labels for local blocks: either from annotations, or `blockN` for unlabelled.
+    /// Blocks that aren't jmp targets don't get labels.
+    pub fn block_labels(&self) -> Vec<Option<String>> {
+        let mut block_labels = vec![];
+        for block in self.blocks.iter() {
+            if let Some(annot) = self.annotations.get(&block.ip) {
+                if let Some(label) = &annot.label {
+                    block_labels.push(Some(label.clone()));
+                    continue;
+                }
+            }
+            block_labels.push(None);
+        }
+        for (_, annot) in self.annotations.iter() {
+            if let Some(XRef::Block(i)) = &annot.jmp {
+                if block_labels[*i].is_none() {
+                    block_labels[*i] = Some(format!("block{i}"));
+                }
+            }
+        }
+        block_labels
+    }
 }
 
 pub struct Block {

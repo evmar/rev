@@ -42,6 +42,7 @@ struct FunctionDetail<'a> {
 #[ts(export)]
 struct BlockDetail {
     ip: SegOfs,
+    label: Option<String>,
     instrs: Vec<InstructionDetail>,
 }
 
@@ -69,26 +70,28 @@ enum MemoryDetail {
     Note(String),
 }
 
-/// Display name and target IP; an empty IP denotes a non-function reference.
+/// Display name and target IP.
 #[derive(serde::Serialize, ts_rs::TS)]
 #[ts(export)]
-struct XRefDetail(String, SegOfs);
+struct XRefDetail(String, Option<SegOfs>);
 
 impl XRefDetail {
     fn function(db: &DB, ip: SegOfs) -> Self {
         let name = db.functions.get(&ip).and_then(|func| func.name.clone());
-        Self(name.unwrap_or_else(|| ip.to_string()), ip)
+        Self(name.unwrap_or_else(|| ip.to_string()), Some(ip))
     }
 
-    fn from_xref(db: &DB, xref: &XRef) -> Self {
+    fn from_xref(db: &DB, xref: &XRef, block_labels: &[Option<String>]) -> Self {
         match xref {
             XRef::External(ip) => Self::function(db, *ip),
-            _ => Self(xref.to_string(), SegOfs::default()),
+            XRef::Block(i) => Self(block_labels[*i].as_ref().cloned().unwrap(), None),
+            _ => Self(xref.to_string(), None),
         }
     }
 }
 
 fn function_detail<'a>(db: &'a DB, func: &'a crate::db::Function) -> FunctionDetail<'a> {
+    let block_labels = func.block_labels();
     FunctionDetail {
         ip: func.ip.to_string(),
         name: func.name.as_deref(),
@@ -129,7 +132,7 @@ fn function_detail<'a>(db: &'a DB, func: &'a crate::db::Function) -> FunctionDet
                         jmp: annotation
                             .jmp
                             .as_ref()
-                            .map(|xref| XRefDetail::from_xref(db, xref)),
+                            .map(|xref| XRefDetail::from_xref(db, xref, &block_labels)),
                         memory: annotation.memory.as_ref().map(|memory| match memory {
                             Ok(addr) => MemoryDetail::Address(*addr),
                             Err(note) => MemoryDetail::Note(note.clone()),
@@ -139,11 +142,12 @@ fn function_detail<'a>(db: &'a DB, func: &'a crate::db::Function) -> FunctionDet
                 )
             })
             .collect(),
-        blocks: func
-            .blocks
-            .iter()
-            .map(|block| BlockDetail {
+        blocks: block_labels
+            .into_iter()
+            .zip(func.blocks.iter())
+            .map(|(label, block)| BlockDetail {
                 ip: block.ip,
+                label,
                 instrs: block
                     .instrs
                     .iter()

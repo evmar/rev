@@ -151,24 +151,7 @@ pub fn plain_text(db: &DB, func: &Function, include_body: bool) -> String {
 
     writeln!(w, "\n---").ok();
 
-    let mut block_labels = vec![];
-    for block in func.blocks.iter() {
-        if let Some(annot) = func.annotations.get(&block.ip) {
-            if let Some(label) = &annot.label {
-                block_labels.push(Some(label.clone()));
-                continue;
-            }
-        }
-        block_labels.push(None);
-    }
-    for (_, annot) in func.annotations.iter() {
-        if let Some(XRef::Block(i)) = &annot.jmp {
-            if block_labels[*i].is_none() {
-                block_labels[*i] = Some(format!("block{i}"));
-            }
-        }
-    }
-
+    let block_labels = func.block_labels();
     for (label, block) in block_labels.iter().zip(func.blocks.iter()) {
         if let Some(label) = label {
             writeln!(w, "{label}:").ok();

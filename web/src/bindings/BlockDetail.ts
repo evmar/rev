@@ -2,4 +2,4 @@
 import type { InstructionDetail } from "./InstructionDetail";
 import type { SegOfs } from "./SegOfs";
 
-export type BlockDetail = { ip: SegOfs, instrs: Array<InstructionDetail>, };
+export type BlockDetail = { ip: SegOfs, label: string | null, instrs: Array<InstructionDetail>, };

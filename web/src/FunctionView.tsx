@@ -1,3 +1,4 @@
+import type { BlockDetail } from './bindings/BlockDetail';
 import type { FunctionDetail } from './bindings/FunctionDetail';
 import type { XRefDetail } from './bindings/XRefDetail';
 import { useJson } from './useJson';
@@ -52,48 +53,47 @@ export function FunctionView({ ip }: { ip: string }) {
             </dl>
           </section>
           <section class="panel">
-            {func.blocks.length === 0 ? <p>No instructions found.</p> : func.blocks.map((block, index) => (
-              <section key={index}>
-                {block.instrs.length === 0 ? <p>No instructions in this block.</p> : (
-                  <pre><code>{block.instrs.map((instr) => {
-                    const annotation = func.annotations[instr.ip];
-                    const label = annotation?.label != null ? `${annotation.label}:\n` : '';
-                    const assume = annotation?.assume
-                      ?.map(([key, val]) => `@assume ${key}=${val.toString(16)}\n`).join('') ?? '';
-                    const comment = annotation?.comment
-                      ? annotation.comment.split('\n').map(line => `; ${line}\n`).join('')
-                      : '';
-                    const [jumpTarget, targetIp] = annotation?.jmp ?? [];
-                    let jump: preact.ComponentChild = jumpTarget;
-                    if (jumpTarget && targetIp) {
-                      jump = <a href={`#/functions/${encodeURIComponent(targetIp)}`}>
-                        {jumpTarget}
-                      </a>;
-                    }
-                    let memory: preact.ComponentChild;
-                    if (annotation?.memory) {
-                      if ('Address' in annotation.memory) {
-                        const address = annotation.memory.Address;
-                        const name = func.memory[address];
-                        memory = <a href={`#/memory/${encodeURIComponent(address)}`}>
-                          {name ? `${address} (${name})` : address}
-                        </a>;
-                      } else {
-                        memory = annotation.memory.Note;
-                      }
-                    }
-                    return <div key={instr.ip}>
-                      {`${comment}${assume}${label}${instr.ip} ${instr.text}`}
-                      {jump && <> ; {jump}</>}
-                      {memory && <> ; mem {memory}</>}
-                    </div>;
-                  })}</code></pre>
-                )}
-              </section>
-            ))}
+            {func.blocks.length === 0 ? <p>No instructions found.</p> : func.blocks.map((block, index) => Block(index, block, func))}
           </section>
         </>
       )}
     </main>
   );
+}
+function Block(index: number, block: BlockDetail, func: FunctionDetail) {
+  const label = block.label != null ? `${block.label}:\n` : '';
+  return <section key={index}>
+    <pre><code>{block.instrs.map((instr) => {
+      const annotation = func.annotations[instr.ip];
+      const assume = annotation?.assume
+          ?.map(([key, val]) => `@assume ${key}=${val.toString(16)}\n`).join('') ?? '';
+      const comment = annotation?.comment
+          ? annotation.comment.split('\n').map(line => `; ${line}\n`).join('')
+          : '';
+      const [jumpTarget, targetIp] = annotation?.jmp ?? [];
+      let jump: preact.ComponentChild = jumpTarget;
+      if (jumpTarget && targetIp) {
+          jump = <a href={`#/functions/${encodeURIComponent(targetIp)}`}>
+              {jumpTarget}
+          </a>;
+      }
+      let memory: preact.ComponentChild;
+      if (annotation?.memory) {
+          if ('Address' in annotation.memory) {
+              const address = annotation.memory.Address;
+              const name = func.memory[address];
+              memory = <a href={`#/memory/${encodeURIComponent(address)}`}>
+                  {name ? `${address} (${name})` : address}
+              </a>;
+          } else {
+              memory = annotation.memory.Note;
+          }
+      }
+      return <div key={instr.ip}>
+          {`${comment}${assume}${label}${instr.ip} ${instr.text}`}
+          {jump && <> ; {jump}</>}
+          {memory && <> ; mem {memory}</>}
+      </div>;
+    })}</code></pre>
+  </section>;
 }

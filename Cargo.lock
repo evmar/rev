@@ -1507,6 +1507,7 @@ dependencies = [
  "bitflags 2.13.1",
  "log",
  "num-traits",
+ "schemars 1.2.2",
  "serde",
  "ts-rs",
  "widestring",

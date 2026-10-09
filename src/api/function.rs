@@ -29,16 +29,8 @@ pub struct FunctionUpdate {
 #[derive(serde::Serialize, serde::Deserialize, Debug, schemars::JsonSchema)]
 #[schemars(inline)]
 pub struct Annotation {
-    pub addr: String,
+    pub addr: SegOfs,
     pub text: String,
-}
-
-impl Annotation {
-    fn parse(self) -> anyhow::Result<(SegOfs, String)> {
-        let addr = SegOfs::parse(&self.addr)
-            .map_err(|err| anyhow::anyhow!("parsing {addr}: {err}", addr = self.addr))?;
-        Ok((addr, self.text))
-    }
 }
 
 #[derive(serde::Deserialize, serde::Serialize, Debug, ts_rs::TS, schemars::JsonSchema)]
@@ -81,20 +73,18 @@ impl FunctionUpdate {
 
         func.annotations.clear();
 
-        for label in self.labels {
-            let (addr, label) = label.parse()?;
+        for Annotation { addr, text } in self.labels {
             if !instrs.contains(&addr) {
                 anyhow::bail!("label on nonexistent {addr}");
             }
-            func.annotations.entry(addr).or_default().label = Some(label);
+            func.annotations.entry(addr).or_default().label = Some(text);
         }
 
-        for comment in self.inline_comments {
-            let (addr, comment) = comment.parse()?;
+        for Annotation { addr, text } in self.inline_comments {
             if !instrs.contains(&addr) {
                 anyhow::bail!("comment on nonexistent {addr}");
             }
-            func.annotations.entry(addr).or_default().comment = Some(comment);
+            func.annotations.entry(addr).or_default().comment = Some(text);
         }
 
         Ok(())
